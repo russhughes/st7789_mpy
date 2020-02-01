@@ -1,0 +1,8 @@
+.vscode
+.idea
+__pycache__
+sphinx/build
+*~
+*.pyc
+*.o
+*.P
