@@ -31,7 +31,6 @@
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "st7789.h"
-#include <stdio.h>
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #define _swap_bytes(val) ( (((val)>>8)&0x00FF)|(((val)<<8)&0xFF00) )
