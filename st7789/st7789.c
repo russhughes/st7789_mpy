@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "st7789.h"
+#include <stdio.h>
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #define _swap_bytes(val) ( (((val)>>8)&0x00FF)|(((val)<<8)&0xFF00) )
@@ -145,14 +146,23 @@ STATIC void draw_pixel(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t
 }
 
 
-STATIC void fast_hline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t w, uint16_t color) {
-    set_window(self, x, y, x + w - 1, y);
-    DC_HIGH();
-    CS_LOW();
-    fill_color_buffer(self->spi_obj, color, w);
-    CS_HIGH();
-}
+STATIC void fast_hline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint8_t _w, uint16_t color) {
 
+    int w;
+
+    if (x+_w > self->width)
+        w = self->width - x;
+    else
+        w = _w;
+
+    if (w>0) {
+        set_window(self, x, y, x + w - 1, y);
+        DC_HIGH();
+        CS_LOW();
+        fill_color_buffer(self->spi_obj, color, w);
+        CS_HIGH();
+    }
+}
 
 STATIC void fast_vline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t w, uint16_t color) {
     set_window(self, x, y, x, y + w - 1);
@@ -198,7 +208,6 @@ STATIC mp_obj_t st7789_ST7789_write(mp_obj_t self_in, mp_obj_t command, mp_obj_t
         mp_get_buffer_raise(data, &src, MP_BUFFER_READ);
         write_cmd(self, (uint8_t)mp_obj_get_int(command), (const uint8_t*)src.buf, src.len);
     }
-
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(st7789_ST7789_write_obj, st7789_ST7789_write);
@@ -376,40 +385,46 @@ STATIC mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, st7789_ST7789_blit_buffer);
 
+
 STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     // extract arguments
-    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_obj_module_t *font = MP_OBJ_TO_PTR(args[1]);
-    const uint8_t *str = (uint8_t *) mp_obj_str_get_str(args[2]);
-    mp_obj_dict_t *dict = MP_OBJ_TO_PTR(font->globals);
-    uint8_t width = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTH)));
-    uint8_t height = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
-    uint8_t first = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_FIRST)));
-    uint8_t last = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_LAST)));
+    st7789_ST7789_obj_t *self   = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_module_t *font       = MP_OBJ_TO_PTR(args[1]);
+    const char *str             = mp_obj_str_get_str(args[2]);
+    mp_int_t x0                 = mp_obj_get_int(args[3]);
+    mp_int_t y0                 = mp_obj_get_int(args[4]);
+
+    mp_obj_dict_t *dict     = MP_OBJ_TO_PTR(font->globals);
+    const uint8_t width     = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTH)));
+    const uint8_t height    = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
+    const uint8_t first     = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_FIRST)));
+    const uint8_t last      = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_LAST)));
+
     mp_obj_t font_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_FONT));
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(font_data_buff, &bufinfo, MP_BUFFER_READ);
     const uint8_t *font_data = bufinfo.buf;
-    mp_int_t x0 = mp_obj_get_int(args[3]);
-    mp_int_t y0 = mp_obj_get_int(args[4]);
-    mp_int_t fg_color = _swap_bytes(WHITE);
-    mp_int_t bg_color = _swap_bytes(BLACK);
-    if (n_args > 5) {
+
+    mp_int_t fg_color;
+    mp_int_t bg_color;
+
+    if (n_args > 5)
         fg_color = _swap_bytes(mp_obj_get_int(args[5]));
-    }
-    if (n_args > 6) {
+    else
+        fg_color = _swap_bytes(WHITE);
+
+    if (n_args > 6)
         bg_color = _swap_bytes(mp_obj_get_int(args[6]));
-    }
+    else
+        bg_color = _swap_bytes(BLACK);
 
     uint8_t wide = width / 8;
     uint16_t buf_size = width * height * 2;
     uint16_t *c_buffer = malloc(buf_size);
 
     if (c_buffer) {
-        // loop over chars
-        for (; *str; ++str) {
-            // get char and make sure its in range of font
-            uint8_t chr = *str;
+        uint8_t chr;
+        while ((chr = *str++)) {
             if (chr >= first && chr <= last) {
                 uint16_t buf_idx = 0;
                 uint16_t chr_idx = (chr-first)*(height*wide);
@@ -426,11 +441,14 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
                         chr_idx++;
                     }
                 }
-                set_window(self, x0, y0, x0 + width - 1, y0 + height - 1);
-                DC_HIGH();
-                CS_LOW();
-                write_spi(self->spi_obj, (const uint8_t*)c_buffer, buf_size);
-                CS_HIGH();
+                uint16_t x1 = x0+width-1;
+                if (x1 < self->width) {
+                    set_window(self, x0, y0, x1, y0+height-1);
+                    DC_HIGH();
+                    CS_LOW();
+                    write_spi(self->spi_obj, (uint8_t *) c_buffer, buf_size);
+                    CS_HIGH();
+                }
                 x0 += width;
             }
         }
@@ -439,6 +457,7 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_text_obj, 5, 7, st7789_ST7789_text);
+
 
 STATIC void set_rotation(st7789_ST7789_obj_t *self) {
     uint8_t madctl_value = ST7789_MADCTL_RGB;
@@ -523,6 +542,7 @@ STATIC mp_obj_t st7789_ST7789_vscrdef(size_t n_args, const mp_obj_t *args) {
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vscrdef_obj, 4, 4, st7789_ST7789_vscrdef);
+
 
 STATIC mp_obj_t st7789_ST7789_vscsad(mp_obj_t self_in, mp_obj_t vssa_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
