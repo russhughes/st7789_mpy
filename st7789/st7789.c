@@ -714,12 +714,12 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->rotation = args[ARG_rotation].u_int % 4;
 
     if (self->display_height != 240 || (self->display_width != 240  && self->display_width != 135)) {
-        mp_raise_ValueError("Unsupported display. Only 240x240 and 135x240 are supported");
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display. Only 240x240 and 135x240 are supported"));
     }
 
     if (args[ARG_reset].u_obj == MP_OBJ_NULL
         || args[ARG_dc].u_obj == MP_OBJ_NULL) {
-        mp_raise_ValueError("must specify all of reset/dc pins");
+        mp_raise_ValueError(MP_ERROR_TEXT("must specify all of reset/dc pins"));
     }
 
     self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);

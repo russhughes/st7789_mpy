@@ -1,4 +1,4 @@
-MicroPython v1.12-96-gc3095b37e compiled using ESP IDF v3
+MicroPython v1.12-464-gcae77daf0 compiled using ESP IDF v3
 with the st7789 C driver and the frozen python font files:
 
 - vga1_8x8.py
