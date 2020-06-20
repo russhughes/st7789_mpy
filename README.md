@@ -9,7 +9,17 @@ display rotation, scrolling and drawing text using 8 and 16 bit wide bitmap
 fonts. Included are 12 bitmap fonts derived from classic pc text mode fonts
 and a couple of example programs that run on the TTGO T-Display.
 
+A firmware.bin file containing MicroPython v1.12-464-gcae77daf0 compiled
+using ESP IDF v3 with the st7789 C driver and the frozen python font files is
+available in the firmware directory.
+
 This is a work in progress.
+
+Thanks go out to:
+
+- https://github.com/devbis for the original driver this is based on.
+- https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
+- https://github.com/aleggon for finding the correct offsets for a 240x240 display.
 
 -- Russ
 
@@ -184,7 +194,33 @@ This driver supports only 16bit colors in RGB565 notation.
   (0 degrees), 1-Landscape (90 degrees), 2-Inverse Portrait (180 degrees),
   3-Inverse Landscape (270 degrees)
 
-Also, the module exposes predefined colors:
+- `ST7789.offset(x_start, y_start)` The memory in the ST7789 controller is
+  configured for a 240x320 display. When using a smaller display like a
+  240x240 or 135x240 an offset needs to added to the x and y parameters so
+  that the pixels are written to the memory area that corresponds to the
+  visible display.  The offsets may need to be adjusted when rotating the
+  display.
+
+  For example the TTGO-TDisplay is 135x240 and uses the following offsets.
+  | Rotation | x_start | y_start |
+  |----------|---------|---------|
+  | 0        | 52      | 40      |
+  | 1        | 40      | 53      |
+  | 2        | 53      | 40      |
+  | 3        | 40      | 52      |
+
+  When the rotation method is called the driver will adjust the offsets for a
+  135x240 or 240x240 display. Your display may require using different offset
+  values, if so, use the `offset` method after `rotation` to set the offset
+  values.
+
+  The values needed for particular display may not be documented and may
+  require some experimentation to determine the correct values. One technique
+  is to draw a box the same size as the display and then make small changes
+  to the offsets until the display looks correct.
+
+
+The module exposes predefined colors:
   `BLACK`, `BLUE`, `RED`, `GREEN`, `CYAN`, `MAGENTA`, `YELLOW`, and `WHITE`
 
 

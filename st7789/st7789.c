@@ -468,6 +468,11 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
                 self->xstart = 52;
                 self->ystart = 40;
         }
+        else if (self->display_width == 240) {
+                self->xstart = 0;
+                self->ystart = 0;
+
+        }
     }
     else if (self->rotation == 1) {         // Landscape
         madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MV;
@@ -477,6 +482,11 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
             self->xstart = 40;
             self->ystart = 53;
         }
+        else if (self->display_width == 240) {
+            self->xstart = 0;
+            self->ystart = 0;
+        }
+
     }
     else if (self->rotation == 2) {        // Inverted Portrait
         madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MY;
@@ -486,6 +496,11 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
             self->xstart = 53;
             self->ystart = 40;
         }
+        else if (self->display_width == 240) {
+            self->xstart = 0;
+            self->ystart = 80;
+        }
+
     }
     else if (self->rotation == 3) {         // Inverted Landscape
         madctl_value |= ST7789_MADCTL_MV | ST7789_MADCTL_MY;
@@ -494,6 +509,10 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
         if (self->display_width == 135) {
             self->xstart = 40;
             self->ystart = 52;
+        }
+        else if (self->display_width == 240) {
+            self->xstart = 80;
+            self->ystart = 0;
         }
     }
     const uint8_t madctl[] = { madctl_value };
@@ -638,6 +657,18 @@ STATIC mp_obj_t st7789_ST7789_rect(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_rect_obj, 6, 6, st7789_ST7789_rect);
 
+STATIC mp_obj_t st7789_ST7789_offset(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_int_t xstart = mp_obj_get_int(args[1]);
+    mp_int_t ystart = mp_obj_get_int(args[2]);
+
+    self->xstart = xstart;
+    self->ystart = ystart;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_offset_obj, 3, 3, st7789_ST7789_offset);
+
 
 STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     // Do not expose internal functions to fit iram_0 section
@@ -664,6 +695,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&st7789_ST7789_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_vscrdef), MP_ROM_PTR(&st7789_ST7789_vscrdef_obj) },
     { MP_ROM_QSTR(MP_QSTR_vscsad), MP_ROM_PTR(&st7789_ST7789_vscsad_obj) },
+    { MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&st7789_ST7789_offset_obj) },
 
 };
 
