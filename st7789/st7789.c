@@ -23,6 +23,7 @@
  */
 
 #define __ST7789_VERSION__  "0.1.4"
+#include <stdlib.h>
 
 #include "py/obj.h"
 #include "py/objmodule.h"
@@ -419,7 +420,11 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
 
     uint8_t wide = width / 8;
     uint16_t buf_size = width * height * 2;
+#ifdef MICROPY_PY_STM
+    uint16_t *c_buffer = alloca(buf_size);
+#else
     uint16_t *c_buffer = malloc(buf_size);
+#endif
 
     if (c_buffer) {
         uint8_t chr;
@@ -451,7 +456,9 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
                 x0 += width;
             }
         }
+#ifndef MICROPY_PY_STM
         free(c_buffer);
+#endif
     }
     return mp_const_none;
 }
