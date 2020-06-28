@@ -57,10 +57,10 @@ typedef struct _st7789_ST7789_obj_t {
     mp_obj_base_t base;
 
     mp_obj_base_t *spi_obj;
-    uint8_t display_width;      // physical width
-    uint8_t width;              // logical width (after rotation)
-    uint8_t display_height;     // physical width
-    uint8_t height;             // logical height (after rotation)
+    uint16_t display_width;      // physical width
+    uint16_t width;              // logical width (after rotation)
+    uint16_t display_height;     // physical width
+    uint16_t height;            // logical height (after rotation)
     uint8_t xstart;
     uint8_t ystart;
     uint8_t rotation;
@@ -99,7 +99,7 @@ STATIC void write_cmd(st7789_ST7789_obj_t *self, uint8_t cmd, const uint8_t *dat
     CS_HIGH()
 }
 
-STATIC void set_window(st7789_ST7789_obj_t *self, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+STATIC void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     if (x0 > x1 || x1 >= self->width) {
         return;
     }
@@ -135,7 +135,7 @@ STATIC void fill_color_buffer(mp_obj_base_t* spi_obj, uint16_t color, int length
 }
 
 
-STATIC void draw_pixel(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t color) {
+STATIC void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t color) {
     uint8_t hi = color >> 8, lo = color;
     set_window(self, x, y, x, y);
     DC_HIGH();
@@ -146,7 +146,7 @@ STATIC void draw_pixel(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t
 }
 
 
-STATIC void fast_hline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint8_t _w, uint16_t color) {
+STATIC void fast_hline(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t _w, uint16_t color) {
 
     int w;
 
@@ -164,7 +164,7 @@ STATIC void fast_hline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint8_t 
     }
 }
 
-STATIC void fast_vline(st7789_ST7789_obj_t *self, uint8_t x, uint8_t y, uint16_t w, uint16_t color) {
+STATIC void fast_vline(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t w, uint16_t color) {
     set_window(self, x, y, x, y + w - 1);
     DC_HIGH();
     CS_LOW();
@@ -471,35 +471,35 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
     if (self->rotation == 0) {              // Portrait
         self->width = self->display_width;
         self->height = self->display_height;
-        if (self->display_width == 135) {
+        if (self->display_height == 320 || self->display_width == 240) {
+            self->xstart = 0;
+            self->ystart = 0;
+        }
+        else if (self->display_width == 135) {
                 self->xstart = 52;
                 self->ystart = 40;
-        }
-        else if (self->display_width == 240) {
-                self->xstart = 0;
-                self->ystart = 0;
-
         }
     }
     else if (self->rotation == 1) {         // Landscape
         madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MV;
         self->width = self->display_height;
         self->height = self->display_width;
-        if (self->display_width == 135) {
+        if (self->display_height == 320 || self->display_width == 240) {
+            self->xstart = 0;
+            self->ystart = 0;
+        } else if (self->display_width == 135) {
             self->xstart = 40;
             self->ystart = 53;
         }
-        else if (self->display_width == 240) {
-            self->xstart = 0;
-            self->ystart = 0;
-        }
-
     }
     else if (self->rotation == 2) {        // Inverted Portrait
         madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MY;
         self->width = self->display_width;
         self->height = self->display_height;
-        if (self->display_width == 135) {
+        if (self->display_height == 320) {
+            self->xstart = 0;
+            self->ystart = 0;
+        } else if (self->display_width == 135) {
             self->xstart = 53;
             self->ystart = 40;
         }
@@ -513,7 +513,10 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self) {
         madctl_value |= ST7789_MADCTL_MV | ST7789_MADCTL_MY;
         self->width = self->display_height;
         self->height = self->display_width;
-        if (self->display_width == 135) {
+        if (self->display_height == 320) {
+            self->xstart = 0;
+            self->ystart = 0;
+        } else if (self->display_width == 135) {
             self->xstart = 40;
             self->ystart = 52;
         }
@@ -752,8 +755,9 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->height = args[ARG_height].u_int;
     self->rotation = args[ARG_rotation].u_int % 4;
 
-    if (self->display_height != 240 || (self->display_width != 240  && self->display_width != 135)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display. Only 240x240 and 135x240 are supported"));
+    if ((self->display_height != 240 && (self->display_width != 240  || self->display_width != 135)) &&
+        (self->display_height != 320 && self->display_width != 240)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display. Only 240x320, 240x240 and 135x240 are supported"));
     }
 
     if (args[ARG_reset].u_obj == MP_OBJ_NULL

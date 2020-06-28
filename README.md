@@ -7,11 +7,16 @@ https://github.com/devbis/st7789_mpy.
 I modified the original driver for one of my projects by adding support for
 display rotation, scrolling and drawing text using 8 and 16 bit wide bitmap
 fonts. Included are 12 bitmap fonts derived from classic pc text mode fonts
-and a couple of example programs that run on the TTGO T-Display.
+and a couple of example programs that run on the TTGO T-Display and pyboards.
+The driver supports 135x240, 240x240 and 240x320 displays.
 
-A firmware.bin file containing MicroPython v1.12-464-gcae77daf0 compiled
-using ESP IDF v3 with the st7789 C driver and the frozen python font files is
-available in the firmware directory.
+The firmware/esp32 directory contains a firmware.bin file with MicroPython
+v1.12-464-gcae77daf0 compiled using ESP IDF v3 with the st7789 C driver and
+the frozen python font files for generic ESP32 boards.
+
+The firmware/pybv11 directory contains a firmware.dfu file with MicroPython
+v1.12-464-gcae77daf0 compiled with the st7789 C driver and
+the frozen python font files for the Pyboard v1.1.
 
 This is a work in progress.
 
@@ -19,7 +24,7 @@ Thanks go out to:
 
 - https://github.com/devbis for the original driver this is based on.
 - https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
-- https://github.com/aleggon for finding the correct offsets for a 240x240 display.
+- https://github.com/aleggon for finding the correct offsets for a 240x240 display and discovering issues compiling for STM32 based boards.
 
 -- Russ
 
@@ -29,26 +34,27 @@ This is a driver for MicroPython to handle cheap displays
 based on ST7789 chip.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/devbis/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
+  <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
 </p>
 
-It supports both 240x240 and 135x240 variants of displays.
+It supports 240x240, 135x240 and 240x320 displays.
 
-It is written in pure C, so you have to build
-firmware by yourself.
-Only ESP8266 and ESP32 are supported for now.
+It is written in pure C. If you are using an ESP32 or pyboard1.1 you can use
+one of the provided firmware files, otherwise you will have to build the
+firmware from source. Only ESP8266, ESP32 and STM32 processors are supported
+for now.
 
 
 Building instruction
 ---------------------
 
-Prepare build tools as described in the manual.
-You should follow the instruction for building MicroPython and
-ensure that you can build the firmware without this display module.
+Prepare build tools as described in the manual. You should follow the
+instruction for building MicroPython and ensure that you can build the
+firmware without this display module.
 
 Clone this module alongside the MPY sources:
 
-    $ git clone https://github.com/devbis/st7789_mpy.git
+    $ git clone https://github.com/russhughes/st7789_mpy.git
 
 Go to MicroPython ports directory and for ESP8266 run:
 
@@ -75,7 +81,7 @@ for more info)
 Working examples
 ----------------
 
-This module was tested on ESP32 and ESP8266 MCUs.
+This module was tested on ESP32, ESP8266 and the STM32 based pyboard1.1.
 
 You have to provide `machine.SPI` object and at least two pins for RESET and
 DC pins on the screen for the display object.
