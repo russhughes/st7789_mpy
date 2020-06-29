@@ -387,10 +387,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, 
 
 
 STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
+    char single_char_s[2] = { 0, 0};
+    const char *str;
+
     // extract arguments
     st7789_ST7789_obj_t *self   = MP_OBJ_TO_PTR(args[0]);
     mp_obj_module_t *font       = MP_OBJ_TO_PTR(args[1]);
-    const char *str             = mp_obj_str_get_str(args[2]);
+
+    if (mp_obj_is_int(args[2])) {
+        mp_int_t c = mp_obj_get_int(args[2]);
+        single_char_s[0] = c & 0xff;
+        str = single_char_s;
+    } else
+        str = mp_obj_str_get_str(args[2]);
+
+//    const char *str             = mp_obj_str_get_str(args[2]);
     mp_int_t x0                 = mp_obj_get_int(args[3]);
     mp_int_t y0                 = mp_obj_get_int(args[4]);
 
