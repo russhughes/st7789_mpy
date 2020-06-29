@@ -1,11 +1,10 @@
 """
-ttgo_hello.py
+pyb_hello.py
 
     Writes "Hello!" in random colors at random locations on a
     on a ST7789 TFT display connected to a pyboard1.1.
 
-    video: https://youtu.be/OtcERmad5ps
-
+    https://youtu.be/OtcERmad5ps
 """
 import random, time
 from pyb import SPI, Pin

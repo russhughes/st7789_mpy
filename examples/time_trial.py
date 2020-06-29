@@ -14,7 +14,7 @@ import st7789 as st7789
 import time
 import utime
 
-from fonts import vga2_8x16 as font
+import vga2_8x16 as font
 
 def main():
 

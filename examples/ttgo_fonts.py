@@ -11,23 +11,10 @@ import random
 from machine import Pin, SPI
 import st7789
 
-# Choose fonts
-
 import vga1_8x8 as font1
-#import vga2_8x8 as font1
-
 import vga1_8x16 as font2
-#import vga2_8x16 as font2
-
-# import vga1_16x16 as font3
 import vga1_bold_16x16 as font3
-# import vga2_16x16 as font3
-#import vga2_bold_16x16 as font3
-
-# import vga1_16x32 as font4
 import vga1_bold_16x32 as font4
-# import vga2_16x32 as font4
-#import vga2_bold_16x32 as font4
 
 def main():
     tft = st7789.ST7789(

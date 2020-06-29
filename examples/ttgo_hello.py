@@ -4,7 +4,7 @@ ttgo_hello.py
     Writes "Hello!" in random colors at random locations on a
     LILYGO® TTGO T-Display.
 
-    https://www.youtube.com/watch?v=atBa0BYPAAc
+    https://youtu.be/z41Du4GDMSY
 
 """
 import random
@@ -13,21 +13,21 @@ import st7789
 
 # Choose a font
 
-# from fonts import vga1_8x8 as font
-# from fonts import vga2_8x8 as font
+# import vga1_8x8 as font
+# import vga2_8x8 as font
 
-# from fonts import vga1_8x16 as font
-# from fonts import vga2_8x16 as font
+# import vga1_8x16 as font
+# import vga2_8x16 as font
 
-# from fonts import vga1_16x16 as font
-# from fonts import vga1_bold_16x16 as font
-# from fonts import vga2_16x16 as font
-# from fonts import vga2_bold_16x16 as font
+# import vga1_16x16 as font
+# import vga1_bold_16x16 as font
+# import vga2_16x16 as font
+# import vga2_bold_16x16 as font
 
-# from fonts import vga1_16x32 as font
-# from fonts import vga1_bold_16x32 as font
-# from fonts import vga2_16x32 as font
-from fonts import vga2_bold_16x32 as font
+# import vga1_16x32 as font
+# import vga1_bold_16x32 as font
+# import vga2_16x32 as font
+import vga2_bold_16x32 as font
 
 def main():
     tft = st7789.ST7789(
