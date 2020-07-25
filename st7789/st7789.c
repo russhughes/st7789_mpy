@@ -43,8 +43,8 @@
 #define CS_HIGH()    { if(self->cs) {mp_hal_pin_write(self->cs, 1);} }
 #define DC_LOW()     (mp_hal_pin_write(self->dc, 0))
 #define DC_HIGH()    (mp_hal_pin_write(self->dc, 1))
-#define RESET_LOW()  (mp_hal_pin_write(self->reset, 0))
-#define RESET_HIGH() (mp_hal_pin_write(self->reset, 1))
+#define RESET_LOW()  { if (self->reset) mp_hal_pin_write(self->reset, 0); }
+#define RESET_HIGH() { if (self->reset) mp_hal_pin_write(self->reset, 1); }
 
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len) {
@@ -771,23 +771,27 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display. Only 240x320, 240x240 and 135x240 are supported"));
     }
 
-    if (args[ARG_reset].u_obj == MP_OBJ_NULL
-        || args[ARG_dc].u_obj == MP_OBJ_NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("must specify all of reset/dc pins"));
+    if (args[ARG_dc].u_obj == MP_OBJ_NULL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("must specify dc pin"));
     }
 
-    self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);
+    if (args[ARG_reset].u_obj != MP_OBJ_NULL) {
+        self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);
+    }
+
     self->dc = mp_hal_get_pin_obj(args[ARG_dc].u_obj);
 
     if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
         self->cs = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
     }
+
     if (args[ARG_backlight].u_obj != MP_OBJ_NULL) {
         self->backlight = mp_hal_get_pin_obj(args[ARG_backlight].u_obj);
     }
 
     return MP_OBJ_FROM_PTR(self);
 }
+
 
 STATIC uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
     return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b & 0xF8) >> 3);
