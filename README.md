@@ -18,6 +18,11 @@ The firmware/pybv11 directory contains a firmware.dfu file with MicroPython
 v1.12-464-gcae77daf0 compiled with the st7789 C driver and
 the frozen python font files for the Pyboard v1.1.
 
+The firmware/ttgo_watch directory contains a firmware.bin file with MicroPython
+v1.12-464-gcae77daf0 compiled using ESP IDF v3 with the st7789
+C driver, frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Libraries
+and the frozen python font files for the TTGO T-Watch-2020.
+
 This is a work in progress.
 
 Thanks go out to:

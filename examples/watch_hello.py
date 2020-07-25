@@ -1,8 +1,7 @@
 """
 watch_hello.py
 
-    Writes "Hello!" in random colors at random locations on a
-    LILYGO® TTGO T-Watch 2020.
+    Demo program for LILYGO® TTGO T-Watch-2020.
 
     https://youtu.be/Bwq39tuMoY4
 
