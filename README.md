@@ -1,5 +1,4 @@
-ST7789 Driver for MicroPython
-=============================
+# ST7789 Driver for MicroPython
 
 This is a fork of devbis' st7789_mpy module from
 https://github.com/devbis/st7789_mpy.
@@ -10,22 +9,35 @@ fonts. Included are 12 bitmap fonts derived from classic pc text mode fonts
 and a couple of example programs that run on the TTGO T-Display and pyboards.
 The driver supports 135x240, 240x240 and 240x320 displays.
 
-The firmware/esp32 directory contains a firmware.bin file with MicroPython
-v1.12-464-gcae77daf0 compiled using ESP IDF v3 with the st7789 C driver and
-the frozen python font files for generic ESP32 boards.
+## Pre-compiled firmware files
 
-The firmware/pybv11 directory contains a firmware.dfu file with MicroPython
-v1.12-464-gcae77daf0 compiled with the st7789 C driver and
-the frozen python font files for the Pyboard v1.1.
+The firmware directory contains pre-compiled firmware for various devices with
+the st7789 C driver and frozen python font files.
 
-The firmware/ttgo_watch directory contains a firmware.bin file with MicroPython
-v1.12-464-gcae77daf0 compiled using ESP IDF v3 with the st7789
-C driver, frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Libraries
-and the frozen python font files for the TTGO T-Watch-2020.
+### firmware/esp32 (Generic ESP32 devices)
+
+File         | Details
+------------ | ----------------------------------------------------------
+firmware.bin | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
+
+### firmware/pybv11 (Pyboard v1.1.)
+
+File         | Details
+------------ | ----------------------------------------------------------
+firmware.dfu | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
+
+### firmware/ttgo_watch (T-Watch-2020)
+
+Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Libraries
+
+File          | Details
+------------- | ----------------------------------------------------------
+firmware.bin  | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
+firmware2.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth
 
 This is a work in progress.
 
-Thanks go out to:
+## Thanks go out to:
 
 - https://github.com/devbis for the original driver this is based on.
 - https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
@@ -33,8 +45,8 @@ Thanks go out to:
 
 -- Russ
 
-Overview
---------
+## Overview
+
 This is a driver for MicroPython to handle cheap displays
 based on ST7789 chip.
 
@@ -50,8 +62,7 @@ firmware from source. Only ESP8266, ESP32 and STM32 processors are supported
 for now.
 
 
-Building instruction
----------------------
+## Building instruction
 
 Prepare build tools as described in the manual. You should follow the
 instruction for building MicroPython and ensure that you can build the
@@ -83,8 +94,7 @@ Upload the resulting firmware to your MCU as usual with esptool.py
 for more info)
 
 
-Working examples
-----------------
+## Working examples
 
 This module was tested on ESP32, ESP8266 and the STM32 based pyboard1.1.
 
@@ -122,8 +132,7 @@ Other SPI pins are not used.
 
 I couldn't run the display on an SPI with baudrate higher than 40MHZ
 
-Methods
--------------
+## Methods
 
 - `st7789.ST7789(spi, width, height, reset, dc, cs, backlight, rotation)`
 
@@ -235,8 +244,7 @@ The module exposes predefined colors:
   `BLACK`, `BLUE`, `RED`, `GREEN`, `CYAN`, `MAGENTA`, `YELLOW`, and `WHITE`
 
 
-Helper functions
-----------------
+## Helper functions
 
 - `color565(r, g, b)`
 
@@ -253,8 +261,7 @@ Helper functions
   to generate a bitmap fonts from .ttf and use them as a frozen bytecode from
   the ROM memory.
 
-Performance
------------
+## Performance
 
 For the comparison I used an excellent library for Arduino
 that can handle this screen.
@@ -278,8 +285,7 @@ As you can see, the ESP32 module draws a line 4 times slower than
 the older ESP8266 module.
 
 
-Troubleshooting
----------------
+## Troubleshooting
 
 #### Overflow of iram1_0_seg
 
