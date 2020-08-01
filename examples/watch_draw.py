@@ -1,7 +1,12 @@
 '''
-watch_draw.py: A very simple drawing program for the TTGO T-Watch-2020
-using the adafruit_focaltouch driver modified for micropython by franz schaefer
-from https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
+watch_draw.py
+
+    A very simple drawing program for the TTGO T-Watch-2020
+    using the adafruit_focaltouch driver modified for micropython by franz
+    schaefer from https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
+
+    https://www.youtube.com/watch?v=O_lDBnvH1Sw
+
 '''
 
 import machine
