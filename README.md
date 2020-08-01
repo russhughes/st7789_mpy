@@ -35,6 +35,19 @@ File          | Details
 firmware.bin  | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
 firmware2.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth
 
+## Video Examples
+
+Example         | Video
+--------------- | -----------------------------------------------------------
+pyb_hello.py    | https://youtu.be/OtcERmad5ps
+pyb_scroll.py   | https://youtu.be/ro13rvaLKAc
+ttgo_fonts.py   | https://www.youtube.com/watch?v=2cnAhEucPD4
+ttgo_hello.py   | https://youtu.be/z41Du4GDMSY
+ttgo_scroll.py  | https://youtu.be/GQa-RzHLBak
+watch_draw.py   | https://www.youtube.com/watch?v=O_lDBnvH1Sw
+watch_hello.py  | https://youtu.be/Bwq39tuMoY4
+
+
 This is a work in progress.
 
 ## Thanks go out to:
