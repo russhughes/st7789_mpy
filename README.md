@@ -34,7 +34,7 @@ File          | Details
 ------------- | ----------------------------------------------------------
 firmware.bin  | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
 firmware2.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth
-firmware3.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth, bma432, ir, st7789, axp202c and frozen vga fonts.
+firmware3.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth, bma432, focaltouch, ir, st7789, axp202c and frozen vga fonts.
 
 ## Modules
 
@@ -42,6 +42,7 @@ Module             | Source
 ------------------ | -----------------------------------------------------------
 axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
 bma423             | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
+focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
 i2c_bus            | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
 ir                 | https://github.com/haxplore/ESP32_RMT_IRLib
 
