@@ -34,6 +34,39 @@ File          | Details
 ------------- | ----------------------------------------------------------
 firmware.bin  | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
 firmware2.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth
+firmware3.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth, bma432, ir, st7789, axp202c and frozen vga fonts.
+
+## Modules
+
+Module             | Source
+------------------ | -----------------------------------------------------------
+axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
+bma423             | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
+i2c_bus            | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
+ir                 | https://github.com/haxplore/ESP32_RMT_IRLib
+
+## 128 Character Fonts
+
+Font               | Example
+------------------ | -----------------------------------------------------------
+vga1_8x8.py        | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_8x8.png"/>
+vga1_16x16.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_16x16.png"/>
+vga1_16x32.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_16x32.png"/>
+vga1_bold_16x16.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_bold_16x16.png"/>
+vga1_bold_16x32.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_bold_16x32.png"/>
+
+
+## 256 Character Fonts
+
+Font               | Example
+------------------ | -----------------------------------------------------------
+vga2_8x8.py        | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_8x8.png"/>
+vga2_8x16.py       | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_8x16.png"/>
+vga2_16x16.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_16x16.png"/>
+vga2_16x32.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_16x32.png"/>
+vga2_bold_16x16.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_bold_16x16.png"/>
+vga2_bold_16x32.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_bold_16x32.png"/>
+
 
 ## Video Examples
 
