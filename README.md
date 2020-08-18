@@ -32,9 +32,7 @@ Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Librarie
 
 File          | Details
 ------------- | ----------------------------------------------------------
-firmware.bin  | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
-firmware2.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth
-firmware3.bin | MicroPython v1.12-662-g8da40baa4 compiled with ESP IDF v4 with Bluetooth, bma432, focaltouch, ir, st7789, axp202c and frozen vga fonts.
+firmware.bin  | MicroPython v1.12-665-g60f5b941e compiled with ESP IDF v4 with Bluetooth, focaltouch, ir, st7789, axp202c, frozen vga fonts and updated map_bitarray_to_rgb565.
 
 ## Modules
 
@@ -80,6 +78,8 @@ ttgo_hello.py   | https://youtu.be/z41Du4GDMSY
 ttgo_scroll.py  | https://youtu.be/GQa-RzHLBak
 watch_draw.py   | https://www.youtube.com/watch?v=O_lDBnvH1Sw
 watch_hello.py  | https://youtu.be/Bwq39tuMoY4
+watch_bitmap.py |
+
 
 
 This is a work in progress.
