@@ -73,12 +73,12 @@ Example         | Video
 --------------- | -----------------------------------------------------------
 pyb_hello.py    | https://youtu.be/OtcERmad5ps
 pyb_scroll.py   | https://youtu.be/ro13rvaLKAc
-ttgo_fonts.py   | https://www.youtube.com/watch?v=2cnAhEucPD4
+ttgo_fonts.py   | https://youtu.be/2cnAhEucPD4
 ttgo_hello.py   | https://youtu.be/z41Du4GDMSY
 ttgo_scroll.py  | https://youtu.be/GQa-RzHLBak
-watch_draw.py   | https://www.youtube.com/watch?v=O_lDBnvH1Sw
+watch_draw.py   | https://youtu.be/O_lDBnvH1Sw
 watch_hello.py  | https://youtu.be/Bwq39tuMoY4
-watch_bitmap.py |
+watch_bitmap.py | https://youtu.be/DgYzgnAW2d8
 
 
 

@@ -3,6 +3,9 @@ watch_bitarray.py
 
     An example using map_bitarray_to_rgb565 to draw sprites for
     the TTGO T-Watch-2020
+
+    https://www.youtube.com/watch?v=DgYzgnAW2d8
+
 '''
 
 import time
