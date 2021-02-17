@@ -9,19 +9,11 @@ ttgo_scroll.py
 """
 import utime
 import random
-from machine import Pin, SPI
+from machine import Pin, SoftSPI
 import st7789
 
-# choose a font
-# import vga1_8x8 as font
-# import vga2_8x8 as font
-# import vga1_8x16 as font
-# import vga2_8x16 as font
-# import vga1_16x16 as font
-# import vga1_bold_16x16 as font
-# import vga2_16x16 as font
+import vga1_bold_16x16 as font
 
-import vga2_bold_16x16 as font
 
 def cycle(p):
     try:
@@ -35,9 +27,16 @@ def cycle(p):
     while p:
         yield from p
 
+
 def main():
     tft = st7789.ST7789(
-        SPI(2, baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19)),
+        SoftSPI(
+            2,
+            baudrate=30000000,
+            polarity=1,
+            phase=1,
+            sck=Pin(18),
+            mosi=Pin(19)),
         135,
         240,
         reset=Pin(23, Pin.OUT),
@@ -63,7 +62,7 @@ def main():
     tft.vscrdef(tfa, height, tfb)
 
     scroll = 0
-    character = 0
+    character = font.FIRST
 
     while True:
         # clear top line before scrolling off display
@@ -96,7 +95,8 @@ def main():
 
             # next character with rollover at 256
             character += 1
-            character %= 256
+            if character > font.LAST:
+                character = font.FIRST
 
         # scroll the screen up 1 row
         tft.vscsad(scroll+tfa)
@@ -104,5 +104,6 @@ def main():
         scroll %= height
 
         utime.sleep(0.01)
+
 
 main()

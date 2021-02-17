@@ -22,9 +22,12 @@
  * THE SOFTWARE.
  */
 
-#define __ST7789_VERSION__  "0.1.4"
-#include <stdlib.h>
 
+#define __ST7789_VERSION__  "0.1.5"
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include "py/obj.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
@@ -32,6 +35,9 @@
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
 #include "st7789.h"
+
+#include "mpfile.c"
+#include "tjpgd565.c"
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #define _swap_bytes(val) ( (((val)>>8)&0x00FF)|(((val)<<8)&0xFF00) )
@@ -57,9 +63,13 @@ typedef struct _st7789_ST7789_obj_t {
     mp_obj_base_t base;
 
     mp_obj_base_t *spi_obj;
-    uint16_t display_width;      // physical width
-    uint16_t width;              // logical width (after rotation)
-    uint16_t display_height;     // physical width
+	mp_file_t *fp;				// file object
+	uint16_t *i2c_buffer;		// resident buffer if buffer_size given
+    void *work;                 // work buffer for jpg decoding
+	uint16_t buffer_size;       // resident buffer size, 0=dynamic
+    uint16_t display_width;     // physical width
+    uint16_t width;             // logical width (after rotation)
+    uint16_t display_height;    // physical width
     uint16_t height;            // logical height (after rotation)
     uint8_t xstart;
     uint8_t ystart;
@@ -196,8 +206,6 @@ STATIC mp_obj_t st7789_ST7789_soft_reset(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-// do not expose extra method to reduce size
-#ifdef EXPOSE_EXTRA_METHODS
 STATIC mp_obj_t st7789_ST7789_write(mp_obj_t self_in, mp_obj_t command, mp_obj_t data) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -237,8 +245,6 @@ STATIC mp_obj_t st7789_ST7789_set_window(size_t n_args, const mp_obj_t *args) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_set_window_obj, 5, 5, st7789_ST7789_set_window);
-
-#endif
 
 STATIC mp_obj_t st7789_ST7789_inversion_mode(mp_obj_t self_in, mp_obj_t value) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -298,6 +304,63 @@ STATIC mp_obj_t st7789_ST7789_pixel(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_pixel_obj, 4, 4, st7789_ST7789_pixel);
 
+STATIC void line(st7789_ST7789_obj_t *self, int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t color) {
+	bool steep = ABS(y1 - y0) > ABS(x1 - x0);
+	if (steep) {
+		_swap_int16_t(x0, y0);
+		_swap_int16_t(x1, y1);
+	}
+
+	if (x0 > x1) {
+		_swap_int16_t(x0, x1);
+		_swap_int16_t(y0, y1);
+	}
+
+	int16_t dx = x1 - x0, dy = ABS(y1 - y0);
+	int16_t err = dx >> 1, ystep = -1, xs = x0, dlen = 0;
+
+	if (y0 < y1)
+		ystep = 1;
+
+	// Split into steep and not steep for FastH/V separation
+	if (steep) {
+		for (; x0 <= x1; x0++) {
+			dlen++;
+			err -= dy;
+			if (err < 0) {
+				err += dx;
+				if (dlen == 1)
+					draw_pixel(self, y0, xs, color);
+				else
+					fast_vline(self, y0, xs, dlen, color);
+				dlen = 0;
+				y0 += ystep;
+				xs = x0 + 1;
+			}
+		}
+		if (dlen)
+			fast_vline(self, y0, xs, dlen, color);
+	} else {
+		for (; x0 <= x1; x0++) {
+			dlen++;
+			err -= dy;
+			if (err < 0) {
+				err += dx;
+				if (dlen == 1)
+					draw_pixel(self, xs, y0, color);
+				else
+					fast_hline(self, xs, y0, dlen, color);
+				dlen = 0;
+				y0 += ystep;
+				xs = x0 + 1;
+			}
+		}
+		if (dlen)
+			fast_hline(self, xs, y0, dlen, color);
+	}
+}
+
+
 
 STATIC mp_obj_t st7789_ST7789_line(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -307,51 +370,9 @@ STATIC mp_obj_t st7789_ST7789_line(size_t n_args, const mp_obj_t *args) {
     mp_int_t y1 = mp_obj_get_int(args[4]);
     mp_int_t color = mp_obj_get_int(args[5]);
 
-    bool steep = ABS(y1 - y0) > ABS(x1 - x0);
-    if (steep) {
-        _swap_int16_t(x0, y0);
-        _swap_int16_t(x1, y1);
-    }
+	line(self, x0, y0, x1, y1, color);
 
-    if (x0 > x1) {
-        _swap_int16_t(x0, x1);
-        _swap_int16_t(y0, y1);
-    }
-
-    int16_t dx = x1 - x0, dy = ABS(y1 - y0);
-    int16_t err = dx >> 1, ystep = -1, xs = x0, dlen = 0;
-
-    if (y0 < y1) ystep = 1;
-
-    // Split into steep and not steep for FastH/V separation
-    if (steep) {
-        for (; x0 <= x1; x0++) {
-        dlen++;
-        err -= dy;
-        if (err < 0) {
-            err += dx;
-            if (dlen == 1) draw_pixel(self, y0, xs, color);
-            else fast_vline(self, y0, xs, dlen, color);
-            dlen = 0; y0 += ystep; xs = x0 + 1;
-        }
-        }
-        if (dlen) fast_vline(self, y0, xs, dlen, color);
-    }
-    else
-    {
-        for (; x0 <= x1; x0++) {
-        dlen++;
-        err -= dy;
-        if (err < 0) {
-            err += dx;
-            if (dlen == 1) draw_pixel(self, xs, y0, color);
-            else fast_hline(self, xs, y0, dlen, color);
-            dlen = 0; y0 += ystep; xs = x0 + 1;
-        }
-        }
-        if (dlen) fast_hline(self, xs, y0, dlen, color);
-    }
-    return mp_const_none;
+	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_line_obj, 6, 6, st7789_ST7789_line);
 
@@ -386,6 +407,175 @@ STATIC mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, st7789_ST7789_blit_buffer);
 
+#ifdef MICROPY_PY_STM
+#define LROUND(x) ((long) roundf(x))
+#else
+#define LROUND(x) (lround(x))
+#endif
+
+STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args) {
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+	char		single_char_s[] = {0, 0};
+	const char *s;
+
+	mp_obj_module_t *hershey   = MP_OBJ_TO_PTR(args[1]);
+
+	if (mp_obj_is_int(args[2])) {
+		mp_int_t c		 = mp_obj_get_int(args[2]);
+		single_char_s[0] = c & 0xff;
+		s				 = single_char_s;
+	} else {
+		s= mp_obj_str_get_str(args[2]);
+	}
+
+	mp_int_t		 x		   = mp_obj_get_int(args[3]);
+	mp_int_t		 y		   = mp_obj_get_int(args[4]);
+	mp_int_t		 color     = mp_obj_get_int(args[5]);
+
+    mp_float_t scale = 1.0;
+    if (mp_obj_is_float(args[6])) {
+        scale = mp_obj_float_get(args[6]);
+    }
+
+    if (mp_obj_is_int(args[6])) {
+        scale =  (float) mp_obj_get_int(args[6]);
+    }
+
+	mp_obj_dict_t *	 dict = MP_OBJ_TO_PTR(hershey->globals);
+	mp_obj_t *		 index_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_INDEX));
+	mp_buffer_info_t index_bufinfo;
+	mp_get_buffer_raise(index_data_buff, &index_bufinfo, MP_BUFFER_READ);
+	uint8_t *index = index_bufinfo.buf;
+
+	mp_obj_t *		 font_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_FONT));
+	mp_buffer_info_t font_bufinfo;
+	mp_get_buffer_raise(font_data_buff, &font_bufinfo, MP_BUFFER_READ);
+	int8_t *font = font_bufinfo.buf;
+
+    int16_t from_x = x;
+    int16_t from_y  = y;
+    int16_t to_x = x;
+    int16_t to_y = y;
+    int16_t pos_x = x;
+    int16_t pos_y = y;
+    bool penup = true;
+    char c;
+    int16_t ii;
+
+    while ((c = *s++)) {
+        if (c >= 32 && c <= 127) {
+            ii = (c-32) * 2;
+
+			int16_t offset = index[ii] | (index[ii+1] << 8);
+            int16_t length = font[offset++];
+            int16_t left = LROUND((font[offset++] - 0x52) * scale);
+            int16_t right = LROUND((font[offset++] - 0x52) * scale);
+            int16_t width = right - left;
+
+            if (length) {
+                int16_t i;
+                for (i = 0; i < length; i++) {
+                    if (font[offset] == ' ') {
+                        offset+=2;
+                        penup = true;
+                        continue;
+                    }
+
+                    int16_t vector_x = LROUND((font[offset++] - 0x52) * scale);
+                    int16_t vector_y = LROUND((font[offset++] - 0x52) * scale);
+
+                    if (!i ||  penup) {
+                        from_x = pos_x + vector_x - left;
+                        from_y = pos_y + vector_y;
+                    } else {
+                        to_x = pos_x + vector_x - left;
+                        to_y = pos_y + vector_y;
+
+                        line(self, from_x, from_y, to_x, to_y, color);
+                        from_x = to_x;
+                        from_y = to_y;
+                    }
+                    penup = false;
+                }
+            }
+            pos_x += width;
+        }
+    }
+
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_obj, 6, 7, st7789_ST7789_draw);
+
+STATIC uint16_t bs_bit		= 0;
+uint8_t *		bitmap_data = NULL;
+
+uint8_t get_color(uint8_t bpp) {
+	uint8_t color = 0;
+	int		i;
+
+	for (i = 1; i < bpp; i++) {
+		color <<= 1;
+		color |= (bitmap_data[bs_bit / 8] & 1 << (7 - (bs_bit % 8))) > 0;
+		bs_bit++;
+	}
+	return color;
+}
+
+STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+	mp_obj_module_t *bitmap		 = MP_OBJ_TO_PTR(args[1]);
+	mp_int_t		 x			 = mp_obj_get_int(args[2]);
+	mp_int_t		 y			 = mp_obj_get_int(args[3]);
+	mp_obj_dict_t *	 dict		 = MP_OBJ_TO_PTR(bitmap->globals);
+	const uint16_t	 height		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
+	const uint16_t	 width		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTH)));
+	//const uint16_t colors		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_COLORS)));
+	//const uint16_t bits		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITS)));
+	const uint8_t	 bpp		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
+	mp_obj_t *		 palette_arg = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_PALETTE));
+	mp_obj_t *		 palette	 = NULL;
+	size_t			 palette_len = 0;
+
+	mp_obj_get_array(palette_arg, &palette_len, &palette);
+
+	mp_obj_t *		 bitmap_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAP));
+	mp_buffer_info_t bufinfo;
+
+	mp_get_buffer_raise(bitmap_data_buff, &bufinfo, MP_BUFFER_READ);
+	bitmap_data = bufinfo.buf;
+
+	uint16_t buf_size = width * height * 2;
+	if (self->buffer_size == 0) {
+		self->i2c_buffer = m_malloc(buf_size);
+	}
+
+	uint16_t ofs = 0;
+	bs_bit		 = 0;
+
+	for (int yy = 0; yy < height; yy++) {
+		for (int xx = 0; xx < width; xx++) {
+			self->i2c_buffer[ofs++] = mp_obj_get_int(palette[get_color(bpp + 1)]);
+		}
+	}
+
+	uint16_t x1 = x + width - 1;
+	if (x1 < self->width) {
+		set_window(self, x, y, x1, y + height - 1);
+		DC_HIGH();
+		CS_LOW();
+		write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, buf_size);
+		CS_HIGH();
+	}
+
+	if (self->buffer_size == 0) {
+		m_free(self->i2c_buffer);
+	}
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bitmap_obj, 4, 4, st7789_ST7789_bitmap);
 
 STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     char single_char_s[2] = { 0, 0};
@@ -431,13 +621,12 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
 
     uint8_t wide = width / 8;
     uint16_t buf_size = width * height * 2;
-#ifdef MICROPY_PY_STM
-    uint16_t *c_buffer = alloca(buf_size);
-#else
-    uint16_t *c_buffer = malloc(buf_size);
-#endif
 
-    if (c_buffer) {
+	if (self->buffer_size == 0) {
+		self->i2c_buffer = m_malloc(buf_size);
+	}
+
+	if (self->i2c_buffer) {
         uint8_t chr;
         while ((chr = *str++)) {
             if (chr >= first && chr <= last) {
@@ -448,9 +637,9 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
                         uint8_t chr_data = font_data[chr_idx];
                         for (uint8_t bit = 8; bit; bit--) {
                             if (chr_data >> (bit-1) & 1)
-                                c_buffer[buf_idx] = fg_color;
+                                self->i2c_buffer[buf_idx] = fg_color;
                             else
-                                c_buffer[buf_idx] = bg_color;
+                                self->i2c_buffer[buf_idx] = bg_color;
                             buf_idx++;
                         }
                         chr_idx++;
@@ -461,18 +650,19 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
                     set_window(self, x0, y0, x1, y0+height-1);
                     DC_HIGH();
                     CS_LOW();
-                    write_spi(self->spi_obj, (uint8_t *) c_buffer, buf_size);
+                    write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, buf_size);
                     CS_HIGH();
                 }
                 x0 += width;
             }
         }
-#ifndef MICROPY_PY_STM
-        free(c_buffer);
-#endif
+        if (self->buffer_size == 0) {
+            m_free(self->i2c_buffer);
+        }
     }
     return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_text_obj, 5, 7, st7789_ST7789_text);
 
 
@@ -747,9 +937,185 @@ STATIC mp_obj_t st7789_map_bitarray_to_rgb565(size_t n_args, const mp_obj_t *arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_map_bitarray_to_rgb565_obj, 3, 6, st7789_map_bitarray_to_rgb565);
 
 
+//
+// jpg routines
+//
+
+#define JPG_MODE_FAST (0)
+#define JPG_MODE_SLOW (1)
+
+// User defined device identifier
+typedef struct {
+    mp_file_t *fp;          		// File pointer for input function
+    uint8_t *fbuf;          		// Pointer to the frame buffer for output function
+    unsigned int wfbuf;     		// Width of the frame buffer [pix]
+	st7789_ST7789_obj_t *self;	// display object
+} IODEV;
+
+//
+// User defined input function
+//
+
+static unsigned int in_func(    // Returns number of bytes read (zero on error)
+    JDEC* jd,                   // Decompression object
+    uint8_t* buff,              // Pointer to the read buffer (null to remove data)
+    unsigned int nbyte )        // Number of bytes to read/remove
+{
+    IODEV *dev = (IODEV*)jd->device;   // Device identifier for the session (5th argument of jd_prepare function)
+	unsigned int nread;
+
+    if (buff) { // Read data from input stream
+        nread = (unsigned int)mp_readinto(dev->fp, buff, nbyte);
+		return nread;
+    }
+
+    // Remove data from input stream if buff was NULL
+    mp_seek(dev->fp, nbyte, SEEK_CUR);
+    return 0;
+}
+
+//
+// User defined output function
+//
+
+static int out_fast (       // 1:Ok, 0:Aborted
+    JDEC* jd,               // Decompression object
+    void* bitmap,           // Bitmap data to be output
+    JRECT* rect )           // Rectangular region of output image
+{
+    IODEV *dev = (IODEV*)jd->device;
+    uint8_t *src, *dst;
+    uint16_t y, bws, bwd;
+
+    // Copy the decompressed RGB rectanglar to the frame buffer (assuming RGB565)
+    src = (uint8_t*)bitmap;
+    dst = dev->fbuf + 2 * (rect->top * dev->wfbuf + rect->left);    // Left-top of destination rectangular
+    bws = 2 * (rect->right - rect->left + 1);                       // Width of source rectangular [byte]
+    bwd = 2 * dev->wfbuf;                                           // Width of frame buffer [byte]
+    for (y = rect->top; y <= rect->bottom; y++) {
+        memcpy(dst, src, bws);                                      // Copy a line
+        src += bws; dst += bwd;                                     // Next line
+    }
+
+    return 1;    // Continue to decompress
+}
+
+//
+// User defined output function
+//
+
+static int out_slow (       // 1:Ok, 0:Aborted
+    JDEC* jd,               // Decompression object
+    void* bitmap,           // Bitmap data to be output
+    JRECT* rect )           // Rectangular region of output image
+{
+	IODEV *dev = (IODEV*)jd->device;
+    st7789_ST7789_obj_t *self = dev->self;
+
+    uint8_t *src, *dst;
+    uint16_t y;
+	uint16_t wx2 = (rect->right-rect->left+1) *2;
+	uint16_t h = rect->bottom-rect->top+1;
+
+    // Copy the decompressed RGB rectanglar to the frame buffer (assuming RGB565)
+    src = (uint8_t*)bitmap;
+    dst = dev->fbuf;    							// Left-top of destination rectangular
+	for (y = rect->top; y <= rect->bottom; y++) {
+        memcpy(dst, src, wx2);                      // Copy a line
+        src += wx2; dst += wx2;                     // Next line
+    }
+
+	// blit buffer to display
+
+	set_window(self, rect->left, rect->top, rect->right, rect->bottom);
+	DC_HIGH();
+	CS_LOW();
+	write_spi(self->spi_obj, (uint8_t *) dev->fbuf, wx2 * h);
+	CS_HIGH();
+
+    return 1;    // Continue to decompress
+}
+
+
+STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+	const char *filename = mp_obj_str_get_str(args[1]);
+	mp_int_t x	  		 = mp_obj_get_int(args[2]);
+	mp_int_t y	  		 = mp_obj_get_int(args[3]);
+
+	mp_int_t mode;
+
+	if (n_args > 4)
+		mode = mp_obj_get_int(args[4]);
+	else
+		mode = JPG_MODE_FAST;
+
+	int (*outfunc)(JDEC*,void*,JRECT*);
+
+    JRESULT res;                        // Result code of TJpgDec API
+    JDEC jdec;                          // Decompression object
+    self->work = (void*)m_malloc(3100); // Pointer to the work area
+    IODEV devid;                        // User defined device identifier
+    size_t bufsize;
+
+    self->fp = mp_open(filename, "rb");
+	devid.fp = self->fp;
+    if (devid.fp) {
+		// Prepare to decompress
+		res = jd_prepare(&jdec, in_func, self->work, 3100, &devid);
+		if (res == JDR_OK) {
+			// Initialize output device
+			if (mode == JPG_MODE_FAST) {
+				bufsize = 2 * jdec.width * jdec.height;
+				outfunc = out_fast;
+			} else {
+				bufsize = 2 * jdec.msx*8 * jdec.msy*8;
+				outfunc = out_slow;
+			}
+			if (self->buffer_size && bufsize > self->buffer_size)
+				mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small"));
+
+			if (self->buffer_size == 0) {
+				self->i2c_buffer = m_malloc(bufsize);
+			}
+
+			if (!self->i2c_buffer)
+				mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
+
+			devid.fbuf = (uint8_t *) self->i2c_buffer;
+			devid.wfbuf = jdec.width;
+			devid.self = self;
+			res = jd_decomp(&jdec, outfunc, 0);        // Start to decompress with 1/1 scaling
+			if (res == JDR_OK) {
+				if (mode == JPG_MODE_FAST) {
+					set_window(self, x, y, x + jdec.width - 1, y + jdec.height - 1);
+					DC_HIGH();
+					CS_LOW();
+					write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, bufsize);
+					CS_HIGH();
+				}
+			} else {
+				mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg decompress failed."));
+			}
+			if (self->buffer_size == 0) {
+				m_free(self->i2c_buffer);       // Discard frame buffer
+				self->i2c_buffer = MP_OBJ_NULL;
+			}
+			devid.fbuf = MP_OBJ_NULL;
+		} else {
+ 			mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
+		}
+	    mp_close(devid.fp);
+	}
+	m_free(self->work);         // Discard work area
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_obj, 4, 5, st7789_ST7789_jpg);
+
+
 STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
-    // Do not expose internal functions to fit iram_0 section
-#ifdef EXPOSE_EXTRA_METHODS
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&st7789_ST7789_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_hard_reset), MP_ROM_PTR(&st7789_ST7789_hard_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&st7789_ST7789_soft_reset_obj) },
@@ -757,11 +1123,12 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_inversion_mode), MP_ROM_PTR(&st7789_ST7789_inversion_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_window), MP_ROM_PTR(&st7789_ST7789_set_window_obj) },
     { MP_ROM_QSTR(MP_QSTR_map_bitarray_to_rgb565), MP_ROM_PTR(&st7789_map_bitarray_to_rgb565_obj) },
-#endif
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&st7789_ST7789_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&st7789_ST7789_pixel_obj) },
     { MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj) },
+  	{ MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
+	{ MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&st7789_ST7789_bitmap_obj)},
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&st7789_ST7789_fill_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&st7789_ST7789_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_hline), MP_ROM_PTR(&st7789_ST7789_hline_obj) },
@@ -774,6 +1141,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vscrdef), MP_ROM_PTR(&st7789_ST7789_vscrdef_obj) },
     { MP_ROM_QSTR(MP_QSTR_vscsad), MP_ROM_PTR(&st7789_ST7789_vscsad_obj) },
     { MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&st7789_ST7789_offset_obj) },
+	{ MP_ROM_QSTR(MP_QSTR_jpg), MP_ROM_PTR(&st7789_ST7789_jpg_obj)},
 
 };
 
@@ -795,7 +1163,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
                                 const mp_obj_t *all_args ) {
     enum {
         ARG_spi, ARG_width, ARG_height, ARG_reset, ARG_dc, ARG_cs,
-        ARG_backlight, ARG_rotation
+        ARG_backlight, ARG_rotation, ARG_buffer_size
     };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL} },
@@ -806,6 +1174,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
         { MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_backlight, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_rotation, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0 } },
+   		{ MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -822,6 +1191,11 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     self->display_height = args[ARG_height].u_int;
     self->height = args[ARG_height].u_int;
     self->rotation = args[ARG_rotation].u_int % 4;
+	self->buffer_size	   = args[ARG_buffer_size].u_int;
+
+	if (self->buffer_size) {
+		self->i2c_buffer = m_malloc(self->buffer_size);
+	}
 
     if ((self->display_height != 240 && (self->display_width != 240  || self->display_width != 135)) &&
         (self->display_height != 320 && self->display_width != 240)) {
@@ -863,6 +1237,9 @@ STATIC const mp_map_elem_t st7789_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MAGENTA), MP_ROM_INT(MAGENTA) },
     { MP_ROM_QSTR(MP_QSTR_YELLOW), MP_ROM_INT(YELLOW) },
     { MP_ROM_QSTR(MP_QSTR_WHITE), MP_ROM_INT(WHITE) },
+    { MP_ROM_QSTR(MP_QSTR_FAST), MP_ROM_INT(JPG_MODE_FAST)},
+    { MP_ROM_QSTR(MP_QSTR_SLOW), MP_ROM_INT(JPG_MODE_SLOW)},
+
 };
 
 STATIC MP_DEFINE_CONST_DICT (mp_module_st7789_globals, st7789_module_globals_table );

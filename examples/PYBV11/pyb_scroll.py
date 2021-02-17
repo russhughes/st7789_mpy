@@ -12,15 +12,7 @@ import random
 from pyb import SPI, Pin
 import st7789
 
-# choose a font
-# import vga1_8x8 as font
-# import vga2_8x8 as font
-# import vga1_8x16 as font
-# import vga2_8x16 as font
-# import vga1_16x16 as font
-# import vga1_bold_16x16 as font
-# import vga2_16x16 as font
-import vga2_bold_16x16 as font
+import vga1_bold_16x16 as font
 
 def cycle(p):
     try:
@@ -90,19 +82,19 @@ def main():
                 foreground,
                 background)
 
-            # write character+128 hex value as a string
+            # write character+64 hex value as a string
             tft.text(
                 font,
-                'x{:02x}'.format(character+128),
+                'x{:02x}'.format(character+64),
                 120,
                 line,
                 foreground,
                 background)
 
-            # write character+128 using a integer (could be > 0x7f)
+            # write character+64 using a integer (could be > 0x7f)
             tft.text(
                 font,
-                character+128,
+                character+64,
                 184,
                 line,
                 foreground,
@@ -113,7 +105,7 @@ def main():
 
             # next character with rollover at 256
             character += 1
-            character %= 128
+            character %= 64
 
         tft.vscsad(scroll+tfa)
         scroll +=1

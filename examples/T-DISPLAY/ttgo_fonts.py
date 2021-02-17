@@ -8,7 +8,7 @@ ttgo_fonts.py
 """
 import utime
 import random
-from machine import Pin, SPI
+from machine import Pin, SoftSPI
 import st7789
 
 import vga1_8x8 as font1
@@ -16,9 +16,10 @@ import vga1_8x16 as font2
 import vga1_bold_16x16 as font3
 import vga1_bold_16x32 as font4
 
+
 def main():
     tft = st7789.ST7789(
-        SPI(2, baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19)),
+        SoftSPI(2, baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19)),
         135,
         240,
         reset=Pin(23, Pin.OUT),
@@ -48,4 +49,6 @@ def main():
                         col = 0
 
             utime.sleep(3)
+
+
 main()

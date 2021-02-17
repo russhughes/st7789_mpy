@@ -6,3 +6,4 @@ sphinx/build
 *.pyc
 *.o
 *.P
+.DS_Store

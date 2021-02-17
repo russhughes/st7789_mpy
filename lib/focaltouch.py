@@ -56,7 +56,7 @@ try:
 except ImportError:
     import ustruct as struct
 
-from machine import I2C
+from machine import SoftI2C
 from micropython import const
 
 
@@ -84,7 +84,7 @@ class FocalTouch:
 
     def __init__(self, i2c, address=_FT6206_DEFAULT_I2C_ADDR, debug=False):
         self.bus = i2c
-        self.address = address 
+        self.address = address
         self._debug = debug
 
         chip_data = self._read(_FT6XXX_REG_LIBH, 8)
@@ -108,7 +108,7 @@ class FocalTouch:
             print("Firmware ID %02X" % firm_id)
             print("Point rate %d Hz" % self._read(_FT6XXX_REG_POINTRATE, 1)[0])
             print("Thresh %d" % self._read(_FT6XXX_REG_THRESHHOLD, 1)[0])
-            
+
 
     @property
     def touched(self):

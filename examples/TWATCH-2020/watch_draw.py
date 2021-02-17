@@ -36,7 +36,7 @@ def main():
         axp.enablePower(axp202c.AXP202_LDO2)
 
         # initialize display spi port
-        spi = machine.SPI(
+        spi = machine.SoftSPI(
             2,
             baudrate=32000000,
             polarity=1,

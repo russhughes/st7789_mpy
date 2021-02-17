@@ -8,27 +8,12 @@ watch_hello.py
 """
 import time
 import random
-from machine import Pin, SPI
+from machine import Pin, SoftSPI
 import axp202c
 import st7789
 
-# Choose a font
+import vga1_bold_16x32 as font
 
-# import vga1_8x8 as font
-# import vga2_8x8 as font
-
-# import vga1_8x16 as font
-# import vga2_8x16 as font
-
-# import vga1_16x16 as font
-# import vga1_bold_16x16 as font
-# import vga2_16x16 as font
-# import vga2_bold_16x16 as font
-
-# import vga1_16x32 as font
-# import vga1_bold_16x32 as font
-# import vga2_16x32 as font
-import vga2_bold_16x32 as font
 
 def wheel(pos):
     pos = 255 - (pos % 255)
@@ -42,11 +27,13 @@ def wheel(pos):
     pos -= 170
     return st7789.color565(pos * 3, 255 - pos * 3, 0)
 
+
 def random_color():
     return st7789.color565(
         random.getrandbits(8),
         random.getrandbits(8),
         random.getrandbits(8))
+
 
 def main():
     try:
@@ -54,8 +41,8 @@ def main():
         axp = axp202c.PMU()
         axp.enablePower(axp202c.AXP202_LDO2)
 
-        # initalize spi port
-        spi = SPI(
+        # initialize spi port
+        spi = SoftSPI(
             2,
             baudrate=32000000,
             polarity=1,
@@ -114,7 +101,7 @@ def main():
             # write hello! randomly on display running through each rotation
             for rotation in range(9):
                 tft.fill(0)
-                tft.rotation(rotation%4+2)
+                tft.rotation(rotation % 4+2)
                 col_max = tft.width() - font.WIDTH*6
                 row_max = tft.height() - font.HEIGHT
 
@@ -132,5 +119,6 @@ def main():
         spi.deinit()
         # turn off display power
         axp.disablePower(axp202c.AXP202_LDO2)
+
 
 main()

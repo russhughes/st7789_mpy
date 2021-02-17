@@ -111,6 +111,7 @@ class pacman():
 
         self.x %= 224
 
+
 def main():
     '''
     Draw on screen using map_bitarray_to_rgb565
@@ -121,7 +122,7 @@ def main():
         axp.enablePower(axp202c.AXP202_LDO2)
 
         # initialize display spi port
-        spi = machine.SPI(
+        spi = machine.SoftSPI(
             2,
             baudrate=32000000,
             polarity=1,
@@ -188,5 +189,6 @@ def main():
 
         # turn off display backlight
         axp.disablePower(axp202c.AXP202_LDO2)
+
 
 main()

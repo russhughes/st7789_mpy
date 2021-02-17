@@ -12,19 +12,21 @@ The driver supports 135x240, 240x240 and 240x320 displays.
 ## Pre-compiled firmware files
 
 The firmware directory contains pre-compiled firmware for various devices with
-the st7789 C driver and frozen python font files.
+the st7789 C driver and frozen python font files. See the README.md file in the
+fonts folder for more information on the font files.
+
 
 ### firmware/esp32 (Generic ESP32 devices)
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.bin | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
 
 ### firmware/pybv11 (Pyboard v1.1.)
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.dfu | MicroPython v1.12-464-gcae77daf0 compiled with ESP IDF v3
+firmware.dfu | MicroPython v1.14 compiled with ESP IDF v4
 
 ### firmware/ttgo_watch (T-Watch-2020)
 
@@ -32,39 +34,14 @@ Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Librarie
 
 File          | Details
 ------------- | ----------------------------------------------------------
-firmware.bin  | MicroPython v1.12-665-g60f5b941e compiled with ESP IDF v4 with Bluetooth, focaltouch, ir, st7789, axp202c, frozen vga fonts and updated map_bitarray_to_rgb565.
+firmware.bin  | MicroPython v1.14 compiled with ESP IDF v4 with frozen focaltouch and axp202c modules
 
 ## Modules
 
 Module             | Source
 ------------------ | -----------------------------------------------------------
 axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
-bma423             | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
 focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
-i2c_bus            | https://github.com/lewisxhe/MicroPython_ESP32_psRAM_LoBo
-ir                 | https://github.com/haxplore/ESP32_RMT_IRLib
-
-## 128 Character Fonts
-
-Font               | Example
------------------- | -----------------------------------------------------------
-vga1_8x8.py        | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_8x8.png"/>
-vga1_16x16.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_16x16.png"/>
-vga1_16x32.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_16x32.png"/>
-vga1_bold_16x16.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_bold_16x16.png"/>
-vga1_bold_16x32.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga1_bold_16x32.png"/>
-
-
-## 256 Character Fonts
-
-Font               | Example
------------------- | -----------------------------------------------------------
-vga2_8x8.py        | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_8x8.png"/>
-vga2_8x16.py       | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_8x16.png"/>
-vga2_16x16.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_16x16.png"/>
-vga2_16x32.py      | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_16x32.png"/>
-vga2_bold_16x16.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_bold_16x16.png"/>
-vga2_bold_16x32.py | <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/vga2_bold_16x32.png"/>
 
 
 ## Video Examples
@@ -79,7 +56,6 @@ ttgo_scroll.py  | https://youtu.be/GQa-RzHLBak
 watch_draw.py   | https://youtu.be/O_lDBnvH1Sw
 watch_hello.py  | https://youtu.be/Bwq39tuMoY4
 watch_bitmap.py | https://youtu.be/DgYzgnAW2d8
-
 
 
 This is a work in progress.
@@ -119,9 +95,10 @@ Clone this module alongside the MPY sources:
 
     $ git clone https://github.com/russhughes/st7789_mpy.git
 
-Go to MicroPython ports directory and for ESP8266 run:
 
-    $ cd micropython/ports/esp8266
+for stm32 (PYBV11):
+
+    $ cd micropython/ports/stm32
 
 for ESP32:
 
@@ -129,7 +106,7 @@ for ESP32:
 
 And then compile the module with specified USER_C_MODULES dir
 
-    $ make USER_C_MODULES=../../../st7789_mpy/ all
+    $ make -DMODULE_ST7789_ENABLED=1 USER_C_MODULES=../../../st7789_mpy/ all
 
 
 If you have other user modules, copy the st7789_driver/st7789 to
@@ -143,20 +120,10 @@ for more info)
 
 ## Working examples
 
-This module was tested on ESP32, ESP8266 and the STM32 based pyboard1.1.
+This module was tested on ESP32 and the STM32 based pyboard v1.1.
 
 You have to provide `machine.SPI` object and at least two pins for RESET and
 DC pins on the screen for the display object.
-
-
-    # ESP 8266
-
-    import machine
-    import st7789
-    spi = machine.SPI(1, baudrate=40000000, polarity=1)
-    display = st7789.ST7789(spi, 240, 240, reset=machine.Pin(5, machine.Pin.OUT), dc=machine.Pin(4, machine.Pin.OUT))
-    display.init()
-
 
 For ESP32 modules you have to provide specific pins for SPI.
 Unfortunately, I was unable to run this display on SPI(1) interface.
@@ -245,6 +212,31 @@ This driver supports only 16bit colors in RGB565 notation.
   `BLACK`.  See the fonts directory for example fonts and the utils directory
   for a font conversion program. Currently has issues with characters > 127.
 
+- `ST7789.draw(vector_font, s, x, y[, fg, bg])`
+
+  Draw text to the display using the specified hershey vector font with the coordinates
+  as the lower-left corner of the text. The foreground and background colors of
+  the text can be set by the optional arguments fg and bg, otherwise the
+  foreground color defaults to `WHITE` and the background color defaults to
+  `BLACK`.  See the README.md in the fonts directory for example fonts and the
+  utils directory for a font conversion program.
+
+- `ST7789.jpg(jpg_filename, x, y [, method])`
+
+  Draw JPG file on the display at the given x and y coordinates as the upper left corner of
+  the image. There memory required to decode and display a JPG can be considerable as a full
+  screen 320x240 JPG would require at least 3100 bytes for the working area + 320x240x2 bytes
+  of ram to buffer the image. Jpg images that would require a buffer larger than available memory
+  can be drawn by passing SLOW for method. The SLOW method will draw the image a piece at a time
+  using the Minimum Coded Unit (MCU, typically 8x8).
+
+- `ILI9342C.bitmap(bitmap, x , y)`
+
+  Draw bitmap using the specified x, y coordinates as the upper-left corner of
+  the of the bitmap.  See the imgtobitmap.py file in the utils folder for a
+  python utility to create compatible bitmaps from image files using the
+  Pillow Python Imaging Library.
+
 - `ST7789.width()`
 
   Returns the current logical width of the display. (ie a 135x240 display
@@ -330,30 +322,3 @@ The table represents the time in milliseconds for each case
 
 As you can see, the ESP32 module draws a line 4 times slower than
 the older ESP8266 module.
-
-
-## Troubleshooting
-
-#### Overflow of iram1_0_seg
-
-When building a firmware for esp8266 you can see this failure message from
-the linker:
-
-    LINK build/firmware.elf
-    xtensa-lx106-elf-ld: build/firmware.elf section `.text' will not fit in
-    region `iram1_0_seg' xtensa-lx106-elf-ld: region `iram1_0_seg' overflowed
-    by 292 bytes
-    Makefile:192: recipe for target 'build/firmware.elf' failed
-
-To fix this issue, you have to put st7789 module to irom0 section.
-Edit `esp8266_common.ld` file in the `ports/esp8266` dir and add a line
-
-    *st7789/*.o(.literal* .text*)
-
-in the `.irom0.text : ALIGN(4)` section
-
-
-#### Unsupported dimensions
-
-This driver supports only 240x240 and 135x240 pixel displays.
-

@@ -28,7 +28,7 @@ github:https://github.com/lewisxhe/AXP202X_Libraries
 
 
 import gc
-from machine import Pin, I2C
+from machine import Pin, SoftI2C
 import micropython
 from ustruct import unpack
 
@@ -394,7 +394,7 @@ class PMU(object):
 
     def init_i2c(self):
         print('* initializing i2c')
-        self.bus = I2C(scl=self.pin_scl,
+        self.bus = SoftI2C(scl=self.pin_scl,
                        sda=self.pin_sda)
 
     def init_pins(self):
