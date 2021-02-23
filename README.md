@@ -230,7 +230,7 @@ This driver supports only 16bit colors in RGB565 notation.
   can be drawn by passing SLOW for method. The SLOW method will draw the image a piece at a time
   using the Minimum Coded Unit (MCU, typically 8x8).
 
-- `ILI9342C.bitmap(bitmap, x , y)`
+- `ST7789.bitmap(bitmap, x , y)`
 
   Draw bitmap using the specified x, y coordinates as the upper-left corner of
   the of the bitmap.  See the imgtobitmap.py file in the utils folder for a
