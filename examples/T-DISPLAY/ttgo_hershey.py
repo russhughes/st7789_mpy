@@ -65,13 +65,7 @@ def main():
     '''
     # configure display
     tft = st7789.ST7789(
-        SoftSPI(
-            2,
-            baudrate=30000000,
-            polarity=1,
-            phase=1,
-            sck=Pin(18),
-            mosi=Pin(19)),
+        SoftSPI(baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19), miso=Pin(21)),
         135,
         240,
         reset=Pin(23, Pin.OUT),
