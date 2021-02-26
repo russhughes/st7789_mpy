@@ -8,7 +8,7 @@ ttgo_hello.py
 
 """
 import random
-from machine import Pin, SoftSPI
+from machine import Pin, SPI
 import st7789
 
 import vga1_bold_16x32 as font
@@ -16,7 +16,7 @@ import vga1_bold_16x32 as font
 
 def main():
     tft = st7789.ST7789(
-        SoftSPI(baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19), miso=Pin(21)),
+        SPI(2, baudrate=30000000, polarity=1, phase=1, sck=Pin(18), mosi=Pin(19)),
         135,
         240,
         reset=Pin(23, Pin.OUT),
