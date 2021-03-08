@@ -1,13 +1,19 @@
 # ST7789 Driver for MicroPython
 
-This is a fork of devbis' st7789_mpy module from
-https://github.com/devbis/st7789_mpy.
+This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
+I modified the original driver for one of my projects to add:
 
-I modified the original driver for one of my projects by adding support for
-display rotation, scrolling and drawing text using 8 and 16 bit wide bitmap
-fonts. Included are 12 bitmap fonts derived from classic pc text mode fonts
-and a couple of example programs that run on the TTGO T-Display and pyboards.
-The driver supports 135x240, 240x240 and 240x320 displays.
+- Display Rotation
+- Scrolling
+- Drawing text using 8 and 16 bit wide bitmap fonts
+- Drawing text using Hershey vector fonts
+- Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram
+  using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
+  http://elm-chan.org/fsw/tjpgd/00index.html
+
+Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
+Hershey vector fonts and several example programs for different devices. The
+driver supports 135x240, 240x240 and 240x320 displays.
 
 ## Pre-compiled firmware files
 
@@ -15,20 +21,31 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-
-### firmware/esp32 (Generic ESP32 devices)
+### firmware/GENERIC (Generic ESP32 devices)
 
 File         | Details
 ------------ | ----------------------------------------------------------
 firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
 
-### firmware/pybv11 (Pyboard v1.1.)
+### firmware/GENERIC_SPIRAM (Generic ESP32 devices with SPI Ram)
+
+File         | Details
+------------ | ----------------------------------------------------------
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
+
+### firmware/PYBV11 (Pyboard v1.1.)
 
 File         | Details
 ------------ | ----------------------------------------------------------
 firmware.dfu | MicroPython v1.14 compiled with ESP IDF v4
 
-### firmware/ttgo_watch (T-Watch-2020)
+### firmware/T-DISPLAY (LILYGO® TTGO T-Display)
+
+File         | Details
+------------ | ----------------------------------------------------------
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
+
+### firmware/TWATCH-2020 (T-Watch-2020)
 
 Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Libraries
 
@@ -46,16 +63,16 @@ focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropytho
 
 ## Video Examples
 
-Example         | Video
---------------- | -----------------------------------------------------------
-pyb_hello.py    | https://youtu.be/OtcERmad5ps
-pyb_scroll.py   | https://youtu.be/ro13rvaLKAc
-ttgo_fonts.py   | https://youtu.be/2cnAhEucPD4
-ttgo_hello.py   | https://youtu.be/z41Du4GDMSY
-ttgo_scroll.py  | https://youtu.be/GQa-RzHLBak
-watch_draw.py   | https://youtu.be/O_lDBnvH1Sw
-watch_hello.py  | https://youtu.be/Bwq39tuMoY4
-watch_bitmap.py | https://youtu.be/DgYzgnAW2d8
+Example               | Video
+--------------------- | -----------------------------------------------------------
+PYBV11 hello.py       | https://youtu.be/OtcERmad5ps
+PYBV11 scroll.py      | https://youtu.be/ro13rvaLKAc
+T-DISPLAY fonts.py    | https://youtu.be/2cnAhEucPD4
+T-DISPLAY hello.py    | https://youtu.be/z41Du4GDMSY
+T-DISPLAY scroll.py   | https://youtu.be/GQa-RzHLBak
+TWATCH-2020 draw.py   | https://youtu.be/O_lDBnvH1Sw
+TWATCH-2020 hello.py  | https://youtu.be/Bwq39tuMoY4
+TWATCH-2020 bitmap.py | https://youtu.be/DgYzgnAW2d8
 
 
 This is a work in progress.
@@ -148,7 +165,7 @@ I couldn't run the display on an SPI with baudrate higher than 40MHZ
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, reset, dc, cs, backlight, rotation)`
+- `st7789.ST7789(spi, width, height, reset, dc, cs, backlight, rotation, buffer_size)`
 
     required args:
 
@@ -163,6 +180,10 @@ I couldn't run the display on an SPI with baudrate higher than 40MHZ
         `cs` cs pin
         `backlight` backlight pin
         `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
+        `buffer_size` 0= buffer dynamically allocated and freed as needed.
+
+    If buffer_size is specified it must be large enough to contain the largest
+    bitmap and/or JPG used (Rows * Columns *2 bytes).
 
 This driver supports only 16bit colors in RGB565 notation.
 
@@ -205,12 +226,12 @@ This driver supports only 16bit colors in RGB565 notation.
 
 - `ST7789.text(font, s, x, y[, fg, bg])`
 
-  Write text to the display using the specified font with the coordinates as
-  the upper-left corner of the text. The foreground and background colors of
-  the text can be set by the optional arguments fg and bg, otherwise the
-  foreground color defaults to `WHITE` and the background color defaults to
-  `BLACK`.  See the fonts directory for example fonts and the utils directory
-  for a font conversion program. Currently has issues with characters > 127.
+  Write text to the display using the specified bitmap font with the
+  coordinates as the upper-left corner of the text. The foreground and
+  background colors of the text can be set by the optional arguments fg and bg,
+  otherwise the foreground color defaults to `WHITE` and the background color
+  defaults to `BLACK`.  See the README.md in the fonts directory for example
+  fonts.
 
 - `ST7789.draw(vector_font, s, x, y[, fg, bg])`
 
@@ -227,8 +248,7 @@ This driver supports only 16bit colors in RGB565 notation.
   the image. There memory required to decode and display a JPG can be considerable as a full
   screen 320x240 JPG would require at least 3100 bytes for the working area + 320x240x2 bytes
   of ram to buffer the image. Jpg images that would require a buffer larger than available memory
-  can be drawn by passing SLOW for method. The SLOW method will draw the image a piece at a time
-  using the Minimum Coded Unit (MCU, typically 8x8).
+  can be drawn by passing `SLOW` for method. The `SLOW` method will draw the image a piece at a time using the Minimum Coded Unit (MCU, typically 8x8) of the image.
 
 - `ST7789.bitmap(bitmap, x , y)`
 

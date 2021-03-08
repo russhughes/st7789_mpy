@@ -1,0 +1,22 @@
+lpwd Script to upload examples using mpfshell
+
+open tty.usbmodem3378336C34332
+put bitarray.py
+put fonts.py
+put hello.py
+put hershey.py
+lcd jpg
+put bigbuckbunny.jpg
+put jpg.py
+lcd ..
+put scroll.py
+put speedtest.py
+lcd toasters
+put t4.py
+put t1.py
+put t5.py
+put toasters.py
+put t2.py
+put t3.py
+lcd ..
+ls
