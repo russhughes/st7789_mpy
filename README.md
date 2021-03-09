@@ -187,9 +187,13 @@ I couldn't run the display on an SPI with baudrate higher than 40MHZ
 
 This driver supports only 16bit colors in RGB565 notation.
 
-- `ST7789.fill(color)`
+- `ST7789.on()`
 
-  Fill the entire display with the specified color.
+  Turn on the backlight pin if one was defined during init.
+
+- `ST7789.off()`
+
+  Turn off the backlight pin if one was defined during init.
 
 - `ST7789.pixel(x, y, color)`
 
