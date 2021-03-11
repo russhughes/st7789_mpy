@@ -509,7 +509,7 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_obj, 6, 7, st7789_ST7789_draw);
 
-STATIC uint16_t bs_bit		= 0;
+STATIC uint32_t bs_bit		= 0;
 uint8_t *		bitmap_data = NULL;
 
 uint8_t get_color(uint8_t bpp) {
@@ -553,7 +553,7 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 		self->i2c_buffer = m_malloc(buf_size);
 	}
 
-	uint16_t ofs = 0;
+	uint32_t ofs = 0;
 	bs_bit		 = 0;
 
 	for (int yy = 0; yy < height; yy++) {
