@@ -6,7 +6,8 @@ hello.py
 
     https://youtu.be/OtcERmad5ps
 """
-import random, time
+
+import random
 from pyb import SPI, Pin
 import st7789
 

@@ -125,10 +125,6 @@ def main():
         spi = SPI(
             2,
             baudrate=32000000,
-            polarity=1,
-            phase=0,
-            bits=8,
-            firstbit=0,
             sck=Pin(18, Pin.OUT),
             mosi=Pin(19, Pin.OUT))
 
