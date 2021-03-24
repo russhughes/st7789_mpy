@@ -8,6 +8,7 @@ lcd jpg
 put bigbuckbunny.jpg
 put jpg.py
 lcd ..
+put mono_fonts.py
 put scroll.py
 lcd toasters
 put t4.py
@@ -17,4 +18,9 @@ put toasters.py
 put t2.py
 put t3.py
 lcd ..
+lcd ..
+lcd lib
+putc inconsolata_16.py
+putc inconsolata_32.py
+putc inconsolata_64.py
 ls
