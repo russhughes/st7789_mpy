@@ -524,21 +524,43 @@ uint8_t get_color(uint8_t bpp) {
 	return color;
 }
 
+
+mp_obj_t dict_lookup(mp_obj_t self_in, mp_obj_t index) {
+    mp_obj_dict_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, index, MP_MAP_LOOKUP);
+    if (elem == NULL) {
+        return NULL;
+    } else {
+        return elem->value;
+    }
+}
 STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
 	mp_obj_module_t *bitmap		 = MP_OBJ_TO_PTR(args[1]);
 	mp_int_t		 x			 = mp_obj_get_int(args[2]);
 	mp_int_t		 y			 = mp_obj_get_int(args[3]);
+
+    mp_int_t idx;
+    if (n_args > 3) {
+        idx = mp_obj_get_int(args[4]);
+    } else {
+        idx = 0;
+    }
+
 	mp_obj_dict_t *	 dict		 = MP_OBJ_TO_PTR(bitmap->globals);
 	const uint16_t	 height		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
 	const uint16_t	 width		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTH)));
-	//const uint16_t colors		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_COLORS)));
-	//const uint16_t bits		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITS)));
+    uint16_t         bitmaps     = 0;   // was = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS)));
 	const uint8_t	 bpp		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
 	mp_obj_t *		 palette_arg = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_PALETTE));
 	mp_obj_t *		 palette	 = NULL;
 	size_t			 palette_len = 0;
+
+    mp_map_elem_t *elem = dict_lookup(bitmap->globals, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS));
+    if (elem) {
+        bitmaps = mp_obj_get_int(elem);
+    }
 
 	mp_obj_get_array(palette_arg, &palette_len, &palette);
 
@@ -554,7 +576,14 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 	}
 
 	uint32_t ofs = 0;
-	bs_bit		 = 0;
+    bs_bit = 0;
+    if (bitmaps) {
+        if (idx < bitmaps ) {
+            bs_bit = height * width * bpp * idx;
+        } else {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("index out of range"));
+        }
+    }
 
 	for (int yy = 0; yy < height; yy++) {
 		for (int xx = 0; xx < width; xx++) {
@@ -577,7 +606,7 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 	return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bitmap_obj, 4, 4, st7789_ST7789_bitmap);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bitmap_obj, 4, 5, st7789_ST7789_bitmap);
 
 STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     char single_char_s[2] = { 0, 0};
