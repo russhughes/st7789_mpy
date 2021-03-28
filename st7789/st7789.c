@@ -534,6 +534,8 @@ mp_obj_t dict_lookup(mp_obj_t self_in, mp_obj_t index) {
         return elem->value;
     }
 }
+
+
 STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -551,7 +553,7 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 	mp_obj_dict_t *	 dict		 = MP_OBJ_TO_PTR(bitmap->globals);
 	const uint16_t	 height		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
 	const uint16_t	 width		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTH)));
-    uint16_t         bitmaps     = 0;   // was = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS)));
+    uint16_t         bitmaps     = 0;
 	const uint8_t	 bpp		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
 	mp_obj_t *		 palette_arg = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_PALETTE));
 	mp_obj_t *		 palette	 = NULL;
