@@ -45,6 +45,7 @@ def main():
 
         # display jpg in random locations
         while True:
+            tft.rotation(random.randint(0, 4))
             tft.jpg(
                 "alien.jpg",
                 random.randint(0, tft.width() - 30),
