@@ -1,7 +1,7 @@
 """
-noto_fonts Writes the names of three Noto font using the font
-    converted from True Type fonts using the font2bitmap utility
-    centered on the display.
+noto_fonts Writes the names of three Noto fonts centered on the display 
+    using the font. The fonts were converted from True Type fonts using 
+    the font2bitmap utility.
 """
 
 from machine import Pin, SPI
