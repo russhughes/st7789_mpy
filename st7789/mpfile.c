@@ -29,9 +29,9 @@
 #include "py/runtime.h"
 #include "mpfile.h"
 
+#include <stdio.h>
 #include <string.h>
 
-#if MICROPY_PY_FILE_LIKE
 
 STATIC const mp_obj_type_t mp_file_type;
 STATIC mp_obj_t mp___del__(mp_obj_t self);
@@ -103,9 +103,7 @@ STATIC void mp_file_print(const mp_print_t *print, mp_obj_t self, mp_print_kind_
 }
 
 STATIC mp_obj_t mp___del__(mp_obj_t self) {
-    printf("<");
     mp_close(MP_OBJ_TO_PTR(self));
-    printf(">");
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp___del___obj, mp___del__);
@@ -122,4 +120,3 @@ STATIC const mp_obj_type_t mp_file_type = {
     .locals_dict = (mp_obj_dict_t *)&mp_file_locals_dict,
 };
 
-#endif // MICROPY_PY_FILE_LIKE

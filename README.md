@@ -25,25 +25,25 @@ fonts folder for more information on the font files.
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
 
 ### firmware/GENERIC_SPIRAM-7789 (Generic ESP32 devices with SPI Ram)
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
 
 ### firmware/PYBV11 (Pyboard v1.1.)
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.dfu | MicroPython v1.14 compiled with ESP IDF v4
+firmware.dfu | MicroPython v1.14 compiled with ESP IDF v4.2
 
 ### firmware/T-DISPLAY (LILYGO® TTGO T-Display)
 
 File         | Details
 ------------ | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4
+firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
 
 ### firmware/TWATCH-2020 (T-Watch-2020)
 
@@ -51,7 +51,7 @@ Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Librarie
 
 File          | Details
 ------------- | ----------------------------------------------------------
-firmware.bin  | MicroPython v1.14 compiled with ESP IDF v4 with frozen focaltouch and axp202c modules
+firmware.bin  | MicroPython v1.14 compiled with ESP IDF v4.2 with frozen focaltouch and axp202c modules
 
 ## Modules
 
@@ -102,7 +102,7 @@ firmware from source. Only ESP8266, ESP32 and STM32 processors are supported
 for now.
 
 
-## Building instruction
+## Makefile building instructions for Pre MicroPython 1.14
 
 Prepare build tools as described in the manual. You should follow the
 instruction for building MicroPython and ensure that you can build the
@@ -125,6 +125,19 @@ And then compile the module with specified USER_C_MODULES dir
 
     $ make -DMODULE_ST7789_ENABLED=1 USER_C_MODULES=../../../st7789_mpy/ all
 
+
+## CMake building instructions for MicroPython 1.14 and later
+
+for ESP32:
+
+    $ cd micropython/ports/esp32
+
+And then compile the module with specified USER_C_MODULES dir
+
+    $ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake
+
+
+## Compiling with other User Modules
 
 If you have other user modules, copy the st7789_driver/st7789 to
 the user modules directory
@@ -183,7 +196,12 @@ I couldn't run the display on an SPI with baudrate higher than 40MHZ
         `buffer_size` 0= buffer dynamically allocated and freed as needed.
 
     If buffer_size is specified it must be large enough to contain the largest
-    bitmap and/or JPG used (Rows * Columns *2 bytes).
+    bitmap, font character and/or JPG used (Rows * Columns *2 bytes).
+    Specifying a buffer_size reserves memory for use by the driver otherwise
+    memory required is allocated and free dynamicly as it is needed,  Dynamic
+    allocation can cause heap fragmentation so garbage collection (GC) should
+    be enabled.
+
 
 This driver supports only 16bit colors in RGB565 notation.
 
@@ -234,25 +252,40 @@ This driver supports only 16bit colors in RGB565 notation.
   coordinates as the upper-left corner of the text. The foreground and
   background colors of the text can be set by the optional arguments fg and bg,
   otherwise the foreground color defaults to `WHITE` and the background color
-  defaults to `BLACK`.  See the README.md in the fonts directory for example
-  fonts.
+  defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap` directory for
+  example fonts.
+
+- `ST7789.write(bitap_font, s, x, y[, fg, bg])`
+
+  Write text to the display using the specified proportional bitmap font with
+  the coordinates as the upper-left corner of the text. The foreground and
+  background colors of the text can be set by the optional arguments fg and bg,
+  otherwise the foreground color defaults to `WHITE` and the background color
+  defaults to `BLACK`.  See the `README.md` in the `truetype/fonts` directory
+  for example fonts. Returns the width of the string as printed in pixels.
+
+- `ST7789.write_len(bitap_font, s)`
+
+  Returns the width of the string in pixels if printed in the specified font.
 
 - `ST7789.draw(vector_font, s, x, y[, fg, bg])`
 
-  Draw text to the display using the specified hershey vector font with the coordinates
-  as the lower-left corner of the text. The foreground and background colors of
-  the text can be set by the optional arguments fg and bg, otherwise the
-  foreground color defaults to `WHITE` and the background color defaults to
-  `BLACK`.  See the README.md in the fonts directory for example fonts and the
-  utils directory for a font conversion program.
+  Draw text to the display using the specified hershey vector font with the
+  coordinates as the lower-left corner of the text. The foreground and
+  background colors of the text can be set by the optional arguments fg and bg,
+  otherwise the foreground color defaults to `WHITE` and the background color
+  defaults to `BLACK`.  See the README.md in the `vector/fonts` directory for
+  example fonts and the utils directory for a font conversion program.
 
 - `ST7789.jpg(jpg_filename, x, y [, method])`
 
-  Draw JPG file on the display at the given x and y coordinates as the upper left corner of
-  the image. There memory required to decode and display a JPG can be considerable as a full
-  screen 320x240 JPG would require at least 3100 bytes for the working area + 320x240x2 bytes
-  of ram to buffer the image. Jpg images that would require a buffer larger than available memory
-  can be drawn by passing `SLOW` for method. The `SLOW` method will draw the image a piece at a time using the Minimum Coded Unit (MCU, typically 8x8) of the image.
+  Draw JPG file on the display at the given x and y coordinates as the upper
+  left corner of the image. There memory required to decode and display a JPG
+  can be considerable as a full screen 320x240 JPG would require at least 3100
+  bytes for the working area + 320x240x2 bytes of ram to buffer the image. Jpg
+  images that would require a buffer larger than available memory can be drawn
+  by passing `SLOW` for method. The `SLOW` method will draw the image a piece
+  at a time using the Minimum Coded Unit (MCU, typically 8x8) of the image.
 
 - `ST7789.bitmap(bitmap, x , y [, index])`
 

@@ -12,6 +12,7 @@ lcd ..
 put mono_fonts.py
 put scroll.py
 put speedtest.py
+put noto_fonts.py
 lcd toasters
 put t4.py
 put t1.py

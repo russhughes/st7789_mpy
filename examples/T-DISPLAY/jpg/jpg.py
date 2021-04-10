@@ -21,7 +21,7 @@ def main():
     Decode and draw jpg on display
     '''
     try:
-        spi = SPI(2, baudrate=30000000, sck=Pin(18), mosi=Pin(19))
+        spi = SPI(1, baudrate=30000000, sck=Pin(18), mosi=Pin(19))
 
         tft = st7789.ST7789(
             spi,

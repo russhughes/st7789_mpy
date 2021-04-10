@@ -63,7 +63,7 @@ def main():
     '''
     # configure display
     tft = st7789.ST7789(
-        SPI(2, baudrate=30000000, sck=Pin(18), mosi=Pin(19)),
+        SPI(1, baudrate=30000000, sck=Pin(18), mosi=Pin(19)),
         135,
         240,
         reset=Pin(23, Pin.OUT),

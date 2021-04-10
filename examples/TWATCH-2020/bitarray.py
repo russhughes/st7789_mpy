@@ -123,7 +123,7 @@ def main():
 
         # initialize display spi port
         spi = SPI(
-            2,
+            1,
             baudrate=32000000,
             sck=Pin(18, Pin.OUT),
             mosi=Pin(19, Pin.OUT))

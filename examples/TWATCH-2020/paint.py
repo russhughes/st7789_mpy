@@ -38,7 +38,7 @@ def main():
 
         # initialize display spi port
         spi = SPI(
-            2,
+            1,
             baudrate=32000000,
             polarity=1,
             phase=0,

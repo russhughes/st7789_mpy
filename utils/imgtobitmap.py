@@ -5,10 +5,9 @@
     Usage imgtobitmap image_file bits_per_pixel >image.py
 '''
 
-import sys
 from PIL import Image
-from itertools import groupby
 import argparse
+
 
 def main():
 
@@ -16,12 +15,14 @@ def main():
         prog='imgtobitmap',
         description='Convert image file to python module for use with bitmap method.')
 
-    parser.add_argument('image_file',
-         help='Name of file containing image to convert')
+    parser.add_argument(
+        'image_file',
+        help='Name of file containing image to convert')
 
-    parser.add_argument('bits_per_pixel',
+    parser.add_argument(
+        'bits_per_pixel',
         type=int,
-        choices=range(1,9),
+        choices=range(1, 9),
         default=1,
         metavar='bits_per_pixel',
         help='The number of bits to use per pixel (1..8)')
@@ -31,11 +32,11 @@ def main():
     bits = args.bits_per_pixel
     img = Image.open(args.image_file)
     img = img.convert("P", palette=Image.ADAPTIVE, colors=2**bits)
-    palette = img.getpalette()                      # Make copy of palette colors
+    palette = img.getpalette()  # Make copy of palette colors
 
     # For all the colors in the palette
     colors = []
-    for color in range(1<<bits):
+    for color in range(1 << bits):
 
         # get rgb values and convert to 565
         color565 = (
@@ -49,17 +50,15 @@ def main():
         # append byte swapped 565 color to colors
         colors.append(f'{color:04x}')
 
-
     image_bitstring = ''
-    bit_index = 0
-    max_colors = 1<<bits
+    max_colors = 1 << bits
 
-    # Run through the image and create a string with the ascii binary representation
-    # of the color of each pixel.
+    # Run through the image and create a string with the ascii binary
+    # representation of the color of each pixel.
     for y in range(img.height):
         for x in range(img.width):
-            pixel =  img.getpixel((x, y))
-            color =  pixel
+            pixel = img.getpixel((x, y))
+            color = pixel
             bstring = ''
             for bit in range(bits, 0, -1):
                 bstring += '1' if (color & (1 << bit-1)) else '0'
@@ -75,7 +74,7 @@ def main():
     print(f'BPP = {bits}')
     print('PALETTE = [', sep='', end='')
 
-    for color,rgb in enumerate(colors):
+    for color, rgb in enumerate(colors):
         if color:
             print(',', sep='', end='')
         print(f'0x{rgb}', sep='', end='')
@@ -89,11 +88,11 @@ def main():
 
     for i in range(0, bitmap_bits, 8):
 
-        if i and i % (16*8) ==0:
+        if i and i % (16*8) == 0:
             print("'\\\nb'", end='', sep='')
 
         value = image_bitstring[i:i+8]
-        color = int(value,2)
+        color = int(value, 2)
         print(f'\\x{color:02x}', sep='', end='')
 
     print("'\nBITMAP = memoryview(_bitmap)")

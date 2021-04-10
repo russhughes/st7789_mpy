@@ -24,6 +24,10 @@ SOFTWARE.
 axp20x.py - MicroPython library for X-Power AXP202 chip.
 Created by Lewis he on June 24, 2019.
 github:https://github.com/lewisxhe/AXP202X_Libraries
+
+Modified by Russ Hughes on Mar 26, 2021 to use optionally use an initalized I2c
+bus object.
+
 '''
 
 
@@ -31,7 +35,6 @@ import gc
 from machine import Pin, SoftI2C
 import micropython
 from ustruct import unpack
-
 
 
 # Chip Address
@@ -374,11 +377,14 @@ AXP20X_LED_LOW_LEVEL = 3
 
 
 class PMU(object):
-    def __init__(self, scl=None, sda=None,
+    def __init__(self, i2c=None, scl=None, sda=None,
                  intr=None, address=None):
         self.device = None
-        self.scl = scl if scl is not None else default_pin_scl
-        self.sda = sda if sda is not None else default_pin_sda
+        self.bus = i2c
+        if self.bus is None:
+            self.scl = scl if scl is not None else default_pin_scl
+            self.sda = sda if sda is not None else default_pin_sda
+
         self.intr = intr if intr is not None else default_pin_intr
         self.chip = default_chip_type
         self.address = address if address else AXP202_SLAVE_ADDRESS
@@ -389,18 +395,21 @@ class PMU(object):
         self.irqbuf = memoryview(self.buffer[0:5])
 
         self.init_pins()
-        self.init_i2c()
+        if self.bus is None:
+            self.init_i2c()
+
         self.init_device()
 
     def init_i2c(self):
-        print('* initializing i2c')
-        self.bus = SoftI2C(scl=self.pin_scl,
-                       sda=self.pin_sda)
+        if self.bus is None:
+            print('* initializing i2c')
+            self.bus = SoftI2C(scl=self.pin_scl, sda=self.pin_sda)
 
     def init_pins(self):
         print('* initializing pins')
-        self.pin_sda = Pin(self.sda)
-        self.pin_scl = Pin(self.scl)
+        if self.bus is None:
+            self.pin_sda = Pin(self.sda)
+            self.pin_scl = Pin(self.scl)
         self.pin_intr = Pin(self.intr, mode=Pin.IN)
 
     def write_byte(self, reg, val):

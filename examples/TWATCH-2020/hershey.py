@@ -66,11 +66,10 @@ def main():
         # Turn power on display power
         axp = axp202c.PMU()
         axp.enablePower(axp202c.AXP202_LDO2)
-        axp.enablePower(axp202c.AXP202_DCDC3)
 
         # initialize spi port
         spi = SPI(
-            2,
+            1,
             baudrate=32000000,
             sck=Pin(18, Pin.OUT),
             mosi=Pin(19, Pin.OUT))

@@ -36,8 +36,8 @@
 #include "extmod/machine_spi.h"
 #include "st7789.h"
 
-#include "mpfile.c"
-#include "tjpgd565.c"
+#include "mpfile.h"
+#include "tjpgd565.h"
 
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #define _swap_bytes(val) ( (((val)>>8)&0x00FF)|(((val)<<8)&0xFF00) )
@@ -208,6 +208,7 @@ STATIC mp_obj_t st7789_ST7789_soft_reset(mp_obj_t self_in) {
     return mp_const_none;
 }
 
+/*
 STATIC mp_obj_t st7789_ST7789_write(mp_obj_t self_in, mp_obj_t command, mp_obj_t data) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -221,6 +222,7 @@ STATIC mp_obj_t st7789_ST7789_write(mp_obj_t self_in, mp_obj_t command, mp_obj_t
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(st7789_ST7789_write_obj, st7789_ST7789_write);
+*/
 
 MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_hard_reset_obj, st7789_ST7789_hard_reset);
 MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_soft_reset_obj, st7789_ST7789_soft_reset);
@@ -516,7 +518,7 @@ uint8_t get_color(uint8_t bpp) {
 	uint8_t color = 0;
 	int		i;
 
-	for (i = 1; i < bpp; i++) {
+	for (i = 0; i < bpp; i++) {
 		color <<= 1;
 		color |= (bitmap_data[bs_bit / 8] & 1 << (7 - (bs_bit % 8))) > 0;
 		bs_bit++;
@@ -534,6 +536,158 @@ mp_obj_t dict_lookup(mp_obj_t self_in, mp_obj_t index) {
         return elem->value;
     }
 }
+
+
+STATIC mp_obj_t st7789_ST7789_write_len(size_t n_args, const mp_obj_t *args) {
+	mp_obj_module_t *font = MP_OBJ_TO_PTR(args[1]);
+	char single_char_s[2] = {0, 0};
+	const char *str;
+
+	if (mp_obj_is_int(args[2])) {
+		mp_int_t c = mp_obj_get_int(args[2]);
+		single_char_s[0] = c & 0xff;
+		str	= single_char_s;
+	} else {
+		str = mp_obj_str_get_str(args[2]);
+	}
+
+	mp_obj_dict_t *dict	= MP_OBJ_TO_PTR(font->globals);
+	const char 	  *map  = mp_obj_str_get_str(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP)));
+
+	mp_obj_t widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
+	mp_buffer_info_t widths_bufinfo;
+	mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
+	const uint8_t *widths_data = widths_bufinfo.buf;
+
+	uint16_t print_width = 0;
+	uint8_t chr;
+
+	while ((chr = *str++)) {
+		char *char_pointer = strchr(map, chr);
+		if (char_pointer) {
+			uint16_t char_index = char_pointer - map;
+			print_width += widths_data[char_index];
+        }
+    }
+	return mp_obj_new_int(print_width);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_len_obj, 3, 3, st7789_ST7789_write_len);
+
+
+//
+//	write(font_module, s, x, y[, fg, bg])
+//
+
+STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args) {
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+	mp_obj_module_t *font = MP_OBJ_TO_PTR(args[1]);
+
+	char single_char_s[2] = {0, 0};
+	const char *str;
+
+	if (mp_obj_is_int(args[2])) {
+		mp_int_t c = mp_obj_get_int(args[2]);
+		single_char_s[0] = c & 0xff;
+		str	= single_char_s;
+	} else {
+		str = mp_obj_str_get_str(args[2]);
+	}
+
+	mp_int_t x = mp_obj_get_int(args[3]);
+	mp_int_t y = mp_obj_get_int(args[4]);
+	mp_int_t fg_color;
+	mp_int_t bg_color;
+
+	fg_color = (n_args > 5) ? _swap_bytes(mp_obj_get_int(args[5])) : _swap_bytes(WHITE);
+	bg_color = (n_args > 6) ? _swap_bytes(mp_obj_get_int(args[6])) : _swap_bytes(BLACK);
+
+	mp_obj_dict_t *dict			  = MP_OBJ_TO_PTR(font->globals);
+	const char 	  *map 			  = mp_obj_str_get_str(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP)));
+	const uint8_t  bpp			  = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
+	const uint8_t  height		  = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
+	const uint8_t  offset_width	  = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSET_WIDTH)));
+	const uint8_t  max_width	  = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAX_WIDTH)));
+
+	mp_obj_t widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
+	mp_buffer_info_t widths_bufinfo;
+	mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
+	const uint8_t *widths_data = widths_bufinfo.buf;
+
+	mp_obj_t offsets_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSETS));
+	mp_buffer_info_t offsets_bufinfo;
+	mp_get_buffer_raise(offsets_data_buff, &offsets_bufinfo, MP_BUFFER_READ);
+	const uint8_t *offsets_data = offsets_bufinfo.buf;
+
+	mp_obj_t bitmaps_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS));
+	mp_buffer_info_t bitmaps_bufinfo;
+	mp_get_buffer_raise(bitmaps_data_buff, &bitmaps_bufinfo, MP_BUFFER_READ);
+	bitmap_data = bitmaps_bufinfo.buf;
+
+	uint32_t buf_size = max_width * height * 2;
+	if (self->buffer_size == 0) {
+		self->i2c_buffer = m_malloc(buf_size);
+	}
+
+	uint16_t print_width = 0;
+	uint8_t chr;
+
+	while ((chr = *str++)) {
+		char *char_pointer = strchr(map, chr);
+		if (char_pointer) {
+			uint16_t char_index = char_pointer - map;
+			uint8_t width = widths_data[char_index];
+
+			bs_bit = 0;
+			switch (offset_width) {
+				case 1:
+					bs_bit = offsets_data[char_index * offset_width];
+					break;
+
+				case 2:
+					bs_bit = (offsets_data[char_index * offset_width] << 8) +
+                			 (offsets_data[char_index * offset_width + 1]);
+					break;
+
+				case 3:
+					bs_bit = (offsets_data[char_index * offset_width] << 16) +
+                		     (offsets_data[char_index * offset_width + 1] << 8) +
+                		     (offsets_data[char_index * offset_width + 2]);
+					break;
+			}
+
+			uint32_t ofs = 0;
+			for (int yy = 0; yy < height; yy++) {
+				for (int xx = 0; xx < width; xx++) {
+					self->i2c_buffer[ofs++] = get_color(bpp) ? fg_color : bg_color;
+				}
+			}
+
+			uint32_t data_size = width * height * 2;
+			uint16_t x1 = x + width - 1;
+			if (x1 < self->width) {
+				set_window(self, x, y, x1, y + height - 1);
+				DC_HIGH();
+				CS_LOW();
+				write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
+				CS_HIGH();
+				print_width += width;
+			}
+			else
+				break;
+
+			x += width;
+		}
+	}
+
+	if (self->buffer_size == 0) {
+		m_free(self->i2c_buffer);
+	}
+
+	return mp_obj_new_int(print_width);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_obj, 5, 7, st7789_ST7789_write);
 
 
 STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
@@ -589,7 +743,7 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 
 	for (int yy = 0; yy < height; yy++) {
 		for (int xx = 0; xx < width; xx++) {
-			self->i2c_buffer[ofs++] = mp_obj_get_int(palette[get_color(bpp + 1)]);
+			self->i2c_buffer[ofs++] = mp_obj_get_int(palette[get_color(bpp)]);
 		}
 	}
 
@@ -609,6 +763,106 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args) {
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bitmap_obj, 4, 5, st7789_ST7789_bitmap);
+
+
+STATIC mp_obj_t st7789_ST7789_pbitmap(size_t n_args, const mp_obj_t *args) {
+	char single_char_s[2] = { 0, 0};
+    const char *str;
+
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+	mp_obj_module_t *bitmap		 = MP_OBJ_TO_PTR(args[1]);
+
+    if (mp_obj_is_int(args[2])) {
+        mp_int_t c = mp_obj_get_int(args[2]);
+        single_char_s[0] = c & 0xff;
+        str = single_char_s;
+    } else {
+        str = mp_obj_str_get_str(args[2]);
+    }
+
+	mp_int_t		 x			 = mp_obj_get_int(args[3]);
+	mp_int_t		 y			 = mp_obj_get_int(args[4]);
+
+	mp_obj_dict_t *	 dict		 = MP_OBJ_TO_PTR(bitmap->globals);
+	const uint16_t	 height		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
+	const char *     map         = mp_obj_str_get_str(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP)));
+    uint16_t         bitmaps     = strlen(map);
+	const uint8_t	 bpp		 = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
+	mp_obj_t *		 palette_arg = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_PALETTE));
+	mp_obj_t *		 palette	 = NULL;
+	size_t			 palette_len = 0;
+
+    // OFFSETS - 16 bit ints
+    mp_obj_t ofs_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSETS));
+    mp_buffer_info_t ofs_bufinfo;
+    mp_get_buffer_raise(ofs_data_buff, &ofs_bufinfo, MP_BUFFER_READ);
+    const uint8_t *ofs_data = ofs_bufinfo.buf;
+
+    // WIDTHS - 8 bit bytes
+    mp_obj_t widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
+    mp_buffer_info_t widths_bufinfo;
+    mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
+    const uint8_t *widths = widths_bufinfo.buf;
+
+	mp_obj_get_array(palette_arg, &palette_len, &palette);
+
+	mp_obj_t *		 bitmap_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAP));
+	mp_buffer_info_t bitmap_bufinfo;
+	mp_get_buffer_raise(bitmap_data_buff, &bitmap_bufinfo, MP_BUFFER_READ);
+	bitmap_data = bitmap_bufinfo.buf;
+
+	uint32_t ofs = 0;
+    uint16_t idx = 0;
+    uint8_t chr;
+    uint8_t width = 0;
+
+    while ((chr = *str++)) {
+        idx = 0;
+
+        while (idx < bitmaps) {
+            if (map[idx] == chr)
+                break;
+            idx++;
+        }
+
+        if (idx > bitmaps ) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("index out of range"));
+        }
+
+        bs_bit = (ofs_data[idx*2] << 8) + ofs_data[idx*2+1];
+        width = widths[idx];
+
+        uint16_t buf_size = width * height * 2;
+	    if (self->buffer_size == 0) {
+		    self->i2c_buffer = m_malloc(buf_size);
+	    }
+
+        for (int yy = 0; yy < height; yy++) {
+            for (int xx = 0; xx < width; xx++) {
+                self->i2c_buffer[ofs++] = mp_obj_get_int(palette[get_color(bpp)]);
+            }
+        }
+
+        uint16_t x1 = x + width - 1;
+        if (x1 < self->width) {
+            set_window(self, x, y, x1, y + height - 1);
+            DC_HIGH();
+            CS_LOW();
+            write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, buf_size);
+            CS_HIGH();
+        }
+
+	    if (self->buffer_size == 0) {
+		    m_free(self->i2c_buffer);
+        }
+	}
+
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_pbitmap_obj, 5, 5, st7789_ST7789_pbitmap);
+
 
 STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args) {
     char single_char_s[2] = { 0, 0};
@@ -1171,6 +1425,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_obj, 4, 5, st7789_S
 
 STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&st7789_ST7789_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write_len), MP_ROM_PTR(&st7789_ST7789_write_len_obj) },
     { MP_ROM_QSTR(MP_QSTR_hard_reset), MP_ROM_PTR(&st7789_ST7789_hard_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&st7789_ST7789_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_sleep_mode), MP_ROM_PTR(&st7789_ST7789_sleep_mode_obj) },
@@ -1185,6 +1440,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj) },
   	{ MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
 	{ MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&st7789_ST7789_bitmap_obj)},
+	{ MP_ROM_QSTR(MP_QSTR_pbitmap), MP_ROM_PTR(&st7789_ST7789_pbitmap_obj)},
     { MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&st7789_ST7789_fill_rect_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&st7789_ST7789_fill_obj) },
     { MP_ROM_QSTR(MP_QSTR_hline), MP_ROM_PTR(&st7789_ST7789_hline_obj) },
