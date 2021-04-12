@@ -270,12 +270,22 @@ STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args) {
     mp_int_t h = mp_obj_get_int(args[4]);
     mp_int_t color = mp_obj_get_int(args[5]);
 
-    set_window(self, x, y, x + w - 1, y + h - 1);
-    DC_HIGH();
-    CS_LOW();
-    fill_color_buffer(self->spi_obj, color, w * h);
-    CS_HIGH();
+    uint16_t right = x + w - 1;
+    uint16_t bottom = y + h - 1;
 
+    if (x < self->width && y < self->height) {
+        if (right > self->width)
+            right = self->width;
+
+        if (bottom > self->height)
+            bottom = self->height;
+
+        set_window(self, x, y, right, bottom);
+        DC_HIGH();
+        CS_LOW();
+        fill_color_buffer(self->spi_obj, color, w * h);
+        CS_HIGH();
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_fill_rect_obj, 6, 6, st7789_ST7789_fill_rect);

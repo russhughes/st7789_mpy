@@ -29,6 +29,8 @@
 #include "py/runtime.h"
 #include "mpfile.h"
 
+#include "extmod/vfs.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -52,7 +54,7 @@ mp_file_t *mp_open(const char *filename, const char *mode) {
     mp_obj_t filename_obj = mp_obj_new_str(filename, strlen(filename));
     mp_obj_t mode_obj = mp_obj_new_str(mode, strlen(mode));
     mp_obj_t args[2] = { filename_obj, mode_obj };
-    return mp_file_from_file_obj(mp_builtin_open(2, args, (mp_map_t *)&mp_const_empty_map));
+    return mp_file_from_file_obj(mp_vfs_open(2, args, (mp_map_t *)&mp_const_empty_map));
 }
 
 mp_int_t mp_readinto(mp_file_t *file, void *buf, size_t num_bytes) {

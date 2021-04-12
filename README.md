@@ -21,39 +21,18 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-### firmware/GENERIC-7789 (Generic ESP32 devices)
+MicroPython v1.14 compiled with ESP IDF v4.2 using CMake
 
-File         | Details
------------- | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
+Directory             | File         | Device
+--------------------- | ------------ | ----------------------------------
+GENERIC-7789          | firmware.bin | Generic ESP32 devices
+GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
+PYBV11                | firmware.dfu | Pyboard v1.1
+RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
+T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
+T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
 
-### firmware/GENERIC_SPIRAM-7789 (Generic ESP32 devices with SPI Ram)
-
-File         | Details
------------- | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
-
-### firmware/PYBV11 (Pyboard v1.1.)
-
-File         | Details
------------- | ----------------------------------------------------------
-firmware.dfu | MicroPython v1.14 compiled with ESP IDF v4.2
-
-### firmware/T-DISPLAY (LILYGO® TTGO T-Display)
-
-File         | Details
------------- | ----------------------------------------------------------
-firmware.bin | MicroPython v1.14 compiled with ESP IDF v4.2
-
-### firmware/TWATCH-2020 (T-Watch-2020)
-
-Includes frozen axp202c driver from https://github.com/lewisxhe/AXP202X_Libraries
-
-File          | Details
-------------- | ----------------------------------------------------------
-firmware.bin  | MicroPython v1.14 compiled with ESP IDF v4.2 with frozen focaltouch and axp202c modules
-
-## Modules
+## Additional Modules
 
 Module             | Source
 ------------------ | -----------------------------------------------------------
