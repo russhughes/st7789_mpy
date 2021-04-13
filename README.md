@@ -3,8 +3,9 @@
 This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
 I modified the original driver for one of my projects to add:
 
-- Display Rotation
+- Display Rotation and Mirroring.
 - Scrolling
+- Writing text using bitmaps converted from True Type fonts
 - Drawing text using 8 and 16 bit wide bitmap fonts
 - Drawing text using Hershey vector fonts
 - Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram
@@ -129,19 +130,9 @@ for more info)
 
 ## Working examples
 
-This module was tested on ESP32 and the STM32 based pyboard v1.1.
+This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi Pico.
 
-You have to provide `machine.SPI` object and at least two pins for RESET and
-DC pins on the screen for the display object.
-
-For ESP32 modules you have to provide specific pins for SPI.
-Unfortunately, I was unable to run this display on SPI(1) interface.
-For machine.SPI(2) == VSPI you have to use
-
-- CLK: Pin(18)
-- MOSI: Pin(23)
-
-Other SPI pins are not used.
+You have to provide a `SPI` object and the pin to use for the DC input of the screen.
 
 
     # ESP32
@@ -153,7 +144,7 @@ Other SPI pins are not used.
     display.init()
 
 
-I couldn't run the display on an SPI with baudrate higher than 40MHZ
+I was not able to run the display with a baudrate higher than 40MHZ.
 
 ## Methods
 
@@ -177,7 +168,7 @@ I couldn't run the display on an SPI with baudrate higher than 40MHZ
     If buffer_size is specified it must be large enough to contain the largest
     bitmap, font character and/or JPG used (Rows * Columns *2 bytes).
     Specifying a buffer_size reserves memory for use by the driver otherwise
-    memory required is allocated and free dynamicly as it is needed,  Dynamic
+    memory required is allocated and free dynamicly as it is needed.  Dynamic
     allocation can cause heap fragmentation so garbage collection (GC) should
     be enabled.
 
@@ -236,12 +227,20 @@ This driver supports only 16bit colors in RGB565 notation.
 
 - `ST7789.write(bitap_font, s, x, y[, fg, bg])`
 
-  Write text to the display using the specified proportional bitmap font with
-  the coordinates as the upper-left corner of the text. The foreground and
-  background colors of the text can be set by the optional arguments fg and bg,
-  otherwise the foreground color defaults to `WHITE` and the background color
-  defaults to `BLACK`.  See the `README.md` in the `truetype/fonts` directory
-  for example fonts. Returns the width of the string as printed in pixels.
+  Write text to the display using the specified proportional or Monospace bitmap
+  font module with the coordinates as the upper-left corner of the text. The
+  foreground and background colors of the text can be set by the optional
+  arguments fg and bg, otherwise the foreground color defaults to `WHITE` and
+  the background color defaults to `BLACK`.  See the `README.md` in the
+  `truetype/fonts` directory for example fonts. Returns the width of the string
+  as printed in pixels.
+
+  The `font2bitmap` utility creates compatible 1 bit per pixel bitmap modules
+  from Proportional or Monospaced True Type fonts. The character size,
+  foreground, background colors and the characters to include in the bitmap
+  module may be specified as parameters. Use the -h option for details. If you
+  specify a buffer_size during the display initialization it must be large
+  enough to hold the widest character (HEIGHT * MAX_WIDTH * 2).
 
 - `ST7789.write_len(bitap_font, s)`
 
@@ -274,22 +273,20 @@ This driver supports only 16bit colors in RGB565 notation.
   calculate the offset to the beginning of the desired bitmap using the modules
   HEIGHT, WIDTH and BPP values.
 
-  ### Bitmap Utilities in the utils folder
+  The `imgtobitmap.py` utility creates compatible 1 to 8 bit per pixel bitmap modules from image files using the Pillow Python Imaging Library.
 
-  `imgtobitmap.py` creates compatible bitmap modules from image files using the
-  Pillow Python Imaging Library.
+  The `monofont2bitmap.py` utility creates compatible 1 to 8 bit per pixel
+  bitmap modules from Monospaced True Type fonts. See the `inconsolata_16.py`,
+  `inconsolata_32.py` and `inconsolata_64.py` files in the `examples/lib` folder
+  for sample modules and the `mono_font.py` program for an example using the
+  generated modules.
 
-  `monofont2bitmap.py` creates compatible bitmap modules from Monospaced True
-  Type fonts. See the `inconsolata_16.py`, `inconsolata_32.py` and
-  `inconsolata_64.py` files in the `examples/lib` folder for sample modules and
-  the mono_font.py program for an example on how to use the modules.  The
-  character sizes, bit per pixel, foreground, background colors and the
-  characters to include as bitmaps may be specified as parameters. Use the -h
-  option for details. Bits per pixel settings larger than one may be used to
-  create antialiased characters at the expense of memory use.  If you specify
-  a buffer_size during the display initialization it must be large enough to
-  hold the one character (HEIGHT * WIDTH * 2).
-
+  The character sizes, bit per pixel, foreground, background
+  colors and the characters to include in the bitmap module may be specified as
+  parameters. Use the -h option for details. Bits per pixel settings larger than
+  one may be used to create antialiased characters at the expense of memory use.
+  If you specify a buffer_size during the display initialization it must be
+  large enough to hold the one character (HEIGHT * WIDTH * 2).
 
 - `ST7789.width()`
 
