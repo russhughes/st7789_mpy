@@ -3,7 +3,7 @@
 This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
 I modified the original driver for one of my projects to add:
 
-- Display Rotation and Mirroring.
+- Display Rotation.
 - Scrolling
 - Writing text using bitmaps converted from True Type fonts
 - Drawing text using 8 and 16 bit wide bitmap fonts
