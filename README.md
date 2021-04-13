@@ -76,10 +76,7 @@ based on ST7789 chip.
 
 It supports 240x240, 135x240 and 240x320 displays.
 
-It is written in pure C. If you are using an ESP32 or pyboard1.1 you can use
-one of the provided firmware files, otherwise you will have to build the
-firmware from source. Only ESP8266, ESP32 and STM32 processors are supported
-for now.
+The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM, pyboard1.1, and Raspberry Pi Pico devices.
 
 
 ## Makefile building instructions for Pre MicroPython 1.14
