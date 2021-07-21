@@ -7,3 +7,4 @@ sphinx/build
 *.o
 *.P
 .DS_Store
+.history
