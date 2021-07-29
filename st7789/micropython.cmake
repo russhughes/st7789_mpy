@@ -18,5 +18,6 @@ target_compile_definitions(usermod_st7789 INTERFACE
     MICROPY_PY_FILE_LIKE=1
     EXPOSE_EXTRA_METHODS=1
 )
+
 # Link our INTERFACE library to the usermod target.
 target_link_libraries(usermod INTERFACE usermod_st7789)

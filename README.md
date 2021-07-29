@@ -11,6 +11,8 @@ I modified the original driver for one of my projects to add:
 - Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram
   using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
   http://elm-chan.org/fsw/tjpgd/00index.html
+- Drawing and rotating Polygons and filled Polygons.
+- Tracking bounds
 
 Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
 Hershey vector fonts and several example programs for different devices. The
@@ -61,14 +63,15 @@ This is a work in progress.
 
 - https://github.com/devbis for the original driver this is based on.
 - https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
-- https://github.com/aleggon for finding the correct offsets for a 240x240 display and discovering issues compiling for STM32 based boards.
+- https://github.com/aleggon for finding the correct offsets for a 240x240
+  display and discovering issues compiling for STM32 based boards.
 
 -- Russ
 
 ## Overview
 
-This is a driver for MicroPython to handle cheap displays
-based on ST7789 chip.
+This is a driver for MicroPython to handle cheap displays based on the ST7789
+chip.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
@@ -76,7 +79,8 @@ based on ST7789 chip.
 
 It supports 240x240, 135x240 and 240x320 displays.
 
-The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM, pyboard1.1, and Raspberry Pi Pico devices.
+The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM,
+pyboard1.1, and Raspberry Pi Pico devices.
 
 
 ## Makefile building instructions for Pre MicroPython 1.14
@@ -113,6 +117,13 @@ And then compile the module with specified USER_C_MODULES dir
 
     $ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake
 
+for Raspberry Pi PICO:
+
+    $ cd micropython/ports/rp2
+
+And then compile the module with specified USER_C_MODULES dir
+
+    $ make USER_C_MODULES=../../../st7789_mpy/st7789/micropython.cmake
 
 ## Compiling with other User Modules
 
@@ -127,9 +138,9 @@ for more info)
 
 ## Working examples
 
-This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi Pico.
-
-You have to provide a `SPI` object and the pin to use for the DC input of the screen.
+This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi
+Pico. You have to provide a `SPI` object and the pin to use for the DC input of the
+screen.
 
 
     # ESP32
@@ -172,48 +183,48 @@ I was not able to run the display with a baudrate higher than 40MHZ.
 
 This driver supports only 16bit colors in RGB565 notation.
 
-- `ST7789.on()`
+- `on()`
 
   Turn on the backlight pin if one was defined during init.
 
-- `ST7789.off()`
+- `off()`
 
   Turn off the backlight pin if one was defined during init.
 
-- `ST7789.pixel(x, y, color)`
+- `pixel(x, y, color)`
 
   Set the specified pixel to the given color.
 
-- `ST7789.line(x0, y0, x1, y1, color)`
+- `line(x0, y0, x1, y1, color)`
 
   Draws a single line with the provided `color` from (`x0`, `y0`) to
   (`x1`, `y1`).
 
-- `ST7789.hline(x, y, length, color)`
+- `hline(x, y, length, color)`
 
   Draws a single horizontal line with the provided `color` and `length`
   in pixels. Along with `vline`, this is a fast version with reduced
   number of SPI calls.
 
-- `ST7789.vline(x, y, length, color)`
+- `vline(x, y, length, color)`
 
   Draws a single horizontal line with the provided `color` and `length`
   in pixels.
 
-- `ST7789.rect(x, y, width, height, color)`
+- `rect(x, y, width, height, color)`
 
   Draws a rectangle from (`x`, `y`) with corresponding dimensions
 
-- `ST7789.fill_rect(x, y, width, height, color)`
+- `fill_rect(x, y, width, height, color)`
 
   Fill a rectangle starting from (`x`, `y`) coordinates
 
-- `ST7789.blit_buffer(buffer, x, y, width, height)`
+- `blit_buffer(buffer, x, y, width, height)`
 
   Copy bytes() or bytearray() content to the screen internal memory.
   Note: every color requires 2 bytes in the array
 
-- `ST7789.text(font, s, x, y[, fg, bg])`
+- `text(font, s, x, y[, fg, bg])`
 
   Write text to the display using the specified bitmap font with the
   coordinates as the upper-left corner of the text. The foreground and
@@ -222,7 +233,7 @@ This driver supports only 16bit colors in RGB565 notation.
   defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap` directory for
   example fonts.
 
-- `ST7789.write(bitap_font, s, x, y[, fg, bg])`
+- `write(bitap_font, s, x, y[, fg, bg])`
 
   Write text to the display using the specified proportional or Monospace bitmap
   font module with the coordinates as the upper-left corner of the text. The
@@ -239,11 +250,11 @@ This driver supports only 16bit colors in RGB565 notation.
   specify a buffer_size during the display initialization it must be large
   enough to hold the widest character (HEIGHT * MAX_WIDTH * 2).
 
-- `ST7789.write_len(bitap_font, s)`
+- `write_len(bitap_font, s)`
 
   Returns the width of the string in pixels if printed in the specified font.
 
-- `ST7789.draw(vector_font, s, x, y[, fg, bg])`
+- `draw(vector_font, s, x, y[, fg, bg])`
 
   Draw text to the display using the specified hershey vector font with the
   coordinates as the lower-left corner of the text. The foreground and
@@ -252,7 +263,7 @@ This driver supports only 16bit colors in RGB565 notation.
   defaults to `BLACK`.  See the README.md in the `vector/fonts` directory for
   example fonts and the utils directory for a font conversion program.
 
-- `ST7789.jpg(jpg_filename, x, y [, method])`
+- `jpg(jpg_filename, x, y [, method])`
 
   Draw JPG file on the display at the given x and y coordinates as the upper
   left corner of the image. There memory required to decode and display a JPG
@@ -262,7 +273,42 @@ This driver supports only 16bit colors in RGB565 notation.
   by passing `SLOW` for method. The `SLOW` method will draw the image a piece
   at a time using the Minimum Coded Unit (MCU, typically 8x8) of the image.
 
-- `ST7789.bitmap(bitmap, x , y [, index])`
+- `polygon_center(polygon)`
+
+   Return the center of a polygon as an (x, y) tuple. The polygon should
+   consist of a list of (x, y) tuples forming a closed convex polygon.
+
+- `fill_polygon(polygon, x, y, color[, angle, center_x, center_y])`
+
+  Draw a filled `polygon` at the `x`, `y` coordinates in the `color` given.
+  The polygon may be rotated `angle` radians about the `center_x` and
+  `center_y` point. The polygon should consist of a list of (x, y) tuples
+  forming a closed convex polygon.
+
+  See the TWATCH-2020 `watch.py` demo for an example.
+
+- `polygon(polygon, x, y, color, angle, center_x, center_y)`
+
+  Draw a `polygon` at the `x`, `y` coordinates in the `color` given. The polygon
+  may be rotated `angle` radians a bout the `center_x` and `center_y` point.
+  The polygon should consist of a list of (x, y) tuples forming a closed
+  convex polygon.
+
+  See the T-Display `roids.py` for an example.
+
+- `bounding([status])`
+
+  Bounding turns on and off tracking the area of the display that has been
+  written to. Initially tracking is disabled, pass a True value to enable
+  tracking and False to disable. Passing a True or False parameter will reset
+  the current bounding rectangle to (display_width, display_height, 0, 0).
+
+  Returns a four integer tuple containing (min_x, min_y, max_x, max_y) indicating
+  the area of the display that has been written to since the last clearing.
+
+  See the TWATCH-2020 `watch.py` demo for an example.
+
+- `bitmap(bitmap, x , y [, index])`
 
   Draw bitmap using the specified x, y coordinates as the upper-left corner of
   the of the bitmap. The optional index parameter provides a method to select
@@ -270,7 +316,8 @@ This driver supports only 16bit colors in RGB565 notation.
   calculate the offset to the beginning of the desired bitmap using the modules
   HEIGHT, WIDTH and BPP values.
 
-  The `imgtobitmap.py` utility creates compatible 1 to 8 bit per pixel bitmap modules from image files using the Pillow Python Imaging Library.
+  The `imgtobitmap.py` utility creates compatible 1 to 8 bit per pixel bitmap modules
+  from image files using the Pillow Python Imaging Library.
 
   The `monofont2bitmap.py` utility creates compatible 1 to 8 bit per pixel
   bitmap modules from Monospaced True Type fonts. See the `inconsolata_16.py`,
@@ -285,23 +332,23 @@ This driver supports only 16bit colors in RGB565 notation.
   If you specify a buffer_size during the display initialization it must be
   large enough to hold the one character (HEIGHT * WIDTH * 2).
 
-- `ST7789.width()`
+- `width()`
 
   Returns the current logical width of the display. (ie a 135x240 display
   rotated 90 degrees is 240 pixels wide)
 
-- `ST7789.height()`
+- `height()`
 
   Returns the current logical height of the display. (ie a 135x240 display
   rotated 90 degrees is 135 pixels high)
 
-- `ST7789.rotation(r)`
+- `rotation(r)`
 
   Set the rotates the logical display in a clockwise direction. 0-Portrait
   (0 degrees), 1-Landscape (90 degrees), 2-Inverse Portrait (180 degrees),
   3-Inverse Landscape (270 degrees)
 
-- `ST7789.offset(x_start, y_start)` The memory in the ST7789 controller is
+- `offset(x_start, y_start)` The memory in the ST7789 controller is
   configured for a 240x320 display. When using a smaller display like a
   240x240 or 135x240 an offset needs to added to the x and y parameters so
   that the pixels are written to the memory area that corresponds to the
@@ -347,26 +394,3 @@ The module exposes predefined colors:
   https://github.com/peterhinch/micropython-font-to-py
   to generate a bitmap fonts from .ttf and use them as a frozen bytecode from
   the ROM memory.
-
-## Performance
-
-For the comparison I used an excellent library for Arduino
-that can handle this screen.
-
-https://github.com/ananevilya/Arduino-ST7789-Library/
-
-Also, I used my slow driver for this screen, written in pure python.
-
-https://github.com/devbis/st7789py_mpy/
-
-I used these modules to draw a line from 0,0 to 239,239
-The table represents the time in milliseconds for each case
-
-|         | Arduino-ST7789 | st7789py_mpy | st7789_mpy    |
-|---------|----------------|--------------|---------------|
-| ESP8266 | 26             | 450          | 12            |
-| ESP32   | 23             | 450          | 47            |
-
-
-As you can see, the ESP32 module draws a line 4 times slower than
-the older ESP8266 module.

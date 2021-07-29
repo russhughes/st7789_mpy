@@ -68,6 +68,49 @@ extern "C" {
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
+typedef struct _Point {
+   float x;
+   float y;
+} Point;
+
+typedef struct _Polygon {
+    int     length;
+    Point   *points;
+} Polygon;
+
+
+// this is the actual C-structure for our new object
+typedef struct _st7789_ST7789_obj_t {
+    mp_obj_base_t base;
+
+    mp_obj_base_t *spi_obj;
+	mp_file_t *fp;				// file object
+	uint16_t *i2c_buffer;		// resident buffer if buffer_size given
+    void *work;                 // work buffer for jpg decoding
+	uint16_t buffer_size;       // resident buffer size, 0=dynamic
+    uint16_t display_width;     // physical width
+    uint16_t width;             // logical width (after rotation)
+    uint16_t display_height;    // physical width
+    uint16_t height;            // logical height (after rotation)
+    uint8_t xstart;
+    uint8_t ystart;
+    uint8_t rotation;
+    mp_hal_pin_obj_t reset;
+    mp_hal_pin_obj_t dc;
+    mp_hal_pin_obj_t cs;
+    mp_hal_pin_obj_t backlight;
+
+    uint8_t bounding;
+    uint16_t min_x;
+    uint16_t min_y;
+    uint16_t max_x;
+    uint16_t max_y;
+
+} st7789_ST7789_obj_t;
+
+extern void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t color);
+extern void fast_hline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t w, uint16_t color);
+
 #ifdef  __cplusplus
 }
 #endif /*  __cplusplus */
