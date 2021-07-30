@@ -1,5 +1,6 @@
 '''
 roid.py - Asteroids style game demo using polygons.
+    Video: https://youtu.be/JV5fPactSPU
 '''
 
 import math

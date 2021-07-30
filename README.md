@@ -52,10 +52,10 @@ PYBV11 scroll.py      | https://youtu.be/ro13rvaLKAc
 T-DISPLAY fonts.py    | https://youtu.be/2cnAhEucPD4
 T-DISPLAY hello.py    | https://youtu.be/z41Du4GDMSY
 T-DISPLAY scroll.py   | https://youtu.be/GQa-RzHLBak
+T-DISPLAY roids.py    | https://youtu.be/JV5fPactSPU
 TWATCH-2020 draw.py   | https://youtu.be/O_lDBnvH1Sw
 TWATCH-2020 hello.py  | https://youtu.be/Bwq39tuMoY4
 TWATCH-2020 bitmap.py | https://youtu.be/DgYzgnAW2d8
-
 
 This is a work in progress.
 
