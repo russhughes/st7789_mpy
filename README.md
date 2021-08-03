@@ -1,3 +1,4 @@
+
 # ST7789 Driver for MicroPython
 
 This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
@@ -84,30 +85,95 @@ The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM,
 pyboard1.1, and Raspberry Pi Pico devices.
 
 
-## Makefile building instructions for Pre MicroPython 1.14
+# Setup MicroPython Build Environment in Ubuntu 20.04.2
 
-Prepare build tools as described in the manual. You should follow the
-instruction for building MicroPython and ensure that you can build the
-firmware without this display module.
+Update and upgrade Ubuntu using apt-get if you are using a new install of Ubuntu or the Windows Subsystem for Linux.
 
-Clone this module alongside the MPY sources:
+```bash
+sudo apt-get -y update
+sudo apt-get -y upgrade
+```
 
-    $ git clone https://github.com/russhughes/st7789_mpy.git
+Use apt-get to install the required build tools.
 
+```bash
+sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtualenv python3-pip python3-virtualenv
+```
 
-for stm32 (PYBV11):
+Clone the esp-idf SDK repo & install -- this usually takes several minutes
 
-    $ cd micropython/ports/stm32
+```bash
+git clone --recursive https://github.com/espressif/esp-idf.git
+cd esp-idf/
+./install.sh
+```
 
-for ESP32:
+Source the esp-idf export.sh script to set the required environment variables. It's important that you source the file and not run it using ./export.sh. You will need to source this file before compiling MicroPython.
 
-    $ cd micropython/ports/esp32
+```bash
+source export.sh
+cd ..
+```
 
-And then compile the module with specified USER_C_MODULES dir
+Clone the MicroPython repo.
 
-    $ make -DMODULE_ST7789_ENABLED=1 USER_C_MODULES=../../../st7789_mpy/ all
+```bash
+git clone https://github.com/micropython/micropython.git
+```
 
+Clone the st7789 driver repo.
 
+```bash
+git clone https://github.com/russhughes/st7789_mpy.git
+```
+
+Update the git submodules and compile the micropython cross-compiler
+
+```bash
+cd micropython/
+git submodule update --init
+cd mpy-cross/
+make
+cd ..
+cd ports/esp32
+```
+
+Copy any .py files you want to include in the firmware as frozen python modules to the modules subdirectory in ports/esp32. Be aware there is a limit to the flash space available. You will know you have exceeded this limit if you receive an error message saying the code won't fit in the partition or if your firmware continuously reboots with an error.
+
+For example:
+
+```bash
+cp ../../../st7789_mpy/fonts/bitmap/vga1_16x16.py modules
+cp ../../../st7789_mpy/fonts/truetype/NotoSans_32.py modules
+cp ../../../st7789_mpy/fonts/vector/scripts.py modules
+```
+
+Build the MicroPython firmware with the driver and frozen .py files in the modules directory. If you did not add any .py files to the modules directory you can leave out the FROZEN_MANIFEST and FROZEN_MPY_DIR settings.
+
+```bash
+make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake FROZEN_MANIFEST="" FROZEN_MPY_DIR=$UPYDIR/modules
+```
+
+Erase and flash the firmware to your device. Set PORT= to the ESP32's usb serial port. I could not get the usb serial port to work under the Windows Subsystem (WSL2) for Linux. If you have the same issue you can copy the firmware.bin file and use the Windows esptool.py to flash your device.
+
+```bash
+make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 erase
+make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 deploy
+```
+
+The firmware.bin file will be in the build-GENERIC directory. To flash using the python esptool.py utility.
+Use pip3 to install the esptool if it's not already installed.
+
+```bash
+pip3 install esptool
+```
+
+Set PORT= to the ESP32's usb serial port
+
+```bash
+esptool.py --port COM3 erase_flash
+esptool.py --chip esp32 --port COM3 write_flash -z 0x1000 firmware.bin
+```
 ## CMake building instructions for MicroPython 1.14 and later
 
 for ESP32:
@@ -126,17 +192,6 @@ And then compile the module with specified USER_C_MODULES dir
 
     $ make USER_C_MODULES=../../../st7789_mpy/st7789/micropython.cmake
 
-## Compiling with other User Modules
-
-If you have other user modules, copy the st7789_driver/st7789 to
-the user modules directory
-
-Upload the resulting firmware to your MCU as usual with esptool.py
-(See
-[MicroPython docs](http://docs.micropython.org/en/latest/esp8266/tutorial/intro.html#deploying-the-firmware)
-for more info)
-
-
 ## Working examples
 
 This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi
@@ -153,7 +208,7 @@ screen.
     display.init()
 
 
-I was not able to run the display with a baudrate higher than 40MHZ.
+I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
