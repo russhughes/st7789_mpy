@@ -1,0 +1,394 @@
+<svg width="608" height="440" xmlns="http://www.w3.org/2000/svg">
+<style>.small { font: italic 13px sans-serif; }</style>
+<rect x="0" y="0" width="608" height="417" fill="lightyellow" stroke-width="4" stroke="black" />
+<line x1="5" y1="55" x2="603" y2="55" stroke="lightgrey" stroke-width="1" />
+<line x1="55" y1="5" x2="55" y2="414" stroke="lightgrey" stroke-width="1" />
+<text x="16.0" y="31" class="small">hex</text>
+<text x="20" y="102" font-size="large">2x</text>
+<text x="20" y="157" font-size="large">3x</text>
+<text x="20" y="212" font-size="large">4x</text>
+<text x="20" y="267" font-size="large">5x</text>
+<text x="20" y="322" font-size="large">6x</text>
+<text x="20" y="377" font-size="large">7x</text>
+<text x="72" y="35" font-size="large">0</text>
+<text x="104" y="35" font-size="large">1</text>
+<text x="136" y="35" font-size="large">2</text>
+<text x="168" y="35" font-size="large">3</text>
+<text x="200" y="35" font-size="large">4</text>
+<text x="232" y="35" font-size="large">5</text>
+<text x="264" y="35" font-size="large">6</text>
+<text x="296" y="35" font-size="large">7</text>
+<text x="328" y="35" font-size="large">8</text>
+<text x="360" y="35" font-size="large">9</text>
+<text x="392" y="35" font-size="large">A</text>
+<text x="424" y="35" font-size="large">B</text>
+<text x="456" y="35" font-size="large">C</text>
+<text x="488" y="35" font-size="large">D</text>
+<text x="520" y="35" font-size="large">E</text>
+<text x="552" y="35" font-size="large">F</text>
+<polyline points="" stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,87.0 99,88.0 100,95.0 101,88.0 100,87.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,88.0 100,91.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,98.0 99,99.0 100,100.0 101,99.0 100,98.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="132,91.0 131,92.0 132,93.0 133,92.0 132,91.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="133,99.0 132,100.0 131,99.0 132,98.0 133,99.0 133,101.0 131,103.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="167,87.0 163,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="171,87.0 167,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="163,93.0 172,93.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="162,98.0 171,98.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="198,84.0 198,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="201,84.0 201,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="204,88.0 203,88.0 203,89.0 204,89.0 204,88.0 202,87.0 197,87.0 195,88.0 195,90.0 196,92.0 203,95.0 204,96.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="195,90.0 196,91.0 203,94.0 204,96.0 204,98.0 203,99.0 201,100.0 198,100.0 196,99.0 195,98.0 195,97.0 196,97.0 196,98.0 195,98.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="238,87.0 226,100.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,87.0 230,88.0 230,90.0 229,91.0 227,91.0 226,90.0 226,88.0 227,87.0 229,87.0 233,88.0 236,88.0 238,87.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="235,96.0 234,97.0 234,99.0 235,100.0 237,100.0 238,99.0 238,97.0 237,96.0 235,96.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="271,92.0 270,92.0 270,93.0 271,93.0 271,92.0 270,91.0 269,91.0 268,92.0 267,96.0 266,98.0 265,99.0 263,100.0 261,100.0 259,99.0 258,98.0 258,96.0 259,95.0 261,94.0 264,92.0 265,90.0 265,88.0 264,87.0 262,87.0 261,88.0 261,90.0 262,93.0 267,99.0 269,100.0 270,100.0 271,99.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="261,100.0 259,98.0 259,96.0 261,94.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="261,90.0 262,92.0 268,99.0 269,100.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="293,88.0 292,89.0 291,88.0 292,87.0 293,88.0 293,90.0 291,92.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,84.0 326,86.0 324,89.0 323,92.0 323,96.0 324,99.0 326,102.0 328,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,86.0 325,88.0 324,92.0 324,96.0 325,100.0 326,102.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="354,84.0 356,86.0 358,89.0 359,92.0 359,96.0 358,99.0 356,102.0 354,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="356,86.0 357,88.0 358,92.0 358,96.0 357,100.0 356,102.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="389,86.0 389,92.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="386,87.0 392,91.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="392,87.0 386,91.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="425,88.0 425,100.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="419,94.0 431,94.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="453,99.0 452,100.0 451,99.0 452,98.0 453,99.0 453,101.0 451,103.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="483,94.0 495,94.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="516,98.0 515,99.0 516,100.0 517,99.0 516,98.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="557,84.0 546,104.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="69,142.0 67,143.0 66,146.0 66,151.0 67,154.0 69,155.0 72,155.0 74,154.0 75,151.0 75,146.0 74,143.0 72,142.0 69,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="69,142.0 68,143.0 67,146.0 67,151.0 68,154.0 69,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="72,155.0 73,154.0 74,151.0 74,146.0 73,143.0 72,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,145.0 103,142.0 103,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="102,143.0 102,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="99,155.0 106,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="131,144.0 131,145.0 130,145.0 130,144.0 131,143.0 133,142.0 136,142.0 138,143.0 139,145.0 138,147.0 136,148.0 133,149.0 131,150.0 130,152.0 130,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="136,142.0 137,143.0 138,145.0 137,147.0 136,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="130,154.0 131,153.0 132,153.0 135,154.0 138,154.0 139,153.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="132,153.0 135,155.0 138,155.0 139,153.0 139,152.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="163,144.0 163,145.0 162,145.0 162,144.0 163,143.0 165,142.0 168,142.0 170,143.0 171,145.0 170,147.0 168,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="168,142.0 169,143.0 170,145.0 169,147.0 168,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="166,148.0 168,148.0 170,149.0 171,151.0 171,152.0 170,154.0 168,155.0 165,155.0 163,154.0 162,153.0 162,152.0 163,152.0 163,153.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="168,148.0 169,149.0 170,151.0 170,152.0 169,154.0 168,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="199,144.0 199,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="200,142.0 200,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="200,142.0 193,151.0 204,151.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="197,155.0 202,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="227,142.0 226,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="227,142.0 234,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="227,143.0 231,143.0 234,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="226,148.0 227,147.0 229,146.0 232,146.0 234,147.0 235,149.0 235,152.0 234,154.0 232,155.0 229,155.0 227,154.0 226,153.0 226,152.0 227,152.0 227,153.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="232,146.0 233,147.0 234,149.0 234,152.0 233,154.0 232,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="266,144.0 266,145.0 267,145.0 267,144.0 266,143.0 264,142.0 262,142.0 260,143.0 259,144.0 258,147.0 258,152.0 259,154.0 261,155.0 264,155.0 266,154.0 267,152.0 267,150.0 266,148.0 264,147.0 261,147.0 258,149.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="262,142.0 260,144.0 259,147.0 259,152.0 260,154.0 261,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="264,155.0 265,154.0 266,152.0 266,150.0 265,148.0 264,147.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,142.0 290,146.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="298,144.0 294,151.0 292,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="299,142.0 296,148.0 293,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,144.0 292,142.0 294,142.0 297,144.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,144.0 292,143.0 294,143.0 297,144.0 298,144.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="325,142.0 323,143.0 322,145.0 323,147.0 325,148.0 328,148.0 330,147.0 331,145.0 330,143.0 328,142.0 325,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="325,142.0 324,143.0 323,145.0 324,147.0 325,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,148.0 329,147.0 330,145.0 329,143.0 328,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="325,148.0 323,149.0 322,151.0 322,152.0 323,154.0 325,155.0 328,155.0 330,154.0 331,152.0 331,151.0 330,149.0 328,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="325,148.0 324,149.0 323,151.0 323,152.0 324,154.0 325,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,155.0 329,154.0 330,152.0 330,151.0 329,149.0 328,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="355,153.0 355,152.0 354,152.0 354,153.0 355,154.0 357,155.0 359,155.0 361,154.0 362,153.0 363,150.0 363,145.0 362,143.0 360,142.0 357,142.0 355,143.0 354,145.0 354,147.0 355,149.0 357,150.0 360,150.0 363,148.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="359,155.0 361,153.0 362,150.0 362,145.0 361,143.0 360,142.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="357,142.0 356,143.0 355,145.0 355,147.0 356,149.0 357,150.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,146.0 387,147.0 388,148.0 389,147.0 388,146.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,153.0 387,154.0 388,155.0 389,154.0 388,153.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="420,146.0 419,147.0 420,148.0 421,147.0 420,146.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="421,154.0 420,155.0 419,154.0 420,153.0 421,154.0 421,156.0 419,158.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="461,143.0 451,149.0 461,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="483,147.0 495,147.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="483,151.0 495,151.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,143.0 525,149.0 515,155.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="546,145.0 547,145.0 547,146.0 546,146.0 546,145.0 547,143.0 549,142.0 552,142.0 554,143.0 555,145.0 555,146.0 554,148.0 551,149.0 550,150.0 550,151.0 551,151.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="552,142.0 554,144.0 554,147.0 553,148.0 551,149.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="550,154.0 550,155.0 551,155.0 551,154.0 550,154.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="75,202.0 73,201.0 71,201.0 70,203.0 70,204.0 71,206.0 73,206.0 75,205.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="75,201.0 75,205.0 76,206.0 78,206.0 79,204.0 79,203.0 78,200.0 76,198.0 73,197.0 72,197.0 69,198.0 67,200.0 66,203.0 66,204.0 67,207.0 69,209.0 72,210.0 73,210.0 76,209.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="103,197.0 98,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="103,200.0 107,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="103,197.0 108,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,206.0 105,206.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="96,210.0 101,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="105,210.0 110,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="132,197.0 132,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="133,197.0 133,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="130,197.0 137,197.0 140,198.0 141,200.0 140,202.0 137,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="137,197.0 139,198.0 140,200.0 139,202.0 137,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="133,203.0 137,203.0 140,204.0 141,206.0 141,207.0 140,209.0 137,210.0 130,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="137,203.0 139,204.0 140,206.0 140,207.0 139,209.0 137,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="164,197.0 164,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="165,197.0 165,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="162,197.0 172,197.0 172,201.0 171,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="162,210.0 167,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="199,197.0 193,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="199,199.0 204,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="199,197.0 205,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="194,209.0 203,209.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="193,210.0 205,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="228,197.0 228,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,197.0 229,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="233,201.0 233,205.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="226,197.0 236,197.0 236,201.0 235,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,203.0 233,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="226,210.0 236,210.0 236,206.0 235,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="266,197.0 258,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="267,197.0 259,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="259,197.0 258,201.0 258,197.0 267,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="258,210.0 267,210.0 267,206.0 266,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="292,197.0 292,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="293,197.0 293,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="300,197.0 300,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="301,197.0 301,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,197.0 295,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="298,197.0 303,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="293,203.0 300,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,210.0 295,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="298,210.0 303,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,197.0 324,198.0 323,199.0 322,202.0 322,205.0 323,208.0 324,209.0 326,210.0 329,210.0 331,209.0 332,208.0 333,205.0 333,202.0 332,199.0 331,198.0 329,197.0 326,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,197.0 324,199.0 323,202.0 323,205.0 324,208.0 326,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="329,210.0 331,208.0 332,205.0 332,202.0 331,199.0 329,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,201.0 326,206.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="329,201.0 329,206.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,203.0 329,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="326,204.0 329,204.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="356,197.0 356,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="357,197.0 357,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="354,197.0 359,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="354,210.0 359,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,197.0 388,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="389,197.0 389,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="397,197.0 389,205.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="391,203.0 396,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="392,203.0 397,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="386,197.0 391,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="394,197.0 399,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="386,210.0 391,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="394,210.0 399,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,197.0 418,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,200.0 427,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,197.0 428,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="416,210.0 421,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="425,210.0 430,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="452,197.0 452,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="453,200.0 457,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="453,197.0 457,207.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="462,197.0 457,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="462,197.0 462,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="463,197.0 463,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="450,197.0 453,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="462,197.0 465,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="450,210.0 454,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="460,210.0 465,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="484,197.0 484,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="485,199.0 492,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="485,197.0 492,208.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="492,197.0 492,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="482,197.0 485,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="490,197.0 494,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="482,210.0 486,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,196.0 514,199.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="526,196.0 525,199.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="518,202.0 517,205.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="523,202.0 522,205.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,208.0 514,211.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="526,208.0 525,211.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,197.0 525,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,198.0 525,198.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="518,203.0 522,203.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="518,204.0 522,204.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,209.0 525,209.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,210.0 525,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="550,197.0 548,198.0 547,199.0 546,202.0 546,205.0 547,208.0 548,209.0 550,210.0 553,210.0 555,209.0 556,208.0 557,205.0 557,202.0 556,199.0 555,198.0 553,197.0 550,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="550,197.0 548,199.0 547,202.0 547,205.0 548,208.0 550,210.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="553,210.0 555,208.0 556,205.0 556,202.0 555,199.0 553,197.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="68,252.0 68,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="69,252.0 69,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="76,252.0 76,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="77,252.0 77,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="66,252.0 79,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="66,265.0 71,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="74,265.0 79,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="100,252.0 100,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="101,252.0 101,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="98,252.0 105,252.0 108,253.0 109,255.0 109,256.0 108,258.0 105,259.0 101,259.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="105,252.0 107,253.0 108,255.0 108,256.0 107,258.0 105,259.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="98,265.0 103,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="130,252.0 135,258.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="131,252.0 136,258.0 130,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="130,252.0 140,252.0 141,256.0 139,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="131,264.0 140,264.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="130,265.0 140,265.0 141,261.0 139,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="167,252.0 167,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="168,252.0 168,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="163,252.0 162,256.0 162,252.0 173,252.0 173,256.0 172,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="165,265.0 170,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="194,256.0 195,253.0 196,252.0 197,252.0 198,253.0 199,256.0 199,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="205,256.0 204,253.0 203,252.0 202,252.0 201,253.0 200,256.0 200,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="194,256.0 195,254.0 196,253.0 197,253.0 198,254.0 199,256.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="205,256.0 204,254.0 203,253.0 202,253.0 201,254.0 200,256.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="197,265.0 202,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="231,252.0 231,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="232,252.0 232,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="230,255.0 227,256.0 226,258.0 226,259.0 227,261.0 230,262.0 233,262.0 236,261.0 237,259.0 237,258.0 236,256.0 233,255.0 230,255.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="230,255.0 228,256.0 227,258.0 227,259.0 228,261.0 230,262.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="233,262.0 235,261.0 236,259.0 236,258.0 235,256.0 233,255.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,252.0 234,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,265.0 234,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="259,252.0 267,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="260,252.0 268,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="268,252.0 259,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="257,252.0 262,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="265,252.0 270,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="257,265.0 262,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="265,265.0 270,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="296,252.0 296,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="297,252.0 297,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="290,257.0 291,256.0 292,256.0 293,260.0 295,262.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="298,262.0 300,260.0 301,256.0 302,256.0 303,257.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="291,256.0 292,259.0 293,261.0 295,262.0 298,262.0 300,261.0 301,259.0 302,256.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="294,252.0 299,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="294,265.0 299,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="322,263.0 323,265.0 326,265.0 322,259.0 322,256.0 323,254.0 324,253.0 326,252.0 329,252.0 331,253.0 332,254.0 333,256.0 333,259.0 329,265.0 332,265.0 333,263.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="324,262.0 323,259.0 323,256.0 324,254.0 326,252.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="329,252.0 331,254.0 332,256.0 332,259.0 331,262.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="323,264.0 325,264.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="330,264.0 332,264.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="" stroke="black" stroke-width="1" fill="none" />
+<polyline points="" stroke="black" stroke-width="1" fill="none" />
+<polyline points="419,249.0 419,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="420,249.0 420,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="419,249.0 424,249.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="419,269.0 424,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="448,247.0 462,271.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="486,249.0 486,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="487,249.0 487,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="482,249.0 487,249.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="482,269.0 487,269.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="517,254.0 517,265.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="514,257.0 515,256.0 517,253.0 519,256.0 520,257.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="515,256.0 517,254.0 519,256.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="544,267.0 560,267.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="69,307.0 67,309.0 67,311.0 68,312.0 69,311.0 68,310.0 67,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="102,311.0 100,312.0 99,313.0 98,315.0 98,317.0 99,319.0 101,320.0 102,320.0 104,319.0 106,317.0 108,314.0 109,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="102,311.0 100,313.0 99,315.0 99,317.0 100,319.0 101,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="102,311.0 104,311.0 106,312.0 108,319.0 109,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="104,311.0 105,312.0 107,319.0 109,320.0 110,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="135,307.0 133,309.0 132,311.0 130,317.0 128,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="134,308.0 133,310.0 131,316.0 129,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="135,307.0 137,307.0 139,308.0 139,310.0 138,312.0 135,313.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="137,307.0 138,308.0 138,310.0 137,312.0 135,313.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="135,313.0 137,314.0 138,316.0 138,318.0 137,319.0 135,320.0 134,320.0 132,319.0 131,316.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="135,313.0 136,314.0 137,316.0 137,318.0 135,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="161,313.0 163,311.0 165,311.0 167,312.0 168,315.0 168,320.0 167,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="161,313.0 163,312.0 165,312.0 167,313.0 168,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="172,311.0 171,314.0 168,320.0 166,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="200,311.0 198,311.0 196,312.0 195,313.0 194,315.0 194,317.0 195,319.0 197,320.0 199,320.0 201,319.0 202,318.0 203,316.0 203,314.0 202,312.0 199,310.0 198,308.0 198,307.0 199,306.0 201,306.0 202,307.0 203,309.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="198,311.0 196,313.0 195,315.0 195,318.0 197,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="199,320.0 201,318.0 202,316.0 202,313.0 200,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="198,308.0 199,307.0 201,307.0 203,309.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="234,312.0 232,311.0 229,311.0 227,312.0 227,313.0 228,314.0 230,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="229,311.0 228,312.0 228,313.0 230,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="230,315.0 227,316.0 226,317.0 226,319.0 228,320.0 231,320.0 233,319.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="230,315.0 228,316.0 227,317.0 227,319.0 228,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="262,307.0 261,308.0 261,309.0 263,310.0 266,310.0 266,309.0 263,310.0 260,311.0 259,312.0 258,314.0 258,316.0 259,318.0 260,319.0 262,320.0 263,321.0 263,323.0 262,324.0 260,324.0 259,323.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="263,310.0 261,311.0 260,312.0 259,314.0 259,316.0 260,318.0 262,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="289,314.0 290,312.0 291,311.0 293,311.0 294,312.0 294,313.0 292,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="292,311.0 293,312.0 293,313.0 291,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="294,313.0 295,312.0 297,311.0 299,311.0 301,312.0 301,314.0 298,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="299,311.0 300,312.0 300,314.0 297,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="321,315.0 322,313.0 323,312.0 325,312.0 326,313.0 326,318.0 327,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="324,312.0 325,313.0 325,317.0 326,319.0 327,320.0 328,320.0 330,319.0 331,318.0 332,316.0 333,313.0 333,310.0 332,308.0 331,307.0 329,307.0 328,308.0 328,310.0 329,312.0 332,314.0 334,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,320.0 330,318.0 331,316.0 332,313.0 332,310.0 331,307.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="356,311.0 354,318.0 354,319.0 355,320.0 357,320.0 359,319.0 360,317.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="357,311.0 355,318.0 355,319.0 356,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,311.0 385,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="389,311.0 386,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="394,311.0 395,312.0 396,312.0 395,311.0 393,311.0 391,313.0 388,314.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,314.0 389,315.0 391,319.0 393,320.0 395,319.0 396,317.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="388,314.0 390,315.0 392,319.0 393,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="416,307.0 418,307.0 420,308.0 427,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="418,307.0 419,308.0 426,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="422,312.0 417,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="422,312.0 418,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="452,311.0 448,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="453,311.0 449,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="451,317.0 451,319.0 452,320.0 454,320.0 456,319.0 457,318.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="459,311.0 457,318.0 457,319.0 458,320.0 460,320.0 461,319.0 462,317.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="460,311.0 458,318.0 458,319.0 459,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="484,311.0 483,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="485,311.0 484,317.0 483,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="492,314.0 492,311.0 493,311.0 492,314.0 490,317.0 487,319.0 484,320.0 483,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="482,311.0 485,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="517,307.0 516,308.0 516,309.0 518,310.0 521,310.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="519,310.0 516,311.0 515,312.0 515,314.0 517,315.0 520,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="519,310.0 517,311.0 516,312.0 516,314.0 517,315.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="518,315.0 515,316.0 514,317.0 514,319.0 516,320.0 518,321.0 519,322.0 519,323.0 518,324.0 516,324.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="518,315.0 516,316.0 515,317.0 515,319.0 516,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="550,311.0 548,312.0 547,313.0 546,315.0 546,317.0 547,319.0 549,320.0 551,320.0 553,319.0 554,318.0 555,316.0 555,314.0 554,312.0 552,311.0 550,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="550,311.0 548,313.0 547,315.0 547,318.0 549,320.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="551,320.0 553,318.0 554,316.0 554,313.0 552,311.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="71,367.0 68,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="71,367.0 69,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="75,367.0 74,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="75,367.0 75,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="66,368.0 68,366.0 79,366.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="66,368.0 68,367.0 79,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="105,366.0 103,366.0 101,367.0 100,368.0 99,370.0 96,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="103,366.0 101,368.0 100,370.0 97,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="105,366.0 107,367.0 108,369.0 108,371.0 107,373.0 106,374.0 104,375.0 102,375.0 100,374.0 99,372.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="105,366.0 107,368.0 107,371.0 106,373.0 104,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="142,366.0 134,366.0 132,367.0 131,368.0 130,370.0 130,372.0 131,374.0 133,375.0 135,375.0 137,374.0 138,373.0 139,371.0 139,369.0 138,367.0 142,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="134,366.0 132,368.0 131,370.0 131,373.0 133,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="135,375.0 137,373.0 138,371.0 138,368.0 136,366.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="168,367.0 166,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="168,367.0 167,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="162,368.0 164,366.0 173,366.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="162,368.0 164,367.0 173,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="193,369.0 194,367.0 195,366.0 197,366.0 198,367.0 198,369.0 197,372.0 197,374.0 198,375.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="196,366.0 197,367.0 197,369.0 196,372.0 196,374.0 198,375.0 199,375.0 201,374.0 203,372.0 204,369.0 204,366.0 203,366.0 204,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="228,367.0 227,368.0 226,370.0 226,372.0 227,374.0 229,375.0 231,375.0 234,374.0 236,372.0 237,369.0 237,367.0 236,366.0 234,366.0 233,367.0 232,369.0 231,372.0 228,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="226,372.0 227,373.0 229,374.0 231,374.0 234,373.0 236,371.0 237,369.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="237,368.0 236,367.0 234,367.0 232,369.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="231,372.0 230,375.0 229,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="258,366.0 259,366.0 261,367.0 264,378.0 265,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="259,366.0 260,367.0 263,378.0 265,379.0 266,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="267,366.0 265,369.0 259,376.0 257,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="299,362.0 296,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="300,362.0 295,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="289,369.0 290,367.0 291,366.0 293,366.0 294,367.0 294,373.0 295,374.0 298,374.0 300,373.0 302,371.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="292,366.0 293,367.0 293,371.0 294,374.0 295,375.0 298,375.0 300,374.0 302,371.0 303,369.0 304,366.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="324,367.0 326,367.0 326,366.0 324,367.0 323,368.0 322,370.0 322,372.0 323,374.0 324,375.0 326,375.0 327,374.0 328,372.0 329,369.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="322,372.0 324,374.0 326,374.0 328,372.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,369.0 328,374.0 329,375.0 331,375.0 333,373.0 334,371.0 334,369.0 333,367.0 332,366.0 332,367.0 333,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="328,372.0 329,374.0 331,374.0 333,373.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="" stroke="black" stroke-width="1" fill="none" />
+<polyline points="" stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,359.0 421,360.0 420,361.0 420,363.0 422,365.0 423,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="421,360.0 420,363.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,365.0 422,368.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="420,361.0 421,363.0 423,365.0 423,367.0 422,368.0 420,369.0 422,370.0 423,371.0 423,373.0 421,375.0 420,377.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="422,370.0 423,373.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="420,375.0 421,378.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="423,371.0 422,373.0 420,375.0 420,377.0 421,378.0 423,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="451,359.0 451,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="484,359.0 486,360.0 487,361.0 487,363.0 485,365.0 484,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="486,360.0 487,363.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="484,365.0 485,368.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="487,361.0 486,363.0 484,365.0 484,367.0 485,368.0 487,369.0 485,370.0 484,371.0 484,373.0 486,375.0 487,377.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="485,370.0 484,373.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="487,375.0 486,378.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="484,371.0 485,373.0 487,375.0 487,377.0 486,378.0 484,379.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="514,371.0 514,369.0 515,367.0 517,367.0 523,370.0 525,370.0 526,369.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="514,369.0 515,368.0 517,368.0 523,371.0 525,371.0 526,369.0 526,367.0 " stroke="black" stroke-width="1" fill="none" />
+<polyline points="548,362.0 547,363.0 547,365.0 548,366.0 550,366.0 551,365.0 551,363.0 550,362.0 548,362.0 " stroke="black" stroke-width="1" fill="none" />
+<text x="370" y="405.625" font-size="smaller">Max Height 24 Width 24</text>
+</svg>
