@@ -212,32 +212,26 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, reset, dc, cs, backlight, rotation, buffer_size)`
+- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, buffer_size)`
 
-    required args:
+    ### Required positional arguments:
+    - `spi` spi device
+    - `width` display width
+    - `height` display height
+    ### Required keyword arguments:
+    - `dc` sets the pin connected to the display data/command selection input. This parameter is always required.
 
-        `spi` spi device
-        `width` display width
-        `height` display height
+    ### Optional keyword arguments:
 
-    optional args:
+    - `reset` sets the pin connected to the displays hardware reset input. If the displays reset pin is tied high the `reset` parameter is not required.
 
-        `reset` reset pin
-        `dc` dc pin
-        `cs` cs pin
-        `backlight` backlight pin
-        `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
-        `buffer_size` 0= buffer dynamically allocated and freed as needed.
+    - `cs` sets the pin connected to the displays chip select input. If the displays CS pin is tied low, the display must be the only device connected to the SPI port. The display will always be the selected device and the `cs` parameter is not required.
 
-    If buffer_size is specified it must be large enough to contain the largest
-    bitmap, font character and/or JPG used (Rows * Columns *2 bytes).
-    Specifying a buffer_size reserves memory for use by the driver otherwise
-    memory required is allocated and free dynamicly as it is needed.  Dynamic
-    allocation can cause heap fragmentation so garbage collection (GC) should
-    be enabled.
+    - `backlight` sets the pin connected to the displays backlight enable input. The displays backlight input can often be left floating or disconnected as the backlight on some displays are always powered on and cannot be turned off.
 
+    - `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
 
-This driver supports only 16bit colors in RGB565 notation.
+    - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
 
 - `on()`
 
