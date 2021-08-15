@@ -69,8 +69,8 @@ extern "C" {
 #define WHITE   0xFFFF
 
 typedef struct _Point {
-   float x;
-   float y;
+   mp_float_t x;
+   mp_float_t y;
 } Point;
 
 typedef struct _Polygon {

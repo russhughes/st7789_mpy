@@ -460,7 +460,7 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 	}
 
 	if (mp_obj_is_int(args[6])) {
-		scale = (float) mp_obj_get_int(args[6]);
+		scale = (mp_float_t) mp_obj_get_int(args[6]);
 	}
 
 	mp_obj_dict_t *	 dict			 = MP_OBJ_TO_PTR(hershey->globals);
@@ -490,8 +490,8 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 
 			int16_t offset = index[ii] | (index[ii + 1] << 8);
 			int16_t length = font[offset++];
-			int16_t left   = (int16_t) ((font[offset++] - 0x52) * scale) + 0.5;
-			int16_t right  = (int16_t) ((font[offset++] - 0x52) * scale) + 0.5;
+			int16_t left   = (int)(scale * (font[offset++] - 0x52) + 0.5);
+			int16_t right  = (int)(scale * (font[offset++] - 0x52) + 0.5);
 			int16_t width  = right - left;
 
 			if (length) {
@@ -503,8 +503,8 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 						continue;
 					}
 
-					int16_t vector_x = (int16_t) ((font[offset++] - 0x52) * scale) + 0.5;
-					int16_t vector_y = (int16_t) ((font[offset++] - 0x52) * scale) + 0.5;
+					int16_t vector_x = (int) (scale * (font[offset++] - 0x52) + 0.5);
+					int16_t vector_y = (int) (scale * (font[offset++] - 0x52) + 0.5);
 
 					if (!i || penup) {
 						from_x = pos_x + vector_x - left;
@@ -1349,7 +1349,7 @@ STATIC mp_obj_t st7789_ST7789_polygon_center(size_t n_args, const mp_obj_t *args
 	mp_obj_t *polygon;
 	mp_obj_get_array(args[1], &poly_len, &polygon);
 
-	float sum = 0.0f;
+	mp_float_t sum = 0.0;
 	int	  vsx = 0;
 	int	  vsy = 0;
 
@@ -1371,15 +1371,15 @@ STATIC mp_obj_t st7789_ST7789_polygon_center(size_t n_args, const mp_obj_t *args
 			mp_int_t v2x = mp_obj_get_int(point_from_poly[0]);
 			mp_int_t v2y = mp_obj_get_int(point_from_poly[1]);
 
-			float cross = v1x * v2y - v1y * v2x;
+			mp_float_t cross = v1x * v2y - v1y * v2x;
 			sum += cross;
-			vsx = ((v1x + v2x) * cross) + vsx;
-			vsy = ((v1y + v2y) * cross) + vsy;
+			vsx += (int) ((v1x + v2x) * cross);
+			vsy += (int) ((v1y + v2y) * cross);
 		}
 
-		float z = 1.0f / (3.0f * sum);
-		vsx		= (int) (vsx * z);
-		vsy		= (int) (vsy * z);
+		mp_float_t z = 1.0 / (3.0 * sum);
+		vsx	= (int) (vsx * z);
+		vsy	= (int) (vsy * z);
 	} else
 		mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon data error"));
 
@@ -1392,26 +1392,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_polygon_center_obj, 2, 
 // RotatePolygon: Rotate a polygon around a center point angle radians
 //
 
-STATIC void RotatePolygon(Polygon *polygon, Point center, float angle)
+STATIC void RotatePolygon(Polygon *polygon, Point center, mp_float_t angle)
 {
 	if (polygon->length == 0)
 		return; /* reject null polygons */
 
-	float cosAngle = cos(angle);
-	float sinAngle = sin(angle);
+	mp_float_t cosAngle = cos(angle);
+	mp_float_t sinAngle = sin(angle);
 
 	for (int i = 0; i < polygon->length; i++) {
-		float dx = (polygon->points[i].x - center.x);
-		float dy = (polygon->points[i].y - center.y);
+		mp_float_t dx = (polygon->points[i].x - center.x);
+		mp_float_t dy = (polygon->points[i].y - center.y);
 
 		polygon->points[i].x = center.x + (int) 0.5 + (dx * cosAngle - dy * sinAngle);
 		polygon->points[i].y = center.y + (int) 0.5 + (dx * sinAngle + dy * cosAngle);
 	}
-}
-
-static int compare_ints(const void *a, const void *b)
-{
-	return (*(int *) a - *(int *) b);
 }
 
 //
@@ -1422,7 +1417,7 @@ static int compare_ints(const void *a, const void *b)
 #define MAX_POLY_CORNERS 32
 STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point location, uint16_t color)
 {
-	int nodes, nodeX[MAX_POLY_CORNERS], pixelY, i, j;
+	int nodes, nodeX[MAX_POLY_CORNERS], pixelY, i, j, swap;
 
 	int minX = INT_MAX;
 	int maxX = INT_MIN;
@@ -1431,16 +1426,16 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 
 	for (i = 0; i < polygon->length; i++) {
 		if (polygon->points[i].x < minX)
-			minX = polygon->points[i].x;
+			minX = (int) polygon->points[i].x;
 
 		if (polygon->points[i].x > maxX)
-			maxX = polygon->points[i].x;
+			maxX = (int) polygon->points[i].x;
 
 		if (polygon->points[i].y < minY)
-			minY = polygon->points[i].y;
+			minY = (int) polygon->points[i].y;
 
 		if (polygon->points[i].y > maxY)
-			maxY = polygon->points[i].y;
+			maxY = (int) polygon->points[i].y;
 	}
 
 	//  Loop through the rows
@@ -1463,7 +1458,19 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 			j = i;
 		}
 
-		qsort(&nodeX[0], nodes, sizeof(int), compare_ints);
+		//  Sort the nodes, via a simple “Bubble” sort.
+		i = 0;
+		while (i < nodes - 1) {
+			if (nodeX[i] > nodeX[i+1]) {
+				swap = nodeX[i];
+				nodeX[i] = nodeX[i+1];
+				nodeX[i+1] = swap;
+				if (i)
+					i--;
+			} else {
+				i++;
+			}
+		}
 
 		//  Fill the pixels between node pairs.
 		for (i = 0; i < nodes; i += 2) {
@@ -1477,7 +1484,7 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 				if (nodeX[i + 1] > maxX)
 					nodeX[i + 1] = maxX;
 
-				fast_hline(self, nodeX[i] + location.x, pixelY + location.y, nodeX[i + 1] - nodeX[i] + 1, color);
+				fast_hline(self, (int)location.x+nodeX[i], (int)location.y+pixelY, nodeX[i + 1] - nodeX[i] + 1, color);
 			}
 		}
 	}
@@ -1539,14 +1546,19 @@ STATIC mp_obj_t st7789_ST7789_polygon(size_t n_args, const mp_obj_t *args)
 				RotatePolygon(&polygon, center, angle);
 
 			for (int idx = 1; idx < poly_len; idx++) {
-				line(self, point[idx - 1].x + x, point[idx - 1].y + y, point[idx].x + x, point[idx].y + y, color);
+				line(
+					self,
+					(int)point[idx - 1].x + x,
+					(int)point[idx - 1].y + y,
+					(int)point[idx].x + x,
+					(int)point[idx].y + y, color
+				);
 			}
 
 			m_free(self->work);
 			self->work = NULL;
 		} else
 			mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon data error"));
-
 	} else
 		mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon data error"));
 
