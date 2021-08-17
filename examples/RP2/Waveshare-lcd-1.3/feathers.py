@@ -2,7 +2,7 @@
 rainbow.py
     Smoothly scroll rainbow colored random curves across the front of a Waveshare Pico LCD 1.3
     Display Module using a Raspberry Pi PICO.
-    
+
     Video: https://youtu.be/ZKrKsz7_CXo
 """
 
@@ -36,7 +36,7 @@ def color_wheel(WheelPos):
 
 def main():
     # configure spi interface
-    spi = SPI(1, baudrate=30000000, sck=Pin(10), mosi=Pin(11))
+    spi = SPI(1, baudrate=31250000, sck=Pin(10), mosi=Pin(11))
 
     # initialize display
     tft = st7789.ST7789(
@@ -79,13 +79,13 @@ def main():
         # choose a new random value for current_y between 0 and 1/2 the
         # height of the display, choose a new random interval then reset
         # the counter to 0
-        
+
         if counter > interval:
             last_y = current_y
             current_y = random.randint(0, h)
             counter = 0
             interval = random.randint(10, 100)
-        
+
 
         # clear the first column of the display and scroll it
         tft.vline(scroll, 0, height, st7789.BLACK)
@@ -98,14 +98,14 @@ def main():
         for i, x_offset in enumerate(x_offsets):
             tft.pixel((scroll+x_offset) % 240, h + tween, color_wheel(wheel+(i<<2)))
             tft.pixel((scroll+x_offset) % 240, h - tween, color_wheel(wheel+(i<<2)))
-  
+
         # increment scroll, counter, and wheel
         scroll += 1
         scroll %= width
         counter += 1
         wheel += 1
         wheel %= 256
-        
+
         # pause to slow down scrolling
         utime.sleep(0.005)
 

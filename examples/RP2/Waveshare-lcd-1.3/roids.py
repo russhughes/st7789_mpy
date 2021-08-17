@@ -44,8 +44,8 @@ def main():
                 polygon if scale is None else [(int(scale*x[0]), int(scale*x[1])) for x in polygon])
 
             # if no location given assign a random location
-            self.x = random.randint(0, tft.width()) if x is None else x
-            self.y = random.randint(0, tft.width()) if y is None else y
+            self.x = random.randint(0, width) if x is None else x
+            self.y = random.randint(0, width) if y is None else y
 
             # set angle if given
             self.angle = float(0) if angle is None else angle
@@ -83,8 +83,8 @@ def main():
 
             self.x += int(self.velocity_x)
             self.y += int(self.velocity_y)
-            self.x %= tft.width()
-            self.y %= tft.height()
+            self.x %= width
+            self.y %= height
 
         def draw(self, color):
             '''
@@ -245,8 +245,8 @@ def main():
             # erase explosion, move ship to center and stop explosion
             tft.polygon(explosion_poly, ship.x, ship.y, st7789.BLACK)
             # move ship to center
-            ship.x = tft.width() >> 1
-            ship.y = tft.height() >> 1
+            ship.x = width >> 1
+            ship.y = height >> 1
             ship.counter = 0
             return True
 
@@ -254,7 +254,7 @@ def main():
 
     try:
         # configure spi interface
-        spi = SPI(1, baudrate=30000000, sck=Pin(10), mosi=Pin(11))
+        spi = SPI(1, baudrate=31250000, sck=Pin(10), mosi=Pin(11))
 
         # initialize display
         tft = st7789.ST7789(
@@ -271,6 +271,8 @@ def main():
         # enable display and clear screen
         tft.init()
         tft.fill(st7789.BLACK)
+        width = tft.width()
+        height = tft.height()
 
         # 360' in radians
         rad_max = 2 * math.pi
@@ -286,8 +288,8 @@ def main():
 
         ship = Poly(
             ship_poly,
-            x=tft.width() >> 1,
-            y=tft.height() >> 1,
+            x=width >> 1,
+            y=height >> 1,
             v_x=0,
             v_y=0,
             radius=ship_radius,
@@ -352,8 +354,8 @@ def main():
                 # if hyperspace button pressed move ship to random location
                 if hyper.value() == 0:
                     diameter = ship.radius * 2
-                    ship.x = random.randint(diameter, tft.width() - diameter)
-                    ship.y = random.randint(diameter, tft.height() - diameter)
+                    ship.x = random.randint(diameter, width - diameter)
+                    ship.y = random.randint(diameter, height - diameter)
 
                     # stop movement
                     ship.velocity_x = 0.0

@@ -70,7 +70,7 @@ def main():
     Draw greetings on display cycling thru hershey fonts and colors
     '''
     # configure display
-    spi = SPI(1, baudrate=40000000, sck=Pin(14), mosi=Pin(15))
+    spi = SPI(1, baudrate=31250000, sck=Pin(14), mosi=Pin(15))
     tft = st7789.ST7789(
         spi,
         240,

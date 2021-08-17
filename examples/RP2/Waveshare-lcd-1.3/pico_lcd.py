@@ -10,7 +10,7 @@ def main():
     """Waveshare Pico LCD 1.3 demo modified to run using this driver"""
     micropython.kbd_intr(3)
     # configure spi interface
-    spi = SPI(1, baudrate=30000000, sck=Pin(10), mosi=Pin(11))
+    spi = SPI(1, baudrate=31250000, sck=Pin(10), mosi=Pin(11))
 
     # initialize display
     tft = st7789.ST7789(
