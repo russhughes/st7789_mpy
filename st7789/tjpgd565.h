@@ -64,6 +64,8 @@ struct JDEC {
 	unsigned int sz_pool;		/* Size of momory pool (bytes available) */
 	unsigned int (*infunc)(JDEC*, uint8_t*, unsigned int);	/* Pointer to jpeg stream input function */
 	void* device;				/* Pointer to I/O device identifiler for the session */
+	uint16_t x_offs;			/* x offset for slow method */
+	uint16_t y_offs;			/* y offset for slow method */
 };
 
 
