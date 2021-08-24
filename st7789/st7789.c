@@ -455,12 +455,14 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 	mp_int_t color = mp_obj_get_int(args[5]);
 
 	mp_float_t scale = 1.0;
-	if (mp_obj_is_float(args[6])) {
-		scale = mp_obj_float_get(args[6]);
-	}
+	if (n_args > 6) {
+		if (mp_obj_is_float(args[6])) {
+			scale = mp_obj_float_get(args[6]);
+		}
 
-	if (mp_obj_is_int(args[6])) {
-		scale = (mp_float_t) mp_obj_get_int(args[6]);
+		if (mp_obj_is_int(args[6])) {
+			scale = (mp_float_t) mp_obj_get_int(args[6]);
+		}
 	}
 
 	mp_obj_dict_t *	 dict			 = MP_OBJ_TO_PTR(hershey->globals);
