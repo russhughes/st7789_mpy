@@ -452,14 +452,14 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 
 	mp_int_t x	   = mp_obj_get_int(args[3]);
 	mp_int_t y	   = mp_obj_get_int(args[4]);
-	mp_int_t color = mp_obj_get_int(args[5]);
+
+	mp_int_t color = (n_args > 5) ? mp_obj_get_int(args[5]) : WHITE;
 
 	mp_float_t scale = 1.0;
 	if (n_args > 6) {
 		if (mp_obj_is_float(args[6])) {
 			scale = mp_obj_float_get(args[6]);
 		}
-
 		if (mp_obj_is_int(args[6])) {
 			scale = (mp_float_t) mp_obj_get_int(args[6]);
 		}
@@ -528,7 +528,7 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 
 	return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_obj, 6, 7, st7789_ST7789_draw);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_obj, 5, 7, st7789_ST7789_draw);
 
 STATIC uint32_t bs_bit		= 0;
 uint8_t *		bitmap_data = NULL;
