@@ -195,7 +195,7 @@ And then compile the module with specified USER_C_MODULES dir
 ## Working examples
 
 This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi
-Pico. You have to provide a `SPI` object and the pin to use for the DC input of the
+Pico. You have to provide a `SPI` object and the pin to use for the `dc' input of the
 screen.
 
 
@@ -243,7 +243,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `pixel(x, y, color)`
 
-  Set the specified pixel to the given color.
+  Set the specified pixel to the given `color`.
 
 - `line(x0, y0, x1, y1, color)`
 
@@ -276,20 +276,20 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `text(font, s, x, y[, fg, bg])`
 
-  Write text to the display using the specified bitmap font with the
+  Write text to the display using the specified bitmap `font` with the
   coordinates as the upper-left corner of the text. The foreground and
-  background colors of the text can be set by the optional arguments fg and bg,
-  otherwise the foreground color defaults to `WHITE` and the background color
-  defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap` directory for
-  example fonts.
+  background colors of the text can be set by the optional arguments `fg` and
+  `bg`, otherwise the foreground color defaults to `WHITE` and the background
+  color defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap`
+  directory for example fonts.
 
 - `write(bitap_font, s, x, y[, fg, bg])`
 
   Write text to the display using the specified proportional or Monospace bitmap
   font module with the coordinates as the upper-left corner of the text. The
   foreground and background colors of the text can be set by the optional
-  arguments fg and bg, otherwise the foreground color defaults to `WHITE` and
-  the background color defaults to `BLACK`.  See the `README.md` in the
+  arguments `fg` and `bg`, otherwise the foreground color defaults to `WHITE`
+  and the background color defaults to `BLACK`.  See the `README.md` in the
   `truetype/fonts` directory for example fonts. Returns the width of the string
   as printed in pixels.
 
@@ -304,18 +304,20 @@ I was not able to run the display with a baud rate over 40MHZ.
 
   Returns the width of the string in pixels if printed in the specified font.
 
-- `draw(vector_font, s, x, y[, fg, bg])`
+- `draw(vector_font, s, x, y[, fg, scale])`
 
   Draw text to the display using the specified hershey vector font with the
-  coordinates as the lower-left corner of the text. The foreground and
-  background colors of the text can be set by the optional arguments fg and bg,
-  otherwise the foreground color defaults to `WHITE` and the background color
-  defaults to `BLACK`.  See the README.md in the `vector/fonts` directory for
-  example fonts and the utils directory for a font conversion program.
+  coordinates as the lower-left corner of the text. The foreground color of the
+  text can be set by the optional argument `fg`, otherwise the foreground color
+  defaults to `WHITE`. The size of the text can be scaled by specifying a
+  `scale` value. The `scale` value must be larger then 0 and can be a floating
+  point or an integer value. The `scale` value defaults to 1.0. See the
+  README.md in the `vector/fonts` directory for example fonts and the utils
+  directory for a font conversion program.
 
 - `jpg(jpg_filename, x, y [, method])`
 
-  Draw JPG file on the display at the given x and y coordinates as the upper
+  Draw JPG file on the display at the given `x` and `y` coordinates as the upper
   left corner of the image. There memory required to decode and display a JPG
   can be considerable as a full screen 320x240 JPG would require at least 3100
   bytes for the working area + 320x240x2 bytes of ram to buffer the image. Jpg
@@ -325,7 +327,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `polygon_center(polygon)`
 
-   Return the center of a polygon as an (x, y) tuple. The polygon should
+   Return the center of the `polygon` as an (x, y) tuple. The `polygon` should
    consist of a list of (x, y) tuples forming a closed convex polygon.
 
 - `fill_polygon(polygon, x, y, color[, angle, center_x, center_y])`
@@ -360,11 +362,11 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `bitmap(bitmap, x , y [, index])`
 
-  Draw bitmap using the specified x, y coordinates as the upper-left corner of
-  the of the bitmap. The optional index parameter provides a method to select
-  from multiple bitmaps contained a bitmap module. The index is used to
-  calculate the offset to the beginning of the desired bitmap using the modules
-  HEIGHT, WIDTH and BPP values.
+  Draw `bitmap` using the specified `x`, `y` coordinates as the upper-left
+  corner of the of the `bitmap`. The optional `index` parameter provides a
+  method to select from multiple bitmaps contained a `bitmap` module. The
+  `index` is used to calculate the offset to the beginning of the desired bitmap
+  using the modules HEIGHT, WIDTH and BPP values.
 
   The `imgtobitmap.py` utility creates compatible 1 to 8 bit per pixel bitmap modules
   from image files using the Pillow Python Imaging Library.
@@ -436,8 +438,8 @@ The module exposes predefined colors:
 
 - `map_bitarray_to_rgb565(bitarray, buffer, width, color=WHITE, bg_color=BLACK)`
 
-  Convert a bitarray to the rgb565 color buffer which is suitable for blitting.
-  Bit 1 in bitarray is a pixel with `color` and 0 - with `bg_color`.
+  Convert a `bitarray` to the rgb565 color `buffer` that is suitable for blitting.
+  Bit 1 in `bitarray` is a pixel with `color` and 0 - with `bg_color`.
 
   This is a helper with a good performance to print text with a high
   resolution font. You can use an awesome tool
