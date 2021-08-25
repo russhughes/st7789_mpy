@@ -1458,10 +1458,11 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 			if ((polygon->points[i].y < pixelY && polygon->points[j].y >= pixelY) ||
 				(polygon->points[j].y < pixelY && polygon->points[i].y >= pixelY)) {
 				if (nodes < MAX_POLY_CORNERS) {
-					nodeX[nodes++] = (int) (polygon->points[i].x +
-											(pixelY - polygon->points[i].y) /
-												(polygon->points[j].y - polygon->points[i].y) *
-												(polygon->points[j].x - polygon->points[i].x));
+					nodeX[nodes++] = (int)
+						(polygon->points[i].x +
+						(pixelY - polygon->points[i].y) /
+						(polygon->points[j].y - polygon->points[i].y) *
+						(polygon->points[j].x - polygon->points[i].x));
 				} else {
 					mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon too complex increase MAX_POLY_CORNERS."));
 				}
@@ -1517,7 +1518,7 @@ STATIC mp_obj_t st7789_ST7789_polygon(size_t n_args, const mp_obj_t *args)
 		mp_int_t color = mp_obj_get_int(args[4]);
 
 		mp_float_t angle = 0.0f;
-		if (n_args > 4 && mp_obj_is_float(args[5]))
+		if (n_args > 5 && mp_obj_is_float(args[5]))
 			angle = mp_obj_float_get(args[5]);
 
 		mp_int_t cx = 0;
@@ -1597,7 +1598,7 @@ STATIC mp_obj_t st7789_ST7789_fill_polygon(size_t n_args, const mp_obj_t *args)
 		mp_int_t color = mp_obj_get_int(args[4]);
 
 		mp_float_t angle = 0.0f;
-		if (n_args > 4)
+		if (n_args > 5)
 			angle = mp_obj_float_get(args[5]);
 
 		mp_int_t cx = 0;
