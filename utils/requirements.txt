@@ -1,3 +1,3 @@
-Pillow==8.2.0
+Pillow==8.3.2
 pypng==0.0.20
 freetype-py==2.2.0
