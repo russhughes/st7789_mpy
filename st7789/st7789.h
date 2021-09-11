@@ -92,9 +92,10 @@ typedef struct _st7789_ST7789_obj_t {
     uint16_t width;             // logical width (after rotation)
     uint16_t display_height;    // physical width
     uint16_t height;            // logical height (after rotation)
-    uint8_t xstart;
-    uint8_t ystart;
+    uint8_t colstart;
+    uint8_t rowstart;
     uint8_t rotation;
+    uint8_t color_order;
     mp_hal_pin_obj_t reset;
     mp_hal_pin_obj_t dc;
     mp_hal_pin_obj_t cs;
@@ -107,6 +108,8 @@ typedef struct _st7789_ST7789_obj_t {
     uint16_t max_y;
 
 } st7789_ST7789_obj_t;
+
+mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 extern void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t color);
 extern void fast_hline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t w, uint16_t color);

@@ -91,8 +91,6 @@ STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len)
 	spi_p->transfer(spi_obj, len, buf, NULL);
 }
 
-mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-
 STATIC void st7789_ST7789_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind)
 {
 	(void) kind;
@@ -134,8 +132,8 @@ STATIC void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint
 			self->max_y = y1;
 	}
 
-	uint8_t bufx[4] = {(x0 + self->xstart) >> 8, (x0 + self->xstart) & 0xFF, (x1 + self->xstart) >> 8, (x1 + self->xstart) & 0xFF};
-	uint8_t bufy[4] = {(y0 + self->ystart) >> 8, (y0 + self->ystart) & 0xFF, (y1 + self->ystart) >> 8, (y1 + self->ystart) & 0xFF};
+	uint8_t bufx[4] = {(x0 + self->colstart) >> 8, (x0 + self->colstart) & 0xFF, (x1 + self->colstart) >> 8, (x1 + self->colstart) & 0xFF};
+	uint8_t bufy[4] = {(y0 + self->rowstart) >> 8, (y0 + self->rowstart) & 0xFF, (y1 + self->rowstart) >> 8, (y1 + self->rowstart) & 0xFF};
 	write_cmd(self, ST7789_CASET, bufx, 4);
 	write_cmd(self, ST7789_RASET, bufy, 4);
 	write_cmd(self, ST7789_RAMWR, NULL, 0);
@@ -872,42 +870,42 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_text_obj, 5, 7, st7789_
 
 STATIC void set_rotation(st7789_ST7789_obj_t *self)
 {
-	uint8_t madctl_value = ST7789_MADCTL_RGB;
+	uint8_t madctl_value = self->color_order;
 
 	if (self->rotation == 0) { // Portrait
 		self->width	 = self->display_width;
 		self->height = self->display_height;
 		if (self->display_height == 320 || self->display_width == 240) {
-			self->xstart = 0;
-			self->ystart = 0;
+			self->colstart = 0;
+			self->rowstart = 0;
 		} else if (self->display_width == 135) {
-			self->xstart = 52;
-			self->ystart = 40;
+			self->colstart = 52;
+			self->rowstart = 40;
 		}
 	} else if (self->rotation == 1) { // Landscape
 		madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MV;
 		self->width	 = self->display_height;
 		self->height = self->display_width;
 		if (self->display_height == 320 || self->display_width == 240) {
-			self->xstart = 0;
-			self->ystart = 0;
+			self->colstart = 0;
+			self->rowstart = 0;
 		} else if (self->display_width == 135) {
-			self->xstart = 40;
-			self->ystart = 53;
+			self->colstart = 40;
+			self->rowstart = 53;
 		}
 	} else if (self->rotation == 2) { // Inverted Portrait
 		madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MY;
 		self->width	 = self->display_width;
 		self->height = self->display_height;
 		if (self->display_height == 320) {
-			self->xstart = 0;
-			self->ystart = 0;
+			self->colstart = 0;
+			self->rowstart = 0;
 		} else if (self->display_width == 135) {
-			self->xstart = 53;
-			self->ystart = 40;
+			self->colstart = 53;
+			self->rowstart = 40;
 		} else if (self->display_width == 240) {
-			self->xstart = 0;
-			self->ystart = 80;
+			self->colstart = 0;
+			self->rowstart = 80;
 		}
 
 	} else if (self->rotation == 3) { // Inverted Landscape
@@ -915,14 +913,14 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self)
 		self->width	 = self->display_height;
 		self->height = self->display_width;
 		if (self->display_height == 320) {
-			self->xstart = 0;
-			self->ystart = 0;
+			self->colstart = 0;
+			self->rowstart = 0;
 		} else if (self->display_width == 135) {
-			self->xstart = 40;
-			self->ystart = 52;
+			self->colstart = 40;
+			self->rowstart = 52;
 		} else if (self->display_width == 240) {
-			self->xstart = 80;
-			self->ystart = 0;
+			self->colstart = 80;
+			self->rowstart = 0;
 		}
 	}
 	const uint8_t madctl[] = {madctl_value};
@@ -1095,11 +1093,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_rect_obj, 6, 6, st7789_
 STATIC mp_obj_t st7789_ST7789_offset(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self	= MP_OBJ_TO_PTR(args[0]);
-	mp_int_t			 xstart = mp_obj_get_int(args[1]);
-	mp_int_t			 ystart = mp_obj_get_int(args[2]);
+	mp_int_t			 colstart = mp_obj_get_int(args[1]);
+	mp_int_t			 rowstart = mp_obj_get_int(args[2]);
 
-	self->xstart = xstart;
-	self->ystart = ystart;
+	self->colstart = colstart;
+	self->rowstart = rowstart;
 
 	return mp_const_none;
 }
@@ -1729,6 +1727,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		ARG_cs,
 		ARG_backlight,
 		ARG_rotation,
+		ARG_color_order,
 		ARG_buffer_size
 	};
 	static const mp_arg_t allowed_args[] = {
@@ -1740,6 +1739,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		{MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_backlight, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_rotation, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
+		{MP_QSTR_color_order, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ST7789_MADCTL_RGB}},
 		{MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 	};
 	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -1757,15 +1757,11 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 	self->display_height   = args[ARG_height].u_int;
 	self->height		   = args[ARG_height].u_int;
 	self->rotation		   = args[ARG_rotation].u_int % 4;
+	self->color_order	   = args[ARG_color_order].u_int;
 	self->buffer_size	   = args[ARG_buffer_size].u_int;
 
 	if (self->buffer_size) {
 		self->i2c_buffer = m_malloc(self->buffer_size);
-	}
-
-	if ((self->display_height != 240 && (self->display_width != 240 && self->display_width != 135)) &&
-		(self->display_height != 320 && self->display_width != 240)) {
-		mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display. Only 240x320, 240x240 and 135x240 are supported"));
 	}
 
 	if (args[ARG_dc].u_obj == MP_OBJ_NULL) {
@@ -1810,6 +1806,8 @@ STATIC const mp_map_elem_t st7789_module_globals_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_WHITE), MP_ROM_INT(WHITE)},
 	{MP_ROM_QSTR(MP_QSTR_FAST), MP_ROM_INT(JPG_MODE_FAST)},
 	{MP_ROM_QSTR(MP_QSTR_SLOW), MP_ROM_INT(JPG_MODE_SLOW)},
+	{MP_ROM_QSTR(MP_QSTR_RGB), MP_ROM_INT(ST7789_MADCTL_RGB)},
+	{MP_ROM_QSTR(MP_QSTR_BGR), MP_ROM_INT(ST7789_MADCTL_BGR)}
 
 };
 
