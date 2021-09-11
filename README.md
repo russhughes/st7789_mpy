@@ -14,10 +14,51 @@ I modified the original driver for one of my projects to add:
   http://elm-chan.org/fsw/tjpgd/00index.html
 - Drawing and rotating Polygons and filled Polygons.
 - Tracking bounds
+- Support for st7735 displays
 
 Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
-Hershey vector fonts and several example programs for different devices. The
-driver supports 135x240, 240x240 and 240x320 displays.
+Hershey vector fonts and several example programs for different devices.
+
+## Display Configuration
+
+Some displays may use a BGR color order or iverted colors. The `cfg_helper.py` program can use used to determine the color order, inversion_mode, colstart, and rowstart values needed for a display.
+
+### Color Modes
+
+You can test the color order needed by a display by filling the display with the `st7789.RED` color and observing the color displayed.
+  - If the display is RED, the settings are correct.
+  - If the display is BLUE, `color_order` should be `st7789.BGR`.
+  - If the display is YELLOW, `inversion_mode` should be `True`.
+  - If the display is CYAN, `color_order` should be `st7789.BGR` and `inversion_mode` should be `True`.
+
+### colstart and rowstart
+
+Some displays have a frame buffer memory larger than the physical LCD or LED matrix. In these cases the driver must be configured with the position of the first physcial column and row pixels relative to the frame buffer.  Each rotation setting of the display may require different colstart and rowstart values.
+
+The driver automatically adjusts the colstart and rowstarts values for common 135x240, 240x240 and
+240x320 displays. These values can be overridden using the `offsets` method if the default values do not work for your display. The `offsets` method  should be called after any calls of the `rotation` method.
+
+#### 128x128 st7735 cfg_helper.py example
+
+```
+inversion_mode(False)
+color_order = st7789.BGR
+for rotation 0 use offset(2, 1)
+for rotation 1 use offset(1, 2)
+for rotation 2 use offset(2, 3)
+for rotation 3 use offset(3, 2)
+```
+
+#### 128x160 st7735 cfg_helper.py example
+
+```
+inversion_mode(False)
+color_order = st7789.RGB
+for rotation 0 use offset(0, 0)
+for rotation 1 use offset(0, 0)
+for rotation 2 use offset(0, 0)
+for rotation 3 use offset(0, 0)
+```
 
 ## Pre-compiled firmware files
 
@@ -25,7 +66,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython v1.16 compiled with ESP IDF v4.2 using CMake
+MicroPython v1.17-20-g0a5107372 compiled with ESP IDF v4.2 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -42,7 +83,6 @@ Module             | Source
 ------------------ | -----------------------------------------------------------
 axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
 focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
-
 
 ## Video Examples
 
@@ -78,8 +118,6 @@ chip.
 <p align="center">
   <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
 </p>
-
-It supports 240x240, 135x240 and 240x320 displays.
 
 The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM,
 pyboard1.1, and Raspberry Pi Pico devices.
@@ -212,7 +250,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, buffer_size)`
+- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, buffer_size)`
 
     ### Required positional arguments:
     - `spi` spi device
@@ -230,6 +268,8 @@ I was not able to run the display with a baud rate over 40MHZ.
     - `backlight` sets the pin connected to the displays backlight enable input. The displays backlight input can often be left floating or disconnected as the backlight on some displays are always powered on and cannot be turned off.
 
     - `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
+
+    - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
 
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
 
@@ -423,7 +463,8 @@ I was not able to run the display with a baud rate over 40MHZ.
   The values needed for particular display may not be documented and may
   require some experimentation to determine the correct values. One technique
   is to draw a box the same size as the display and then make small changes
-  to the offsets until the display looks correct.
+  to the offsets until the display looks correct. See the `cfg_helper.py` program
+  in the examples folder for more information.
 
 
 The module exposes predefined colors:
