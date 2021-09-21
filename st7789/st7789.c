@@ -926,6 +926,7 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self)
 	const uint8_t madctl[] = {madctl_value};
 	write_cmd(self, ST7789_MADCTL, madctl, 1);
 
+	self->madctl = madctl_value & 0xff;
 	self->min_x = self->display_width;
 	self->min_y = self->display_height;
 	self->max_x = 0;
@@ -1089,6 +1090,21 @@ STATIC mp_obj_t st7789_ST7789_rect(size_t n_args, const mp_obj_t *args)
 	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_rect_obj, 6, 6, st7789_ST7789_rect);
+
+STATIC mp_obj_t st7789_ST7789_madctl(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+	if (n_args == 2) {
+		mp_int_t madctl_value = mp_obj_get_int(args[1]) & 0xff;
+		const uint8_t madctl[] = {madctl_value};
+		write_cmd(self, ST7789_MADCTL, madctl, 1);
+		self->madctl = madctl_value &0xff;
+	}
+	return mp_obj_new_int(self->madctl);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_madctl_obj, 1, 2, st7789_ST7789_madctl);
 
 STATIC mp_obj_t st7789_ST7789_offset(size_t n_args, const mp_obj_t *args)
 {
@@ -1695,7 +1711,9 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&st7789_ST7789_height_obj)},
 	{MP_ROM_QSTR(MP_QSTR_vscrdef), MP_ROM_PTR(&st7789_ST7789_vscrdef_obj)},
 	{MP_ROM_QSTR(MP_QSTR_vscsad), MP_ROM_PTR(&st7789_ST7789_vscsad_obj)},
+	{MP_ROM_QSTR(MP_QSTR_madctl), MP_ROM_PTR(&st7789_ST7789_madctl_obj)},
 	{MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&st7789_ST7789_offset_obj)},
+
 	{MP_ROM_QSTR(MP_QSTR_jpg), MP_ROM_PTR(&st7789_ST7789_jpg_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon_center), MP_ROM_PTR(&st7789_ST7789_polygon_center_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon), MP_ROM_PTR(&st7789_ST7789_polygon_obj)},
@@ -1806,6 +1824,11 @@ STATIC const mp_map_elem_t st7789_module_globals_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_WHITE), MP_ROM_INT(WHITE)},
 	{MP_ROM_QSTR(MP_QSTR_FAST), MP_ROM_INT(JPG_MODE_FAST)},
 	{MP_ROM_QSTR(MP_QSTR_SLOW), MP_ROM_INT(JPG_MODE_SLOW)},
+	{MP_ROM_QSTR(MP_QSTR_MADCTL_MY), MP_ROM_INT(ST7789_MADCTL_MY)},
+	{MP_ROM_QSTR(MP_QSTR_MADCTL_MX), MP_ROM_INT(ST7789_MADCTL_MX)},
+	{MP_ROM_QSTR(MP_QSTR_MADCTL_MV), MP_ROM_INT(ST7789_MADCTL_MV)},
+	{MP_ROM_QSTR(MP_QSTR_MADCTL_ML), MP_ROM_INT(ST7789_MADCTL_ML)},
+	{MP_ROM_QSTR(MP_QSTR_MADCTL_MH), MP_ROM_INT(ST7789_MADCTL_MH)},
 	{MP_ROM_QSTR(MP_QSTR_RGB), MP_ROM_INT(ST7789_MADCTL_RGB)},
 	{MP_ROM_QSTR(MP_QSTR_BGR), MP_ROM_INT(ST7789_MADCTL_BGR)}
 

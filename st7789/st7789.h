@@ -96,6 +96,7 @@ typedef struct _st7789_ST7789_obj_t {
     uint8_t rowstart;
     uint8_t rotation;
     uint8_t color_order;
+    uint8_t madctl;
     mp_hal_pin_obj_t reset;
     mp_hal_pin_obj_t dc;
     mp_hal_pin_obj_t cs;
