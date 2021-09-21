@@ -57,7 +57,10 @@ from machine import Pin, SPI
 import vga1_8x8 as font
 import st7789
 
-# # T-Display st7789 135x250 display
+# Set your display configuration
+
+# TTGO T-Display st7789 135x250 display
+# BAUDRATE = 30000000
 # COLUMNS = 135
 # ROWS = 240
 # SCK_PIN = 18
@@ -68,6 +71,7 @@ import st7789
 # BACKLIGHT_PIN = 4
 
 # Generic st7735 128x128 display
+BAUDRATE = 30000000
 COLUMNS = 128
 ROWS = 128
 SCK_PIN = 19
@@ -165,32 +169,13 @@ class CfgHelper():
 
     def decode_madctl(self):
         """decode madctl bit values"""
-        bits = []
-        bits.append("MY") if self.madctl & MADCTL_MY else None
-        bits.append("MX") if self.madctl & MADCTL_MX else None
-        bits.append("MV") if self.madctl & MADCTL_MV else None
-        bits.append("ML") if self.madctl & MADCTL_ML  else None
-        bits.append("BGR") if self.madctl & MADCTL_RGB else bits.append("RGB")
-        bits.append("MH") if self.madctl & MADCTL_MH else None
-        return " ".join(bits)
-
-    def decode_madctl2(self):
-        """decode madctl bit values"""
-        bits = []
-        if self.madctl & MADCTL_MY:
-            bits.append("MY")
-        if self.madctl & MADCTL_MX:
-            bits.append("MX")
-        if self.madctl & MADCTL_MV:
-            bits.append("MV")
-        if self.madctl & MADCTL_ML:
-            bits.append("ML")
-        if self.madctl & MADCTL_RGB:
-            bits.append("BGR")
-        else:
-            bits.append("RGB")
-        if self.madctl & MADCTL_MH:
-            bits.append("MH")
+        bits = [bit[NAME] for bit in [
+            ("MY", MADCTL_MY),
+            ("MX", MADCTL_MX),
+            ("MV", MADCTL_MV),
+            ("ML", MADCTL_ML),
+            ("RGB", MADCTL_RGB),
+            ("MH", MADCTL_MH)] if bit[VAL] & self.madctl]
 
         return " ".join(bits)
 
@@ -235,13 +220,6 @@ class CfgHelper():
         self.color %= len(COLORS)
         print(f'background = {COLORS[self.color][NAME]}')
 
-    def toggle_color_order(self):
-        """Toggle the color_order"""
-        self.order += 1
-        self.order %= len(ORDERS)
-        print(f'color_order = {ORDERS[self.order][NAME]}')
-        self.init_required = True
-
     def toggle_madctl_bit(self, name, bit):
         """Toggle the MADCTL bit"""
         self.madctl ^= bit
@@ -250,6 +228,9 @@ class CfgHelper():
             print(f'{name} Set')
         else:
             print(f'{name} Cleared')
+
+        # datasheet says if RGB bit is set the color_mode is BGR
+        self.order = 1 if self.madctl & MADCTL_RGB else 0
 
     def set_rows(self):
         """Set the display rows (height)"""
@@ -349,7 +330,7 @@ def main():
     """init display and process menu"""
 
     # init the SPI port for the display
-    display_spi = SPI(1, baudrate=30000000, sck=Pin(SCK_PIN), mosi=Pin(MOSI_PIN))
+    display_spi = SPI(1, baudrate=BAUDRATE, sck=Pin(SCK_PIN), mosi=Pin(MOSI_PIN))
     cfg = CfgHelper(display_spi, COLUMNS, ROWS)
     show_help()
     while True:
