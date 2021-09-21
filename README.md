@@ -66,7 +66,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython v1.17-20-g0a5107372 compiled with ESP IDF v4.2 using CMake
+MicroPython v1.17-59-g782d5b2e5 compiled with ESP IDF v4.2 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -199,8 +199,7 @@ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/tt
 make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 deploy
 ```
 
-The firmware.bin file will be in the build-GENERIC directory. To flash using the python esptool.py utility.
-Use pip3 to install the esptool if it's not already installed.
+The firmware.bin file will be in the build-GENERIC directory. To flash using the python esptool.py utility. Use pip3 to install the esptool if it's not already installed.
 
 ```bash
 pip3 install esptool
@@ -233,8 +232,7 @@ And then compile the module with specified USER_C_MODULES dir
 ## Working examples
 
 This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi
-Pico. You have to provide a `SPI` object and the pin to use for the `dc' input of the
-screen.
+Pico. You have to provide a `SPI` object and the pin to use for the `dc' input of the screen.
 
 
     # ESP32
@@ -272,6 +270,22 @@ I was not able to run the display with a baud rate over 40MHZ.
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
 
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
+
+- `inversion_mode(bool)` Sets the display color inversion mode if True,
+   clears the display color inversion mode if false.
+
+- `madctl(value)` Returns the current value of the MADCTL register.
+   Optionally sets the MADCTL register if a value is passed to the method.
+
+  Constant Name    | Value | Description
+  ---------------- | ----- | ----------------------
+  st7789.MADCTL_MY | 0x80  | Page Address Order
+  st7789_MADCTL_MX | 0x40  | Column Address Order
+  st7789_MADCTL_MV | 0x20  | Page/Column Order
+  st7789_MADCTL_ML | 0x10  | Line Address Order
+  st7789_MADCTL_MH | 0x04  | Display Data Latch Order
+  st7789_RGB       | 0x00  | RGB color order
+  st7789_BGR       | 0x08  | BGR color order
 
 - `on()`
 
