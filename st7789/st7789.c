@@ -301,6 +301,79 @@ STATIC mp_obj_t st7789_ST7789_fill_rect(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_fill_rect_obj, 6, 6, st7789_ST7789_fill_rect);
 
+STATIC mp_obj_t st7789_ST7789_box(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
+	mp_int_t			 x1	   = mp_obj_get_int(args[1]);
+	mp_int_t			 y1	   = mp_obj_get_int(args[2]);
+	mp_int_t			 x2	   = mp_obj_get_int(args[3]);
+	mp_int_t			 y2	   = mp_obj_get_int(args[4]);
+	mp_int_t			 r     = mp_obj_get_int(args[5]);
+	mp_int_t			 color = mp_obj_get_int(args[6]);
+	mp_int_t			 mask  = mp_obj_get_int(args[7]);
+
+	mp_int_t temp;
+	if(x1>x2) temp=x2,x2=x1,x1=temp; //x1,x2=(x1,x2) if x2>x1 else (x2,x1)
+	if(y1>y2) temp=y2,y2=y1,y1=temp; //y1,y2=(y1,y2) if y2>y1 else (y2,y1)
+
+	mp_int_t f = 1 - r;
+	mp_int_t ddF_x = 1;
+	mp_int_t ddF_y = -2 * r;
+	mp_int_t x = 0;
+	mp_int_t y = r;
+
+	while(x < y) {
+		if(f >= 0) {
+			y -= 1;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+		x += 1;
+		ddF_x += 2;
+		f += ddF_x;
+
+		mp_int_t l1 = (mask & 1)?x1 + r - x + 1:x1; //l1,l2 = (x1 + r - x + 1 , x1 + r - y + 1) if rmask & 1 else (x1,x1)
+		mp_int_t l2 = (mask & 1)?x1 + r - y + 1:x1;
+
+		mp_int_t r1 = (mask & 2)?x2 - r + x:x2; //r1,r2 = (x2 - r + x, x2 - r + y) if rmask & 2 else (x2,x2)
+		mp_int_t r2 = (mask & 2)?x2 - r + y:x2;
+
+		mp_int_t l3 = (mask & 4)?x1 + r - x + 1:x1; //l3,l4 = (x1 + r - x + 1, x1 + r - y + 1) if rmask & 4 else (x1,x1)
+		mp_int_t l4 = (mask & 4)?x1 + r - y + 1:x1;
+
+		mp_int_t r3 = (mask & 8)?x2 - r + x:x2; //r3,r4 = (x2 - r + x, x2 - r + y) if rmask & 8 else (x2,x2)
+		mp_int_t r4 = (mask & 8)?x2 - r + y:x2;
+
+		if(mask & 16) {
+			fast_hline(self, l1, y1 + r - y, r1-l1+1, color); //tft.hline(l1,y1 + r - y ,r1-l1-1,255*256)
+			fast_hline(self, l2, y1 + r - x, r2-l2+1, color); //tft.hline(l2,y1 + r - x ,r2-l2-1,255*256)
+			fast_hline(self, l3, y2 - r + y, r3-l3+1, color); //tft.hline(l3,y2 - r + y ,r3-l3-1,255*256)
+			fast_hline(self, l4, y2 - r + x, r4-l4+1, color); //tft.hline(l4,y2 - r + x ,r4-l4-1,255*256)
+		}
+		else {
+			draw_pixel(self, l1,y1 + r - y ,color);draw_pixel(self,r1,y1 + r - y ,color);
+			draw_pixel(self, l2,y1 + r - x ,color);draw_pixel(self,r2,y1 + r - x ,color);
+			draw_pixel(self, l3,y2 - r + y ,color);draw_pixel(self,r3,y2 - r + y ,color);
+			draw_pixel(self, l4,y2 - r + x ,color);draw_pixel(self,r4,y2 - r + x ,color);
+		}
+	}
+
+	fast_hline(self,x1+((mask & 1)?r:0),y1,x2-x1-((mask & 1)?r:0)-((mask & 2)?r:0)+1,color); // tft.hline(x1+r,y1,x2-x1-r-r+1,255*256)
+	fast_hline(self,x1+((mask & 4)?r:0),y2,x2-x1-((mask & 4)?r:0)-((mask & 8)?r:0)+1,color); // tft.hline(x1+r,y2,x2-x1-r-r+1,255*256)
+
+	if(mask & 16) {//	if color2>=0:
+		for(y=y1+r;y<y2-r+1;y++)//		for yv in range(y1+r,y2-r+1):
+			fast_hline(self, x1, y, x2-x1+1, color); // tft.hline(x1,yv,x2-x1-1,255*256)
+	}
+	else { //	else:
+		fast_vline(self,x1,y1+r,y2-y1-r-r+1,color);// tft.vline(x1,y1+r,y2-y1-r-r+1,255*256)
+		fast_vline(self,x2,y1+r,y2-y1-r-r+1,color);// tft.vline(x2,y1+r,y2-y1-r-r+1,255*256)
+	}
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_box_obj, 8, 8, st7789_ST7789_box);
+
 STATIC mp_obj_t st7789_ST7789_fill(mp_obj_t self_in, mp_obj_t _color)
 {
 	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(self_in);
@@ -1695,6 +1768,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&st7789_ST7789_init_obj)},
 	{MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&st7789_ST7789_on_obj)},
 	{MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&st7789_ST7789_off_obj)},
+	{MP_ROM_QSTR(MP_QSTR_box), MP_ROM_PTR(&st7789_ST7789_box_obj)},
 	{MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&st7789_ST7789_pixel_obj)},
 	{MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj)},
 	{MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj)},
