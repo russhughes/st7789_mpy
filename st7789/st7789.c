@@ -1083,6 +1083,98 @@ STATIC mp_obj_t st7789_ST7789_vline(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vline_obj, 5, 5, st7789_ST7789_vline);
 
+STATIC mp_obj_t st7789_ST7789_fillbox(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
+	short			 x1	   = mp_obj_get_int(args[1]);
+	short			 y1	   = mp_obj_get_int(args[2]);
+	short			 x2	   = mp_obj_get_int(args[3]);
+	short			 y2	   = mp_obj_get_int(args[4]);
+	short			 r     = mp_obj_get_int(args[5]);
+	mp_int_t		 color = mp_obj_get_int(args[6]);
+	char			 mask  = mp_obj_get_int(args[7]);
+
+	short temp;
+	if(x1>x2) temp=x2,x2=x1,x1=temp; //x1,x2=(x1,x2) if x2>x1 else (x2,x1)
+	if(y1>y2) temp=y2,y2=y1,y1=temp; //y1,y2=(y1,y2) if y2>y1 else (y2,y1)
+
+	short f = 1 - r, ddF_x = 1, ddF_y = -2 * r;
+	short x = 0, y = r, yold = r, xt = 0;
+	char repeatcount = 2;
+
+	while(x < y) {
+		if(f >= 0) {
+			y -= 1, ddF_y += 2, f += ddF_y;
+		}
+		x += 1;
+		ddF_x += 2;
+		f += ddF_x;
+
+		if(yold != y || x>=y) {
+			short lastylower=-1,lastyupper=-1;
+			while (repeatcount) {
+				short fromx,drawy;
+				if (x<y || repeatcount==2)
+					drawy=yold,fromx=x-1;
+				else
+					drawy=y,fromx=x;
+
+				short l1,l2,r1,r2;
+				l1=l2=x1,r1=r2=x2;
+
+//            l1,l2 = (x1 + r - fromx, x1 + r - drawy) if rmask & 1 else (x1,x1)
+//            r1,r2 = (x2 - r + fromx, x2 - r + drawy) if rmask & 2 else (x2,x2)
+
+				if(mask & 1) l1 = x1 + r - fromx,l2 =x1 + r - drawy;
+				if(mask & 2) r1 = x2 - r + fromx,r2 =x2 - r + drawy;
+
+				if (lastyupper != drawy)
+					fast_hline(self, l1, y1 + r - drawy, r1-l1+1, color);
+					//draw.line((l1,y1 + r - drawy,r1,y1 + r - drawy), fill=(0, 255, 0),width = 1);
+				if (repeatcount == 2) {
+					lastyupper=fromx+xt-1;
+					for(short i=0;i<xt;i++)
+						fast_hline(self,l2,y1 + r - fromx+i,r2-l2+1,color);
+						//draw.line((l2,y1 + r - fromx+i,r2,y1 + r - fromx+i), fill=(255, 255, 0),width = 1);
+				}
+
+				l1=l2=x1,r1=r2=x2;
+//            l1,l2 = (x1 + r - fromx, x1 + r - drawy) if rmask & 4 else (x1,x1)
+//            r1,r2 = (x2 - r + fromx, x2 - r + drawy) if rmask & 8 else (x2,x2)
+
+				if(mask & 4) l1 = x1 + r - fromx,l2 = x1 + r - drawy;
+				if(mask & 8) r1 = x2 - r + fromx,r2 = x2 - r + drawy;
+
+				if (lastylower != drawy)
+					fast_hline(self, l1, y2 - r + drawy, r1-l1+1, color);
+					//draw.line((l1,y2 - r + drawy,r1,y2 - r + drawy), fill=(0, 255, 0),width = 1);
+				if (repeatcount == 2) {
+					lastylower=fromx+xt-1;
+					for(short i=0;i<xt;i++)
+						fast_hline(self,l2,y2 - r + fromx-i,r2-l2+1,color);
+						//draw.line((l2,y2 - r + fromx-i,r2,y2 - r + fromx-i), fill=(255, 255, 0),width = 1);
+				}
+				if (x<y)
+					break;
+				else
+					repeatcount-=1; //#repeat 
+			}
+			xt=1;
+			yold=y;
+		}
+		else
+			xt+=1;
+	}
+	for(short i=y1+r;i<y2-r+1;i++)
+		fast_hline(self,x1,i,x2-x1+1,color);
+		//draw.line((x1,i,x2,i),fill=(255,128,0),width = 1);
+
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_box_obj, 8, 8, st7789_ST7789_fillbox);
+
+
 // Circle/Fill_Circle by https://github.com/c-logic
 // https://github.com/russhughes/st7789_mpy/pull/46
 // https://github.com/c-logic/st7789_mpy.git patch-1
@@ -1798,6 +1890,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&st7789_ST7789_fill_obj)},
 	{MP_ROM_QSTR(MP_QSTR_hline), MP_ROM_PTR(&st7789_ST7789_hline_obj)},
 	{MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&st7789_ST7789_vline_obj)},
+	{MP_ROM_QSTR(MP_QSTR_fillbox), MP_ROM_PTR(&st7789_ST7789_box_obj)},
 	{MP_ROM_QSTR(MP_QSTR_fill_circle), MP_ROM_PTR(&st7789_ST7789_fill_circle_obj)},
 	{MP_ROM_QSTR(MP_QSTR_circle), MP_ROM_PTR(&st7789_ST7789_circle_obj)},
 	{MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&st7789_ST7789_rect_obj)},
