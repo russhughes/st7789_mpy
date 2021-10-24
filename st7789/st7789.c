@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "py/obj.h"
+#include "py/objstr.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -558,35 +559,40 @@ STATIC mp_obj_t dict_lookup(mp_obj_t self_in, mp_obj_t index)
 STATIC mp_obj_t st7789_ST7789_write_len(size_t n_args, const mp_obj_t *args)
 {
 	mp_obj_module_t *font			  = MP_OBJ_TO_PTR(args[1]);
-	char			 single_char_s[2] = {0, 0};
-	const char *	 str;
-
-	if (mp_obj_is_int(args[2])) {
-		mp_int_t c		 = mp_obj_get_int(args[2]);
-		single_char_s[0] = c & 0xff;
-		str				 = single_char_s;
-	} else {
-		str = mp_obj_str_get_str(args[2]);
-	}
-
-	mp_obj_dict_t *dict = MP_OBJ_TO_PTR(font->globals);
-	const char *   map	= mp_obj_str_get_str(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP)));
-
+	mp_obj_dict_t   *dict			  = MP_OBJ_TO_PTR(font->globals);
 	mp_obj_t		 widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
 	mp_buffer_info_t widths_bufinfo;
 	mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
 	const uint8_t *widths_data = widths_bufinfo.buf;
 
 	uint16_t print_width = 0;
-	uint8_t	 chr;
 
-	while ((chr = *str++)) {
-		char *char_pointer = strchr(map, chr);
-		if (char_pointer) {
-			uint16_t char_index = char_pointer - map;
-			print_width += widths_data[char_index];
+	mp_obj_t map_obj = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP));
+	GET_STR_DATA_LEN(map_obj, map_data, map_len);
+	GET_STR_DATA_LEN(args[2], str_data, str_len);
+	const byte *s = str_data, *top = str_data + str_len;
+
+	while (s < top) {
+		unichar ch;
+		ch = utf8_get_char(s);
+		s  = utf8_next_char(s);
+
+		const byte *map_s = map_data, *map_top = map_data + map_len;
+		uint16_t	char_index = 0;
+
+		while (map_s < map_top) {
+			unichar map_ch;
+			map_ch = utf8_get_char(map_s);
+			map_s  = utf8_next_char(map_s);
+
+			if (ch == map_ch) {
+				print_width += widths_data[char_index];
+				break;
+			}
+			char_index++;
 		}
 	}
+
 	return mp_obj_new_int(print_width);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_len_obj, 3, 3, st7789_ST7789_write_len);
@@ -598,18 +604,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_len_obj, 3, 3, st
 STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-	mp_obj_module_t *	 font = MP_OBJ_TO_PTR(args[1]);
-
-	char		single_char_s[2] = {0, 0};
-	const char *str;
-
-	if (mp_obj_is_int(args[2])) {
-		mp_int_t c		 = mp_obj_get_int(args[2]);
-		single_char_s[0] = c & 0xff;
-		str				 = single_char_s;
-	} else {
-		str = mp_obj_str_get_str(args[2]);
-	}
+	mp_obj_module_t 	*font = MP_OBJ_TO_PTR(args[1]);
 
 	mp_int_t x = mp_obj_get_int(args[3]);
 	mp_int_t y = mp_obj_get_int(args[4]);
@@ -620,7 +615,6 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 	bg_color = (n_args > 6) ? _swap_bytes(mp_obj_get_int(args[6])) : _swap_bytes(BLACK);
 
 	mp_obj_dict_t *dict			= MP_OBJ_TO_PTR(font->globals);
-	const char *   map			= mp_obj_str_get_str(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP)));
 	const uint8_t  bpp			= mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
 	const uint8_t  height		= mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
 	const uint8_t  offset_width = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSET_WIDTH)));
@@ -647,52 +641,68 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 	}
 
 	uint16_t print_width = 0;
-	uint8_t	 chr;
 
-	while ((chr = *str++)) {
-		char *char_pointer = strchr(map, chr);
-		if (char_pointer) {
-			uint16_t char_index = char_pointer - map;
-			uint8_t	 width		= widths_data[char_index];
+	mp_obj_t map_obj = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP));
+	GET_STR_DATA_LEN(map_obj, map_data, map_len);
 
-			bs_bit = 0;
-			switch (offset_width) {
-				case 1:
-					bs_bit = offsets_data[char_index * offset_width];
-					break;
+	GET_STR_DATA_LEN(args[2], str_data, str_len);
+	const byte *s = str_data, *top = str_data + str_len;
+	while (s < top) {
+		unichar ch;
+		ch = utf8_get_char(s);
+		s  = utf8_next_char(s);
 
-				case 2:
-					bs_bit = (offsets_data[char_index * offset_width] << 8) +
-							 (offsets_data[char_index * offset_width + 1]);
-					break;
+		const byte *map_s = map_data, *map_top = map_data + map_len;
+		uint16_t	char_index = 0;
 
-				case 3:
-					bs_bit = (offsets_data[char_index * offset_width] << 16) +
-							 (offsets_data[char_index * offset_width + 1] << 8) +
-							 (offsets_data[char_index * offset_width + 2]);
-					break;
-			}
+		while (map_s < map_top) {
+			unichar map_ch;
+			map_ch = utf8_get_char(map_s);
+			map_s  = utf8_next_char(map_s);
 
-			uint32_t ofs = 0;
-			for (int yy = 0; yy < height; yy++) {
-				for (int xx = 0; xx < width; xx++) {
-					self->i2c_buffer[ofs++] = get_color(bpp) ? fg_color : bg_color;
+			if (ch == map_ch) {
+				uint8_t width = widths_data[char_index];
+
+				bs_bit = 0;
+				switch (offset_width) {
+					case 1:
+						bs_bit = offsets_data[char_index * offset_width];
+						break;
+
+					case 2:
+						bs_bit = (offsets_data[char_index * offset_width] << 8) +
+								 (offsets_data[char_index * offset_width + 1]);
+						break;
+
+					case 3:
+						bs_bit = (offsets_data[char_index * offset_width] << 16) +
+								 (offsets_data[char_index * offset_width + 1] << 8) +
+								 (offsets_data[char_index * offset_width + 2]);
+						break;
 				}
-			}
 
-			uint32_t data_size = width * height * 2;
-			uint16_t x1		   = x + width - 1;
-			if (x1 < self->width) {
-				set_window(self, x, y, x1, y + height - 1);
-				DC_HIGH();
-				CS_LOW();
-				write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
-				CS_HIGH();
+				uint32_t ofs = 0;
+				for (int yy = 0; yy < height; yy++) {
+					for (int xx = 0; xx < width; xx++) {
+						self->i2c_buffer[ofs++] = get_color(bpp) ? fg_color : bg_color;
+					}
+				}
+
+				uint32_t data_size = width * height * 2;
+				uint16_t x1		   = x + width - 1;
+				if (x1 < self->width) {
+					set_window(self, x, y, x1, y + height - 1);
+					DC_HIGH();
+					CS_LOW();
+					write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
+					CS_HIGH();
+				}
 				print_width += width;
-			} else
-				break;
+				x += width;
 
-			x += width;
+				break;
+			}
+			char_index++;
 		}
 	}
 

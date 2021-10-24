@@ -46,46 +46,44 @@ import bisect
 import freetype
 
 
-def to_int(str):
-    return int(str, base=16) if str.startswith("0x") else int(str)
+def to_int(string):
+    return int(string, base=16) if string.startswith("0x") else int(string)
 
 
-def get_chars(str):
-    return ''.join([chr(b) for a in [
-        (lambda sub: range(sub[0], sub[-1] + 1))
-        (list(map(to_int, ele.split('-'))))
-        for ele in str.split(',')]
-            for b in a])
+def get_chars(string):
+    return ''.join(chr(b) for a in [
+            (lambda sub: range(sub[0], sub[-1] + 1))
+            (list(map(to_int, ele.split('-'))))
+            for ele in string.split(',')] for b in a)
 
 
-def wrap_list(lst, items_per_line=8):
-    lines = []
-    for i in range(0, len(lst), items_per_line):
-        chunk = lst[i:i + items_per_line]
-        line = ", ".join("0x{:02x}".format(x) for x in chunk)
-        lines.append(line)
-    return "[\n    " + ",\n    ".join(lines) + "]"
+def wrap_str(str, items_per_line=32):
+    lines = [
+        str[i : i + items_per_line]
+        for i in range(0, len(str), items_per_line)
+    ]
+
+    return "(\n    '" + "'\n    '".join(lines) + "'\n)"
 
 
 def wrap_bytes(lst, items_per_line=16):
-    lines = []
-    for i in range(0, len(lst), items_per_line):
-        chunk = lst[i:i + items_per_line]
-        line = "".join("\\x{:02x}".format(x) for x in chunk)
-        lines.append(line)
+    lines = [
+        "".join("\\x{:02x}".format(x) for x in lst[i : i + items_per_line])
+        for i in range(0, len(lst), items_per_line)
+    ]
+
     return "    b'" + "'\\\n    b'".join(lines) + "'"
 
 
 def wrap_longs(lst, items_per_line=16):
-    lines = []
-    for i in range(0, len(lst), items_per_line):
-        chunk = lst[i:i + items_per_line]
-        line = "".join("\\x{:02x}".format(x) for x in chunk)
-        lines.append(line)
+    lines = [
+        "".join("\\x{:02x}".format(x) for x in lst[i : i + items_per_line])
+        for i in range(0, len(lst), items_per_line)
+    ]
     return "    b'" + "'\\\n    b'".join(lines) + "'"
 
 
-class Bitmap(object):
+class Bitmap():
     """
     A 2D bitmap image represented as a list of byte values. Each byte indicates
     the state of a single pixel in the bitmap. A value of 0 indicates that the
@@ -132,7 +130,7 @@ class Bitmap(object):
             dstpixel += row_offset
 
 
-class Glyph(object):
+class Glyph():
     def __init__(self, pixels, width, height, top, left, advance_width):
         self.bitmap = Bitmap(width, height, pixels)
 
@@ -216,7 +214,7 @@ class Glyph(object):
         return data
 
 
-class Font(object):
+class Font():
     def __init__(self, filename, width, height):
         self.face = freetype.Face(filename)
         self.face.set_pixel_sizes(width, height)
@@ -310,7 +308,7 @@ class Font(object):
         bit_string = ''.join(bits)
 
         # escape '\' and '"' characters for char_map
-        char_map = text.replace('\\', '\\\\').replace('"', '\\"')
+        char_map = wrap_str(text.replace('\\', '\\\\').replace('"', '\\"'))
 
         cmd_line = " ".join(map(shlex.quote, sys.argv))
         max_width = max(widths)
@@ -320,7 +318,8 @@ class Font(object):
         print(f'# Converted from {font_file} using:')
         print(f'#     {cmd_line}')
         print()
-        print(f'MAP = "{char_map}"')
+
+        print(f'MAP = {char_map}')
         print('BPP = 1')
         print(f'HEIGHT = {height}')
         print(f'MAX_WIDTH = {max_width}')
@@ -340,10 +339,7 @@ class Font(object):
         print()
 
         print('_BITMAPS =\\')
-        byte_values = []
-        for i in range(0, len(bit_string), 8):
-            byte_values.append(int(bit_string[i:i+8], 2))
-
+        byte_values = [int(bit_string[i:i+8], 2) for i in range(0, len(bit_string), 8)]
         print(wrap_bytes(byte_values))
         print("\nWIDTHS = memoryview(_WIDTHS)")
         print("OFFSETS = memoryview(_OFFSETS)")
@@ -392,8 +388,8 @@ def main():
     font_file = args.font_file
     height = args.font_height
     width = args.font_height if args.font_width is None else args.font_width
-    characters = (
-        get_chars(args.characters) if args.string is None else args.string)
+    characters = ''.join(set(
+        get_chars(args.characters) if args.string is None else args.string))
 
     fnt = Font(font_file, width, height)
     fnt.write_python(characters, font_file)
