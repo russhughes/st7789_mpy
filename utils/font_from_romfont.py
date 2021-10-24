@@ -28,7 +28,7 @@ def convert_font(file_in, file_out, width, height, first=0x0, last=0xff):
             print(f'HEIGHT = {height}', file=font_file)
             print(f'FIRST = 0x{first:02x}', file=font_file)
             print(f'LAST = 0x{last:02x}', file=font_file)
-            print(f'_FONT =\\\n', sep='', end='', file=font_file)
+            print('_FONT =\\\n', sep='', end='', file=font_file)
             for chunk in iter(lambda: bin_file.read(chunk_size), b''):
                 print('b\'', sep='', end='', file=font_file)
                 for data in chunk:
@@ -42,12 +42,11 @@ def convert_font(file_in, file_out, width, height, first=0x0, last=0xff):
             print('FONT = memoryview(_FONT)', file=font_file)
 
 def auto_int(x):
-        return int(x, 0)
+    return int(x, 0)
 
 def main():
-
     parser = argparse.ArgumentParser(
-        description='Convert fomfont.bin font files in input to python in font_directory.')
+        description='Convert Romfont.bin font files in input to python in font_directory.')
     parser.add_argument('input', help='file or directory containing binary font file(s).')
     parser.add_argument('output', help='file or directory to contain python font file(s).')
     parser.add_argument('-f', '--first-char', type=auto_int, default=0x20)
@@ -57,11 +56,7 @@ def main():
     file_re = re.compile(r'^(.*)(\d+)x(\d+)\.bin$')
 
     is_dir = os.path.isdir(args.input)
-    if is_dir:
-        bin_files = os.listdir(args.input)
-    else:
-        bin_files = [args.input]
-
+    bin_files = os.listdir(args.input) if is_dir else [args.input]
     for bin_file_name in bin_files:
         match = file_re.match(bin_file_name)
         if match:
@@ -88,4 +83,5 @@ def main():
                 font_height,
                 args.first_char,
                 args.last_char)
+
 main()

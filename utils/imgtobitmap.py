@@ -40,9 +40,9 @@ def main():
 
         # get rgb values and convert to 565
         color565 = (
-            ((palette[color*3] & 0xF8) << 8)
-            | ((palette[color*3+1] & 0xFC) << 3)
-            | ((palette[color*3+2] & 0xF8) >> 3))
+            ((palette[color*3] & 0xF8) << 8) |
+            ((palette[color*3+1] & 0xFC) << 3) |
+            ((palette[color*3+2] & 0xF8) >> 3))
 
         # swap bytes in 565
         color = ((color565 & 0xff) << 8) + ((color565 & 0xff00) >> 8)
@@ -59,9 +59,11 @@ def main():
         for x in range(img.width):
             pixel = img.getpixel((x, y))
             color = pixel
-            bstring = ''
-            for bit in range(bits, 0, -1):
-                bstring += '1' if (color & (1 << bit-1)) else '0'
+            bstring = ''.join(
+                '1' if (color & (1 << bit - 1)) else '0'
+                for bit in range(bits, 0, -1)
+            )
+
             image_bitstring += bstring
 
     bitmap_bits = len(image_bitstring)

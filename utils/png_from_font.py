@@ -27,7 +27,6 @@ def create_png(font_file_name, png_file_name):
         with open(png_file_name, 'wb') as png_file:
             image = png.Writer((16+2) * font.WIDTH, (row_count+3) * font.HEIGHT, bitdepth=1)
             image_data = [[0 for j in range((16+2) * font.WIDTH)] for i in range((row_count+3)* font.HEIGHT)]
-            font_count = len(font.FONT)+1
             for chart_row in range(row_count+2):
                 for chart_col in range(16):
                     chart_idx = chart_row * 16 + chart_col

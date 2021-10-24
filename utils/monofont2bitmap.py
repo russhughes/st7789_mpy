@@ -45,12 +45,10 @@ def to_int(str):
 
 
 def get_characters(str):
-    return ''.join([chr(b) for a in [
+    return ''.join(chr(b) for a in [
         (lambda sub: range(sub[0], sub[-1] + 1))
         (list(map(to_int, ele.split('-'))))
-        for ele in str.split(',')]
-            for b in a])
-
+        for ele in str.split(',')] for b in a)
 
 def process_char(img, bits):
     global image_bitstring
@@ -62,9 +60,11 @@ def process_char(img, bits):
         for x in range(img.width):
             pixel = img.getpixel((x, y))
             color = pixel
-            bit_string = ''
-            for bit in range(bits, 0, -1):
-                bit_string += '1' if (color & (1 << bit-1)) else '0'
+            bit_string = ''.join(
+                '1' if (color & (1 << bit - 1)) else '0'
+                for bit in range(bits, 0, -1)
+            )
+
             image_bitstring += bit_string
 
 
