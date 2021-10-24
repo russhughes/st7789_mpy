@@ -696,10 +696,9 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 					CS_LOW();
 					write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
 					CS_HIGH();
+					print_width += width;
 				}
-				print_width += width;
 				x += width;
-
 				break;
 			}
 			char_index++;
@@ -1084,6 +1083,90 @@ STATIC mp_obj_t st7789_ST7789_vline(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vline_obj, 5, 5, st7789_ST7789_vline);
 
+// Circle/Fill_Circle by https://github.com/c-logic
+// https://github.com/russhughes/st7789_mpy/pull/46
+// https://github.com/c-logic/st7789_mpy.git patch-1
+
+STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
+	mp_int_t			 xm	   = mp_obj_get_int(args[1]);
+	mp_int_t			 ym	   = mp_obj_get_int(args[2]);
+	mp_int_t			 r	   = mp_obj_get_int(args[3]);
+	mp_int_t			 color = mp_obj_get_int(args[4]);
+
+	mp_int_t f = 1 - r;
+	mp_int_t ddF_x = 1;
+	mp_int_t ddF_y = -2 * r;
+	mp_int_t x = 0;
+	mp_int_t y = r;
+
+	draw_pixel(self, xm, ym + r, color);
+	draw_pixel(self, xm, ym - r, color);
+	draw_pixel(self, xm + r, ym, color);
+	draw_pixel(self, xm - r, ym, color);
+	while(x < y) {
+		if(f >= 0) {
+			y -= 1;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+		x += 1;
+		ddF_x += 2;
+		f += ddF_x;
+		draw_pixel(self, xm + x, ym + y, color);
+		draw_pixel(self, xm - x, ym + y, color);
+		draw_pixel(self, xm + x, ym - y, color);
+		draw_pixel(self, xm - x, ym - y, color);
+		draw_pixel(self, xm + y, ym + x, color);
+		draw_pixel(self, xm - y, ym + x, color);
+		draw_pixel(self, xm + y, ym - x, color);
+		draw_pixel(self, xm - y, ym - x, color);
+	}
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_circle_obj, 5, 5, st7789_ST7789_circle);
+
+// Circle/Fill_Circle by https://github.com/c-logic
+// https://github.com/russhughes/st7789_mpy/pull/46
+// https://github.com/c-logic/st7789_mpy.git patch-1
+
+STATIC mp_obj_t st7789_ST7789_fill_circle(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
+	mp_int_t			 xm	   = mp_obj_get_int(args[1]);
+	mp_int_t			 ym	   = mp_obj_get_int(args[2]);
+	mp_int_t			 r	   = mp_obj_get_int(args[3]);
+	mp_int_t			 color = mp_obj_get_int(args[4]);
+
+	mp_int_t f = 1 - r;
+	mp_int_t ddF_x = 1;
+	mp_int_t ddF_y = -2 * r;
+	mp_int_t x = 0;
+	mp_int_t y = r;
+
+	fast_vline(self, xm, ym - y, 2 * y + 1, color);
+
+	while(x < y) {
+		if(f >= 0) {
+			y -= 1;
+			ddF_y += 2;
+			f += ddF_y;
+		}
+		x += 1;
+		ddF_x += 2;
+		f += ddF_x;
+		fast_vline(self, xm + x, ym - y, 2 * y + 1, color);
+		fast_vline(self, xm + y, ym - x, 2 * x + 1, color);
+		fast_vline(self, xm - x, ym - y, 2 * y + 1, color);
+		fast_vline(self, xm - y, ym - x, 2 * x + 1, color);
+	}
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_fill_circle_obj, 5, 5, st7789_ST7789_fill_circle);
+
 STATIC mp_obj_t st7789_ST7789_rect(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
@@ -1099,6 +1182,7 @@ STATIC mp_obj_t st7789_ST7789_rect(size_t n_args, const mp_obj_t *args)
 	fast_vline(self, x + w - 1, y, h, color);
 	return mp_const_none;
 }
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_rect_obj, 6, 6, st7789_ST7789_rect);
 
 STATIC mp_obj_t st7789_ST7789_madctl(size_t n_args, const mp_obj_t *args)
@@ -1714,6 +1798,8 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&st7789_ST7789_fill_obj)},
 	{MP_ROM_QSTR(MP_QSTR_hline), MP_ROM_PTR(&st7789_ST7789_hline_obj)},
 	{MP_ROM_QSTR(MP_QSTR_vline), MP_ROM_PTR(&st7789_ST7789_vline_obj)},
+	{MP_ROM_QSTR(MP_QSTR_fill_circle), MP_ROM_PTR(&st7789_ST7789_fill_circle_obj)},
+	{MP_ROM_QSTR(MP_QSTR_circle), MP_ROM_PTR(&st7789_ST7789_circle_obj)},
 	{MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&st7789_ST7789_rect_obj)},
 	{MP_ROM_QSTR(MP_QSTR_text), MP_ROM_PTR(&st7789_ST7789_text_obj)},
 	{MP_ROM_QSTR(MP_QSTR_rotation), MP_ROM_PTR(&st7789_ST7789_rotation_obj)},
