@@ -1,5 +1,5 @@
 """
-rainbow.py
+feathers2.py
     Smoothly scroll rainbow colored random curves across the front of a Waveshare Pico LCD 1.3
     Display Module using a Raspberry Pi PICO.
 
