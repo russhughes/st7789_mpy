@@ -696,10 +696,9 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 					CS_LOW();
 					write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
 					CS_HIGH();
+					print_width += width;
 				}
-				print_width += width;
 				x += width;
-
 				break;
 			}
 			char_index++;
@@ -1084,6 +1083,10 @@ STATIC mp_obj_t st7789_ST7789_vline(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vline_obj, 5, 5, st7789_ST7789_vline);
 
+// Circle/Fill_Circle by https://github.com/c-logic
+// https://github.com/russhughes/st7789_mpy/pull/46
+// https://github.com/c-logic/st7789_mpy.git patch-1
+
 STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self  = MP_OBJ_TO_PTR(args[0]);
@@ -1124,6 +1127,10 @@ STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args)
 }
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_circle_obj, 5, 5, st7789_ST7789_circle);
+
+// Circle/Fill_Circle by https://github.com/c-logic
+// https://github.com/russhughes/st7789_mpy/pull/46
+// https://github.com/c-logic/st7789_mpy.git patch-1
 
 STATIC mp_obj_t st7789_ST7789_fill_circle(size_t n_args, const mp_obj_t *args)
 {
