@@ -323,6 +323,15 @@ I was not able to run the display with a baud rate over 40MHZ.
 
   Fill a rectangle starting from (`x`, `y`) coordinates
 
+- `circle(x, y, r, color)`
+
+  Draws a circle with radius `r` centered at the (`x`, `y`) coordinates in the given
+  `color`.
+
+- `fill_circle(x, y, r, color)`
+
+  Draws a filled circle with radius `r` centered at the (`x`, `y`) coordinates in the given `color`.
+
 - `blit_buffer(buffer, x, y, width, height)`
 
   Copy bytes() or bytearray() content to the screen internal memory.
@@ -345,7 +354,7 @@ I was not able to run the display with a baud rate over 40MHZ.
   arguments `fg` and `bg`, otherwise the foreground color defaults to `WHITE`
   and the background color defaults to `BLACK`.  See the `README.md` in the
   `truetype/fonts` directory for example fonts. Returns the width of the string
-  as printed in pixels.
+  as printed in pixels. Accepts UTF8 encoded strings.
 
   The `font2bitmap` utility creates compatible 1 bit per pixel bitmap modules
   from Proportional or Monospaced True Type fonts. The character size,
