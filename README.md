@@ -66,7 +66,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython v1.17-59-g782d5b2e5 compiled with ESP IDF v4.2 using CMake
+MicroPython v1.17-161-g5900257dd compiled with ESP IDF v4.2 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -346,15 +346,20 @@ I was not able to run the display with a baud rate over 40MHZ.
   color defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap`
   directory for example fonts.
 
-- `write(bitap_font, s, x, y[, fg, bg])`
+- `write(bitmap_font, s, x, y[, fg, bg, background_tuple, fill_flag])`
 
   Write text to the display using the specified proportional or Monospace bitmap
   font module with the coordinates as the upper-left corner of the text. The
   foreground and background colors of the text can be set by the optional
   arguments `fg` and `bg`, otherwise the foreground color defaults to `WHITE`
-  and the background color defaults to `BLACK`.  See the `README.md` in the
-  `truetype/fonts` directory for example fonts. Returns the width of the string
-  as printed in pixels. Accepts UTF8 encoded strings.
+  and the background color defaults to `BLACK`.
+
+  Transparency can be emulated by providing a `background_tuple` containing
+  (bitmap_buffer, width, height).  This is the same format used by the jpg_decode
+  method. See examples/T-DISPLAY/clock/clock.py for an example.
+
+  See the `README.md` in the `truetype/fonts` directory for example fonts.
+  Returns the width of the string as printed in pixels. Accepts UTF8 encoded strings.
 
   The `font2bitmap` utility creates compatible 1 bit per pixel bitmap modules
   from Proportional or Monospaced True Type fonts. The character size,
@@ -383,10 +388,21 @@ I was not able to run the display with a baud rate over 40MHZ.
   Draw JPG file on the display at the given `x` and `y` coordinates as the upper
   left corner of the image. There memory required to decode and display a JPG
   can be considerable as a full screen 320x240 JPG would require at least 3100
-  bytes for the working area + 320x240x2 bytes of ram to buffer the image. Jpg
-  images that would require a buffer larger than available memory can be drawn
+  bytes for the working area + 320 * 240 * 2 bytes of ram to buffer the image.
+  Jpg images that would require a buffer larger than available memory can be drawn
   by passing `SLOW` for method. The `SLOW` method will draw the image a piece
-  at a time using the Minimum Coded Unit (MCU, typically 8x8) of the image.
+  at a time using the Minimum Coded Unit (MCU, typically a multiple of 8x8)
+  of the image.
+
+- `jpg_decode(jpg_filename [, x, y, width, height])`
+
+  Decode a jpg file and return it or a portion of it as a tuple composed of
+  (buffer, width, height). The buffer is a color565 blit_buffer compatible byte
+  array. The buffer will require width * height * 2 bytes of memory.
+
+  If the optional x, y, width and height parameters are given the buffer will
+  only contain the specified area of the image. See examples/T-DISPLAY/clock/clock.py
+  examples/T-DISPLAY/toasters_jpg/toasters_jpg.py for examples.
 
 - `polygon_center(polygon)`
 

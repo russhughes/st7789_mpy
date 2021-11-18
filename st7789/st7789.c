@@ -449,8 +449,8 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 		s = mp_obj_str_get_str(args[2]);
 	}
 
-	mp_int_t x	   = mp_obj_get_int(args[3]);
-	mp_int_t y	   = mp_obj_get_int(args[4]);
+	mp_int_t x = mp_obj_get_int(args[3]);
+	mp_int_t y = mp_obj_get_int(args[4]);
 
 	mp_int_t color = (n_args > 5) ? mp_obj_get_int(args[5]) : WHITE;
 
@@ -491,8 +491,8 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 
 			int16_t offset = index[ii] | (index[ii + 1] << 8);
 			int16_t length = font[offset++];
-			int16_t left   = (int)(scale * (font[offset++] - 0x52) + 0.5);
-			int16_t right  = (int)(scale * (font[offset++] - 0x52) + 0.5);
+			int16_t left   = (int) (scale * (font[offset++] - 0x52) + 0.5);
+			int16_t right  = (int) (scale * (font[offset++] - 0x52) + 0.5);
 			int16_t width  = right - left;
 
 			if (length) {
@@ -559,7 +559,7 @@ STATIC mp_obj_t dict_lookup(mp_obj_t self_in, mp_obj_t index)
 STATIC mp_obj_t st7789_ST7789_write_len(size_t n_args, const mp_obj_t *args)
 {
 	mp_obj_module_t *font			  = MP_OBJ_TO_PTR(args[1]);
-	mp_obj_dict_t   *dict			  = MP_OBJ_TO_PTR(font->globals);
+	mp_obj_dict_t *	 dict			  = MP_OBJ_TO_PTR(font->globals);
 	mp_obj_t		 widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
 	mp_buffer_info_t widths_bufinfo;
 	mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
@@ -598,13 +598,14 @@ STATIC mp_obj_t st7789_ST7789_write_len(size_t n_args, const mp_obj_t *args)
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_len_obj, 3, 3, st7789_ST7789_write_len);
 
 //
-//	write(font_module, s, x, y[, fg, bg])
+//	write(font_module, s, x, y[, fg, bg, background_tuple, fill])
+//		background_tuple (bitmap_buffer, width, height)
 //
 
 STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-	mp_obj_module_t 	*font = MP_OBJ_TO_PTR(args[1]);
+	mp_obj_module_t *font = MP_OBJ_TO_PTR(args[1]);
 
 	mp_int_t x = mp_obj_get_int(args[3]);
 	mp_int_t y = mp_obj_get_int(args[4]);
@@ -614,37 +615,66 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 	fg_color = (n_args > 5) ? _swap_bytes(mp_obj_get_int(args[5])) : _swap_bytes(WHITE);
 	bg_color = (n_args > 6) ? _swap_bytes(mp_obj_get_int(args[6])) : _swap_bytes(BLACK);
 
-	mp_obj_dict_t *dict			= MP_OBJ_TO_PTR(font->globals);
-	const uint8_t  bpp			= mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
-	const uint8_t  height		= mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
-	const uint8_t  offset_width = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSET_WIDTH)));
-	const uint8_t  max_width	= mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAX_WIDTH)));
+    mp_obj_t *tuple_data = NULL;
+	size_t tuple_len = 0;
 
-	mp_obj_t		 widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
+	mp_buffer_info_t background_bufinfo;
+	uint16_t background_width = 0;
+	uint16_t background_height = 0;
+	uint16_t *background_data = NULL;
+
+    if (n_args > 7) {
+	    mp_obj_tuple_get(args[7], &tuple_len, &tuple_data);
+		if (tuple_len > 2) {
+			mp_get_buffer_raise(tuple_data[0], &background_bufinfo, MP_BUFFER_READ);
+			background_data = background_bufinfo.buf;
+        	background_width = mp_obj_get_int(tuple_data[1]);
+        	background_height = mp_obj_get_int(tuple_data[2]);
+		}
+	}
+
+	bool fill = (n_args > 8) ? mp_obj_is_true(args[8]) : false;
+
+	mp_obj_dict_t *dict	= MP_OBJ_TO_PTR(font->globals);
+	const uint8_t  bpp = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BPP)));
+	const uint8_t  height = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_HEIGHT)));
+	const uint8_t  offset_width = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSET_WIDTH)));
+	const uint8_t  max_width = mp_obj_get_int(mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAX_WIDTH)));
+
+	mp_obj_t widths_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_WIDTHS));
 	mp_buffer_info_t widths_bufinfo;
 	mp_get_buffer_raise(widths_data_buff, &widths_bufinfo, MP_BUFFER_READ);
 	const uint8_t *widths_data = widths_bufinfo.buf;
 
-	mp_obj_t		 offsets_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSETS));
+	mp_obj_t offsets_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_OFFSETS));
 	mp_buffer_info_t offsets_bufinfo;
 	mp_get_buffer_raise(offsets_data_buff, &offsets_bufinfo, MP_BUFFER_READ);
 	const uint8_t *offsets_data = offsets_bufinfo.buf;
 
-	mp_obj_t		 bitmaps_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS));
+	mp_obj_t bitmaps_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_BITMAPS));
 	mp_buffer_info_t bitmaps_bufinfo;
 	mp_get_buffer_raise(bitmaps_data_buff, &bitmaps_bufinfo, MP_BUFFER_READ);
 	bitmap_data = bitmaps_bufinfo.buf;
+
+	// allocate buffer large enough the the widest character in the font
+	// if a buffer was not specified during the driver init.
 
 	uint32_t buf_size = max_width * height * 2;
 	if (self->buffer_size == 0) {
 		self->i2c_buffer = m_malloc(buf_size);
 	}
 
-	uint16_t print_width = 0;
+	// if fill is set, and background bitmap data is availabe copy the background
+	// bitmap data into the buffer. The background buffer must be the size of the
+	// widest character in the font.
 
+	if (fill && background_data && self->i2c_buffer) {
+		memcpy(self->i2c_buffer, background_data, background_width * background_height * 2);
+	}
+
+	uint16_t print_width = 0;
 	mp_obj_t map_obj = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_MAP));
 	GET_STR_DATA_LEN(map_obj, map_data, map_len);
-
 	GET_STR_DATA_LEN(args[2], str_data, str_len);
 	const byte *s = str_data, *top = str_data + str_len;
 	while (s < top) {
@@ -653,12 +683,12 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 		s  = utf8_next_char(s);
 
 		const byte *map_s = map_data, *map_top = map_data + map_len;
-		uint16_t	char_index = 0;
+		uint16_t char_index = 0;
 
 		while (map_s < map_top) {
 			unichar map_ch;
 			map_ch = utf8_get_char(map_s);
-			map_s  = utf8_next_char(map_s);
+			map_s = utf8_next_char(map_s);
 
 			if (ch == map_ch) {
 				uint8_t width = widths_data[char_index];
@@ -681,17 +711,29 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 						break;
 				}
 
-				uint32_t ofs = 0;
-				for (int yy = 0; yy < height; yy++) {
-					for (int xx = 0; xx < width; xx++) {
-						self->i2c_buffer[ofs++] = get_color(bpp) ? fg_color : bg_color;
+				uint16_t buffer_width = (fill) ? max_width : width;
+
+				uint16_t color = 0;
+				for (uint16_t yy = 0; yy < height; yy++) {
+					for (uint16_t xx = 0; xx < width; xx++) {
+						if (background_data && (xx <= background_width && yy <= background_height)){
+							if (get_color(bpp) == bg_color) {
+								color = background_data[(yy * background_width + xx)];
+							} else {
+								color = fg_color;
+							}
+						} else {
+							color = get_color(bpp) ? fg_color : bg_color;
+						}
+						self->i2c_buffer[yy*buffer_width + xx] = color;
 					}
 				}
 
-				uint32_t data_size = width * height * 2;
-				uint16_t x1		   = x + width - 1;
-				if (x1 < self->width) {
-					set_window(self, x, y, x1, y + height - 1);
+				uint32_t data_size = buffer_width * height * 2;
+				uint16_t x2	= x + buffer_width - 1;
+				uint16_t y2 = y + height - 1;
+				if (x2 < self->width) {
+					set_window(self, x, y, x2, y2);
 					DC_HIGH();
 					CS_LOW();
 					write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, data_size);
@@ -711,7 +753,7 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 
 	return mp_obj_new_int(print_width);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_obj, 5, 7, st7789_ST7789_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_write_obj, 5, 9, st7789_ST7789_write);
 
 STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args)
 {
@@ -936,10 +978,10 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self)
 	write_cmd(self, ST7789_MADCTL, madctl, 1);
 
 	self->madctl = madctl_value & 0xff;
-	self->min_x = self->display_width;
-	self->min_y = self->display_height;
-	self->max_x = 0;
-	self->max_y = 0;
+	self->min_x	 = self->display_width;
+	self->min_y	 = self->display_height;
+	self->max_x	 = 0;
+	self->max_y	 = 0;
 }
 
 STATIC mp_obj_t st7789_ST7789_rotation(mp_obj_t self_in, mp_obj_t value)
@@ -1095,18 +1137,18 @@ STATIC mp_obj_t st7789_ST7789_circle(size_t n_args, const mp_obj_t *args)
 	mp_int_t			 r	   = mp_obj_get_int(args[3]);
 	mp_int_t			 color = mp_obj_get_int(args[4]);
 
-	mp_int_t f = 1 - r;
+	mp_int_t f	   = 1 - r;
 	mp_int_t ddF_x = 1;
 	mp_int_t ddF_y = -2 * r;
-	mp_int_t x = 0;
-	mp_int_t y = r;
+	mp_int_t x	   = 0;
+	mp_int_t y	   = r;
 
 	draw_pixel(self, xm, ym + r, color);
 	draw_pixel(self, xm, ym - r, color);
 	draw_pixel(self, xm + r, ym, color);
 	draw_pixel(self, xm - r, ym, color);
-	while(x < y) {
-		if(f >= 0) {
+	while (x < y) {
+		if (f >= 0) {
 			y -= 1;
 			ddF_y += 2;
 			f += ddF_y;
@@ -1140,16 +1182,16 @@ STATIC mp_obj_t st7789_ST7789_fill_circle(size_t n_args, const mp_obj_t *args)
 	mp_int_t			 r	   = mp_obj_get_int(args[3]);
 	mp_int_t			 color = mp_obj_get_int(args[4]);
 
-	mp_int_t f = 1 - r;
+	mp_int_t f	   = 1 - r;
 	mp_int_t ddF_x = 1;
 	mp_int_t ddF_y = -2 * r;
-	mp_int_t x = 0;
-	mp_int_t y = r;
+	mp_int_t x	   = 0;
+	mp_int_t y	   = r;
 
 	fast_vline(self, xm, ym - y, 2 * y + 1, color);
 
-	while(x < y) {
-		if(f >= 0) {
+	while (x < y) {
+		if (f >= 0) {
 			y -= 1;
 			ddF_y += 2;
 			f += ddF_y;
@@ -1190,10 +1232,10 @@ STATIC mp_obj_t st7789_ST7789_madctl(size_t n_args, const mp_obj_t *args)
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
 	if (n_args == 2) {
-		mp_int_t madctl_value = mp_obj_get_int(args[1]) & 0xff;
-		const uint8_t madctl[] = {madctl_value};
+		mp_int_t	  madctl_value = mp_obj_get_int(args[1]) & 0xff;
+		const uint8_t madctl[]	   = {madctl_value};
 		write_cmd(self, ST7789_MADCTL, madctl, 1);
-		self->madctl = madctl_value &0xff;
+		self->madctl = madctl_value & 0xff;
 	}
 	return mp_obj_new_int(self->madctl);
 }
@@ -1202,7 +1244,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_madctl_obj, 1, 2, st778
 
 STATIC mp_obj_t st7789_ST7789_offset(size_t n_args, const mp_obj_t *args)
 {
-	st7789_ST7789_obj_t *self	= MP_OBJ_TO_PTR(args[0]);
+	st7789_ST7789_obj_t *self	  = MP_OBJ_TO_PTR(args[0]);
 	mp_int_t			 colstart = mp_obj_get_int(args[1]);
 	mp_int_t			 rowstart = mp_obj_get_int(args[2]);
 
@@ -1274,10 +1316,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_map_bitarray_to_rgb565_obj, 3,
 
 // User defined device identifier
 typedef struct {
-	mp_file_t *			 fp;	// File pointer for input function
-	uint8_t *			 fbuf;	// Pointer to the frame buffer for output function
-	unsigned int		 wfbuf; // Width of the frame buffer [pix]
-	st7789_ST7789_obj_t *self;	// display object
+	mp_file_t *	 fp;	 // File pointer for input function
+	uint8_t *	 fbuf;	 // Pointer to the frame buffer for output function
+	unsigned int wfbuf;	 // Width of the frame buffer [pix]
+	unsigned int left;	 // jpg crop left column
+	unsigned int top;	 // jpg crop top row
+	unsigned int right;	 // jpg crop right column
+	unsigned int bottom; // jpg crop bottom row
+
+	st7789_ST7789_obj_t *self; // display object
 } IODEV;
 
 //
@@ -1362,8 +1409,7 @@ static int out_slow( // 1:Ok, 0:Aborted
 		rect->left + jd->x_offs,
 		rect->top + jd->y_offs,
 		rect->right + jd->x_offs,
-		rect->bottom + jd->y_offs
-	);
+		rect->bottom + jd->y_offs);
 
 	DC_HIGH();
 	CS_LOW();
@@ -1411,8 +1457,8 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 				bufsize = 2 * jdec.width * jdec.height;
 				outfunc = out_fast;
 			} else {
-				bufsize = 2 * jdec.msx * 8 * jdec.msy * 8;
-				outfunc = out_slow;
+				bufsize		= 2 * jdec.msx * 8 * jdec.msy * 8;
+				outfunc		= out_slow;
 				jdec.x_offs = x;
 				jdec.y_offs = y;
 			}
@@ -1459,6 +1505,128 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_obj, 4, 5, st7789_ST7789_jpg);
 
 //
+// output function for jpg_decode
+//
+
+static int out_crop( // 1:Ok, 0:Aborted
+	JDEC * jd,		 // Decompression object
+	void * bitmap,	 // Bitmap data to be output
+	JRECT *rect)	 // Rectangular region of output image
+{
+	IODEV *	dev  = (IODEV *) jd->device;
+
+	if (
+		dev->left <= rect->right &&
+		dev->right >= rect->left &&
+        dev->top <= rect->bottom &&
+		dev->bottom >= rect->top) {
+
+		uint16_t  left		 = MAX(dev->left, rect->left);
+		uint16_t  top		 = MAX(dev->top, rect->top);
+		uint16_t  right		 = MIN(dev->right, rect->right);
+		uint16_t  bottom	 = MIN(dev->bottom, rect->bottom);
+		uint16_t  dev_width	 = dev->right - dev->left + 1;
+		uint16_t  rect_width = rect->right - rect->left + 1;
+		uint16_t  width 	 = (right - left + 1) * 2;
+		uint16_t  row;
+
+		for (row = top; row <= bottom; row++) {
+			memcpy(
+				(uint16_t *) dev->fbuf + ((row-dev->top) * dev_width) + left - dev->left,
+				(uint16_t *) bitmap + ((row-rect->top) * rect_width) + left - rect->left,
+				width
+			);
+		}
+	}
+	return 1; // Continue to decompress
+}
+
+//
+// Decode a jpg file and return it or a portion of it as a tuple containing
+// a blittable buffer, the width and height of the buffer.
+//
+
+STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+	const char *filename;
+	mp_int_t x, y, width = 0, height = 0;
+
+	if (n_args == 2 || n_args == 6) {
+		filename = mp_obj_str_get_str(args[1]);
+
+		if (n_args == 6) {
+			x      	 = mp_obj_get_int(args[2]);
+			y	   	 = mp_obj_get_int(args[3]);
+			width  	 = mp_obj_get_int(args[4]);
+			height	 = mp_obj_get_int(args[5]);
+		}
+
+		self->work = (void *) m_malloc(3100); // Pointer to the work area
+
+		JRESULT res;						  // Result code of TJpgDec API
+		JDEC	jdec;						  // Decompression object
+		IODEV  devid;						  // User defined device identifier
+		size_t bufsize = 0;
+
+		self->fp = mp_open(filename, "rb");
+		devid.fp = self->fp;
+		if (devid.fp) {
+			// Prepare to decompress
+			res = jd_prepare(&jdec, in_func, self->work, 3100, &devid);
+			if (res == JDR_OK) {
+
+				if (n_args < 6) {
+					x = 0;
+					y = 0;
+					width = jdec.width;
+					height = jdec.height;
+				}
+				// Initialize output device
+				devid.left	 = x;
+				devid.top	 = y;
+				devid.right	 = x + width - 1;
+				devid.bottom = y + height - 1;
+
+				bufsize = 2 * width * height;
+				self->i2c_buffer = m_malloc(bufsize);
+				if (self->i2c_buffer) {
+					memset(self->i2c_buffer, 0xBEEF, bufsize);
+				} else {
+					mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
+				}
+
+				devid.fbuf	= (uint8_t *) self->i2c_buffer;
+				devid.wfbuf = jdec.width;
+				devid.self	= self;
+				res			= jd_decomp(&jdec, out_crop, 0); // Start to decompress with 1/1 scaling
+				if (res != JDR_OK) {
+					mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg decompress failed."));
+				}
+
+			} else {
+				mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
+			}
+			mp_close(devid.fp);
+		}
+		m_free(self->work); // Discard work area
+
+		mp_obj_t result[3] = {
+			mp_obj_new_bytearray(bufsize, (mp_obj_t *) self->i2c_buffer),
+			mp_obj_new_int(width),
+			mp_obj_new_int(height)
+		};
+
+		return mp_obj_new_tuple(3, result);
+	}
+
+	mp_raise_TypeError(MP_ERROR_TEXT("jpg_decode requires either 2 or 6 arguments"));
+	return mp_const_none;
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_decode_obj, 2, 6, st7789_ST7789_jpg_decode);
+
+//
 // Return the center of a polygon as an (x, y) tuple
 //
 
@@ -1469,8 +1637,8 @@ STATIC mp_obj_t st7789_ST7789_polygon_center(size_t n_args, const mp_obj_t *args
 	mp_obj_get_array(args[1], &poly_len, &polygon);
 
 	mp_float_t sum = 0.0;
-	int	  vsx = 0;
-	int	  vsy = 0;
+	int		   vsx = 0;
+	int		   vsy = 0;
 
 	if (poly_len > 0) {
 		for (int idx = 0; idx < poly_len; idx++) {
@@ -1497,8 +1665,8 @@ STATIC mp_obj_t st7789_ST7789_polygon_center(size_t n_args, const mp_obj_t *args
 		}
 
 		mp_float_t z = 1.0 / (3.0 * sum);
-		vsx	= (int) (vsx * z);
-		vsy	= (int) (vsy * z);
+		vsx			 = (int) (vsx * z);
+		vsy			 = (int) (vsy * z);
 	} else
 		mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon data error"));
 
@@ -1566,11 +1734,10 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 			if ((polygon->points[i].y < pixelY && polygon->points[j].y >= pixelY) ||
 				(polygon->points[j].y < pixelY && polygon->points[i].y >= pixelY)) {
 				if (nodes < MAX_POLY_CORNERS) {
-					nodeX[nodes++] = (int)
-						(polygon->points[i].x +
-						(pixelY - polygon->points[i].y) /
-						(polygon->points[j].y - polygon->points[i].y) *
-						(polygon->points[j].x - polygon->points[i].x));
+					nodeX[nodes++] = (int) (polygon->points[i].x +
+											(pixelY - polygon->points[i].y) /
+												(polygon->points[j].y - polygon->points[i].y) *
+												(polygon->points[j].x - polygon->points[i].x));
 				} else {
 					mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Polygon too complex increase MAX_POLY_CORNERS."));
 				}
@@ -1581,10 +1748,10 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 		//  Sort the nodes, via a simple “Bubble” sort.
 		i = 0;
 		while (i < nodes - 1) {
-			if (nodeX[i] > nodeX[i+1]) {
-				swap = nodeX[i];
-				nodeX[i] = nodeX[i+1];
-				nodeX[i+1] = swap;
+			if (nodeX[i] > nodeX[i + 1]) {
+				swap		 = nodeX[i];
+				nodeX[i]	 = nodeX[i + 1];
+				nodeX[i + 1] = swap;
 				if (i)
 					i--;
 			} else {
@@ -1604,7 +1771,7 @@ STATIC void PolygonFill(st7789_ST7789_obj_t *self, Polygon *polygon, Point locat
 				if (nodeX[i + 1] > maxX)
 					nodeX[i + 1] = maxX;
 
-				fast_hline(self, (int)location.x+nodeX[i], (int)location.y+pixelY, nodeX[i + 1] - nodeX[i] + 1, color);
+				fast_hline(self, (int) location.x + nodeX[i], (int) location.y + pixelY, nodeX[i + 1] - nodeX[i] + 1, color);
 			}
 		}
 	}
@@ -1668,11 +1835,10 @@ STATIC mp_obj_t st7789_ST7789_polygon(size_t n_args, const mp_obj_t *args)
 			for (int idx = 1; idx < poly_len; idx++) {
 				line(
 					self,
-					(int)point[idx - 1].x + x,
-					(int)point[idx - 1].y + y,
-					(int)point[idx].x + x,
-					(int)point[idx].y + y, color
-				);
+					(int) point[idx - 1].x + x,
+					(int) point[idx - 1].y + y,
+					(int) point[idx].x + x,
+					(int) point[idx].y + y, color);
 			}
 
 			m_free(self->work);
@@ -1809,8 +1975,8 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_vscsad), MP_ROM_PTR(&st7789_ST7789_vscsad_obj)},
 	{MP_ROM_QSTR(MP_QSTR_madctl), MP_ROM_PTR(&st7789_ST7789_madctl_obj)},
 	{MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&st7789_ST7789_offset_obj)},
-
 	{MP_ROM_QSTR(MP_QSTR_jpg), MP_ROM_PTR(&st7789_ST7789_jpg_obj)},
+	{MP_ROM_QSTR(MP_QSTR_jpg_decode), MP_ROM_PTR(&st7789_ST7789_jpg_decode_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon_center), MP_ROM_PTR(&st7789_ST7789_polygon_center_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon), MP_ROM_PTR(&st7789_ST7789_polygon_obj)},
 	{MP_ROM_QSTR(MP_QSTR_fill_polygon), MP_ROM_PTR(&st7789_ST7789_fill_polygon_obj)},
