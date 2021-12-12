@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 monofont2bitmap.py
     Convert characters from monospace truetype fonts to a python bitmap

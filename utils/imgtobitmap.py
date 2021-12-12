@@ -1,4 +1,5 @@
-#!python3
+#!/usr/bin/env python3
+
 '''
     Convert image file to python module for use with blit_bitmap.
 
