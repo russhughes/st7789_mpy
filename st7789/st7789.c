@@ -578,7 +578,7 @@ STATIC mp_obj_t st7789_ST7789_write_len(size_t n_args, const mp_obj_t *args)
 		s  = utf8_next_char(s);
 
 		const byte *map_s = map_data, *map_top = map_data + map_len;
-		uint16_t	char_index = 0;
+		uint16_t char_index = 0;
 
 		while (map_s < map_top) {
 			unichar map_ch;
@@ -659,7 +659,7 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 	// allocate buffer large enough the the widest character in the font
 	// if a buffer was not specified during the driver init.
 
-	uint32_t buf_size = max_width * height * 2;
+	size_t buf_size = max_width * height * 2;
 	if (self->buffer_size == 0) {
 		self->i2c_buffer = m_malloc(buf_size);
 	}
@@ -792,13 +792,13 @@ STATIC mp_obj_t st7789_ST7789_bitmap(size_t n_args, const mp_obj_t *args)
 	mp_get_buffer_raise(bitmap_data_buff, &bufinfo, MP_BUFFER_READ);
 	bitmap_data = bufinfo.buf;
 
-	uint16_t buf_size = width * height * 2;
+	size_t buf_size = width * height * 2;
 	if (self->buffer_size == 0) {
 		self->i2c_buffer = m_malloc(buf_size);
 	}
 
-	uint32_t ofs = 0;
-	bs_bit		 = 0;
+	size_t ofs = 0;
+	bs_bit	   = 0;
 	if (bitmaps) {
 		if (idx < bitmaps) {
 			bs_bit = height * width * bpp * idx;
@@ -873,8 +873,8 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args)
 	else
 		bg_color = _swap_bytes(BLACK);
 
-	uint8_t	 wide	  = width / 8;
-	uint16_t buf_size = width * height * 2;
+	uint8_t	wide	= width / 8;
+	size_t buf_size = width * height * 2;
 
 	if (self->buffer_size == 0) {
 		self->i2c_buffer = m_malloc(buf_size);
