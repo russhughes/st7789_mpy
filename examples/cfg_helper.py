@@ -71,15 +71,28 @@ import st7789
 # BACKLIGHT_PIN = 4
 
 # Generic st7735 128x128 display
+# BAUDRATE = 30000000
+# COLUMNS = 128
+# ROWS = 160
+# SCK_PIN = 18
+# MOSI_PIN = 19
+# RESET_PIN = 4
+# CS_PIN = 13
+# DC_PIN = 12
+# BACKLIGHT_PIN = 15
+
+# Waveshare Pico LCD 2 display
+# 320×240 ST7789VW
+# https://www.waveshare.com/wiki/Pico-LCD-2
 BAUDRATE = 30000000
-COLUMNS = 128
-ROWS = 128
-SCK_PIN = 19
-MOSI_PIN = 18
-RESET_PIN = 4
-CS_PIN = 13
-DC_PIN = 12
-BACKLIGHT_PIN = 15
+COLUMNS = 320
+ROWS = 240
+SCK_PIN = 10
+MOSI_PIN = 11
+RESET_PIN = 12
+CS_PIN = 9
+DC_PIN = 8
+BACKLIGHT_PIN = 13
 
 # madctl register bits
 MADCTL_MY = 0x80   # Page Address Order
@@ -117,6 +130,8 @@ def show_help():
     print('V, v Toggle MADCTL_MV Page/Column Order ')
     print('L, l Toggle MADCTL_ML Line Address Order')
     print('H, h Toggle MADCTL_MH Display Data Latch Order')
+    print('C, c Set Columns')
+    print('R, r Set Rows')
     print('I, i Toggle inversion')
     print('B, b Change background')
     print('P, p Print current settings')
