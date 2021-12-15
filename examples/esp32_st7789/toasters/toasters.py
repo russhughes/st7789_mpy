@@ -52,7 +52,7 @@ def random_start(tft, sprites, bitmaps):
     '''return new location along the top or right of the screen that does not overlap any sprites'''
     while True:
         if random.getrandbits(2) > 1:
-            row = 0
+            row = 1
             col = random.randint(bitmaps.WIDTH, tft.width()-bitmaps.WIDTH)
         else:
             col = tft.width() - bitmaps.WIDTH
@@ -77,7 +77,7 @@ def main():
             self.location = random_start(tft, sprites, bitmaps)
             self.last = self.location
             self.step = random.randint(0, self.steps)
-            self.direction = rect(-random.randint(2, 5), 1, 0, 0)
+            self.direction = rect(-random.randint(2, 5), 2, 0, 0)
             self.prev_direction = self.direction
             self.iceberg = 0
 
@@ -115,7 +115,7 @@ def main():
             # if new location touches edge of screen, erase then set new start location
             if new_location.col <= 0 or new_location.row > tft.height() - self.location.height:
                 self.erase()
-                self.direction = rect(-random.randint(2, 5), 1, 0, 0)
+                self.direction = rect(-random.randint(2, 5), 2, 0, 0)
                 self.location = random_start(tft, sprites, self.bitmaps)
 
             # Track post collision direction change
