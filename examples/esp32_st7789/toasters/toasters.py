@@ -1,5 +1,5 @@
 '''
-toasters.py - Flying Toasters(ish)
+toasters.py - Flying Toasters(ish) an ESP-32 and ST7789 240x320 display.
 
     Uses spritesheet from CircuitPython_Flying_Toasters pendant project
     https://learn.adafruit.com/circuitpython-sprite-animation-pendant-mario-clouds-flying-toasters
@@ -19,115 +19,124 @@ import toast_bitmaps
 TOASTER_FRAMES = [0, 1, 2, 3]
 TOAST_FRAMES = [4]
 
-class rect():
-    '''rectangle class'''
-
-    def __init__(self, col, row, width, height):
-        '''create new rectangle'''
-        self.col = col
-        self.row = row
-        self.width = width
-        self.height = height
-
-    def __add__(self, other):
-        '''add two rectangles'''
-        return rect(
-            self.col + other.col,
-            self.row + other.row,
-            self.width + other.width,
-            self.height + other.height)
-
-def collide(rect_a, rect_b):
+def collide(a_col, a_row, a_width, a_height, b_col, b_row, b_width, b_height):
     '''return true if two rectangles overlap'''
-    return (rect_a.col + rect_a.width >= rect_b.col
-            and rect_a.col <= rect_b.col + rect_b.width
-            and rect_a.row + rect_a.height >= rect_b.row
-            and rect_a.row <= rect_b.row + rect_b.height)
+    return (a_col + a_width >= b_col and a_col <= b_col + b_width
+            and a_row + a_height >= b_row and a_row <= b_row + b_height)
 
 def collision(sprites):
     ''''return true if any sprites overlap'''
-    return any(collide(a.location, b.location) for a, b in zip(sprites[::], sprites[1::]))
+    return any(
+        collide(a.col, a.row, a.width, a.height, b.col, b.row, b.width, b.height)
+        for a, b in zip(sprites[::], sprites[1::]))
 
-def random_start(tft, sprites, bitmaps):
-    '''return new location along the top or right of the screen that does not overlap any sprites'''
-    while True:
-        if random.getrandbits(2) > 1:
-            row = 1
-            col = random.randint(bitmaps.WIDTH, tft.width()-bitmaps.WIDTH)
-        else:
-            col = tft.width() - bitmaps.WIDTH
-            row = random.randint(bitmaps.HEIGHT, tft.height()-bitmaps.HEIGHT)
+def random_start(tft, sprites, bitmaps, num):
+    '''
+    Return a random location along the top or right of the screen, if that location would overlaps
+    with another sprite return (0,0). This allows the other sprites to keep moving giving the next
+    random_start a better chance to avoid a collision.
 
-        new_location = rect(col, row, bitmaps.WIDTH, bitmaps.HEIGHT)
-        if not any(collide(new_location, sprite.location) for sprite in sprites):
-            return new_location
+    '''
+    # 50/50 chance to try along the top/right half or along the right/top half of the screen
+    if random.getrandbits(1):
+        row = 1
+        col = random.randint(bitmaps.WIDTH//2, tft.width()-bitmaps.WIDTH)
+    else:
+        col = tft.width() - bitmaps.WIDTH
+        row = random.randint(1, tft.height() // 2)
+
+    if any(collide(
+        col, row, bitmaps.WIDTH, bitmaps.HEIGHT,
+        sprite.col, sprite.row, sprite.width, sprite.height)
+        for sprite in sprites if num != sprite.num):
+
+        col = 0
+        row = 0
+
+    return (col, row)
 
 def main():
 
-    class toast():
+    class Toast():
         '''
-        toast class to keep track of toaster and toast sprites
+        Toast class to keep track of toaster and toast sprites
         '''
         def __init__(self, sprites, bitmaps, frames):
             '''create new sprite in random location that does not overlap other sprites'''
-            self.id = len(sprites)
+            self.num = len(sprites)
             self.bitmaps = bitmaps
             self.frames = frames
             self.steps = len(frames)
-            self.location = random_start(tft, sprites, bitmaps)
-            self.last = self.location
+            self.col, self.row  = random_start(tft, sprites, bitmaps, self.num)
+            self.width = bitmaps.WIDTH
+            self.height = bitmaps.HEIGHT
+            self.last_col = self.col
+            self.last_row = self.row
             self.step = random.randint(0, self.steps)
-            self.direction = rect(-random.randint(2, 5), 2, 0, 0)
-            self.prev_direction = self.direction
+            self.dir_col = -random.randint(2, 5)
+            self.dir_row = 2
+            self.prev_dir_col = self.dir_col
+            self.prev_dir_row = self.dir_row
             self.iceberg = 0
 
         def clear(self):
             '''clear above and behind sprite'''
             tft.fill_rect(
-                self.location.col, self.location.row-1, self.location.width, self.direction.row+1,
+                self.col, self.row-1, self.width, self.dir_row+1,
                 st7789.BLACK)
 
             tft.fill_rect(
-                self.location.col+self.bitmaps.WIDTH+self.direction.col, self.location.row,
-                -self.direction.col, self.location.height, st7789.BLACK)
+                self.col+self.width+self.dir_col, self.row,
+                -self.dir_col, self.height, st7789.BLACK)
 
         def erase(self):
             '''erase last postion of sprite'''
             tft.fill_rect(
-                self.last.col, self.last.row, self.last.width, self.last.height, st7789.BLACK)
+                self.last_col, self.last_row, self.width, self.height, st7789.BLACK)
 
         def move(self, sprites):
             '''step frame and move sprite'''
+
             if self.steps:
                 self.step = (self.step + 1) % self.steps
 
-            self.last = self.location
-            new_location = self.location + self.direction
+            self.last_col = self.col
+            self.last_row = self.row
+            new_col = self.col + self.dir_col
+            new_row = self.row + self.dir_row
 
-            # if new location collides with another sprite, change direction down for 16 frames
-            if any(collide(new_location, sprite.location) for sprite in sprites if self.id != sprite.id):
-                self.iceberg = 16
-                self.direction = rect(-1, 2, 0, 0)
-                new_location = self.location + self.direction
+            # if new location collides with another sprite, change direction for 32 frames
+            if any(
+                collide(new_col, new_row, self.width, self.height, sprite.col, sprite.row, sprite.width, sprite.height)
+                for sprite in sprites if self.num != sprite.num):
 
-            self.location = new_location
+                self.iceberg = 32
+                self.dir_col = -1
+                self.dir_row = 3
+                new_col = self.col + self.dir_col
+                new_row = self.row + self.dir_row
+
+            self.col = new_col
+            self.row = new_row
 
             # if new location touches edge of screen, erase then set new start location
-            if new_location.col <= 0 or new_location.row > tft.height() - self.location.height:
+            if self.col <= 0 or self.row > tft.height() - self.height:
                 self.erase()
-                self.direction = rect(-random.randint(2, 5), 2, 0, 0)
-                self.location = random_start(tft, sprites, self.bitmaps)
+                self.dir_col = -random.randint(2, 5)
+                self.dir_row = 2
+                self.col, self.row  = random_start(tft, sprites, self.bitmaps, self.num)
 
             # Track post collision direction change
             if self.iceberg:
                 self.iceberg -= 1
                 if self.iceberg == 1:
-                    self.direction = self.prev_direction
+                    self.dir_col = self.prev_dir_col
+                    self.dir_row = self.prev_dir_row
 
         def draw(self):
-            '''draw current frame of sprite at it's location'''
-            tft.bitmap(self.bitmaps, self.location.col, self.location.row, self.frames[self.step])
-
+            '''if the location is not 0,0 draw current frame of sprite at it's location'''
+            if self.col and self.row:
+                tft.bitmap(self.bitmaps, self.col, self.row, self.frames[self.step])
 
     # configure spi interface
     spi = SPI(1, baudrate=31250000, sck=Pin(18), mosi=Pin(19))
@@ -150,14 +159,14 @@ def main():
 
     # create toast spites and set animation frames
     sprites = []
-    sprites.append(toast(sprites, toast_bitmaps, TOAST_FRAMES))
-    sprites.append(toast(sprites, toast_bitmaps, TOASTER_FRAMES))
-    sprites.append(toast(sprites, toast_bitmaps, TOASTER_FRAMES))
+    sprites.append(Toast(sprites, toast_bitmaps, TOAST_FRAMES))
+    sprites.append(Toast(sprites, toast_bitmaps, TOASTER_FRAMES))
+    sprites.append(Toast(sprites, toast_bitmaps, TOASTER_FRAMES))
 
     # move and draw sprites
+
     while True:
         for sprite in sprites:
-
             sprite.clear()
             sprite.move(sprites)
             sprite.draw()
