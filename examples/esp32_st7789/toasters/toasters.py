@@ -24,12 +24,6 @@ def collide(a_col, a_row, a_width, a_height, b_col, b_row, b_width, b_height):
     return (a_col + a_width >= b_col and a_col <= b_col + b_width
             and a_row + a_height >= b_row and a_row <= b_row + b_height)
 
-def collision(sprites):
-    ''''return true if any sprites overlap'''
-    return any(
-        collide(a.col, a.row, a.width, a.height, b.col, b.row, b.width, b.height)
-        for a, b in zip(sprites[::], sprites[1::]))
-
 def random_start(tft, sprites, bitmaps, num):
     '''
     Return a random location along the top or right of the screen, if that location would overlaps
@@ -106,15 +100,21 @@ def main():
             new_row = self.row + self.dir_row
 
             # if new location collides with another sprite, change direction for 32 frames
-            if any(
-                collide(new_col, new_row, self.width, self.height, sprite.col, sprite.row, sprite.width, sprite.height)
-                for sprite in sprites if self.num != sprite.num):
 
-                self.iceberg = 32
-                self.dir_col = -1
-                self.dir_row = 3
-                new_col = self.col + self.dir_col
-                new_row = self.row + self.dir_row
+            for sprite in sprites:
+                if (
+                    self.num != sprite.num
+                    and collide(
+                        new_col, new_row, self.width, self.height,
+                        sprite.col, sprite.row, sprite.width, sprite.height,
+                    )
+                    and (self.col > sprite.col)):
+
+                    self.iceberg = 32
+                    self.dir_col = -1
+                    self.dir_row = 3
+                    new_col = self.col + self.dir_col
+                    new_row = self.row + self.dir_row
 
             self.col = new_col
             self.row = new_row
