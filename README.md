@@ -1,24 +1,36 @@
 
 # ST7789 Driver for MicroPython
+# MicroPython的ST7789驱动程序
 
 This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
+此驱动程序基于[devbis的st7789\u mpy驱动程序。](https://github.com/devbis/st7789_mpy)
 I modified the original driver for one of my projects to add:
-
+我修改了我的一个项目的原始驱动程序，以添加：
 - Display Rotation.
+- 显示旋转。
 - Scrolling
+- 滚动
 - Writing text using bitmaps converted from True Type fonts
+- 使用从True Type字体转换的位图写入文本
 - Drawing text using 8 and 16 bit wide bitmap fonts
+- 使用8位和16位宽位图字体绘制文本
 - Drawing text using Hershey vector fonts
+- 使用Hershey vector字体绘制文本
 - Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram
+- 绘制JPG，包括绘制JPG大于可用ram的慢速模式
   using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
+  使用TJpgDec-微型JPEG解压器R0。01d。从…起
   http://elm-chan.org/fsw/tjpgd/00index.html
 - Drawing and rotating Polygons and filled Polygons.
+- 绘制和旋转多边形以及填充多边形。
 - Tracking bounds
+- 跟踪边界
 - Support for st7735 displays
+- 支持st7735显示器
 
 Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
 Hershey vector fonts and several example programs for different devices.
-
+包括12种源于经典pc文本模式字体的位图字体、26种Hershey vector字体以及用于不同设备的几个示例程序。
 ## Display Configuration
 
 Some displays may use a BGR color order or iverted colors. The `cfg_helper.py` program can use used to determine the color order, inversion_mode, colstart, and rowstart values needed for a display.
