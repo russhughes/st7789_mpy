@@ -1,10 +1,14 @@
 
 # ST7789 Driver for MicroPython
+
 # MicroPython的ST7789驱动程序
 
 This driver is based on [devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
-此驱动程序基于[devbis的st7789\u mpy驱动程序。](https://github.com/devbis/st7789_mpy)
+
+此驱动程序基于[devbis' st7789_mpy driver.](https://github.com/devbis/st7789_mpy)
+
 I modified the original driver for one of my projects to add:
+
 我修改了我的一个项目的原始驱动程序，以添加：
 - Display Rotation.
 - 显示旋转。
@@ -30,25 +34,42 @@ I modified the original driver for one of my projects to add:
 
 Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
 Hershey vector fonts and several example programs for different devices.
+
 包括12种源于经典pc文本模式字体的位图字体、26种Hershey vector字体以及用于不同设备的几个示例程序。
+
 ## Display Configuration
+
+## 显示配置
 
 Some displays may use a BGR color order or iverted colors. The `cfg_helper.py` program can use used to determine the color order, inversion_mode, colstart, and rowstart values needed for a display.
 
+某些显示器可能使用BGR颜色顺序或分散颜色。`cfg_helper.py`程序可用于确定显示所需的颜色顺序、反转模式、colstart和rowstart值。
+
 ### Color Modes
 
+### 颜色模式
+
 You can test the color order needed by a display by filling the display with the `st7789.RED` color and observing the color displayed.
+
+通过使用`st7789.RED`颜色填充显示器并观察显示的颜色，可以测试显示器所需的颜色顺序。
   - If the display is RED, the settings are correct.
+  - 如果显示为红色，则设置正确
   - If the display is BLUE, `color_order` should be `st7789.BGR`.
+  - 如果显示为蓝色，`color_order`颜色顺序应为`st7789.BGR`。
   - If the display is YELLOW, `inversion_mode` should be `True`.
+  - 如果显示为黄色，`inversion_mode` 反转模式应为 `True`。
   - If the display is CYAN, `color_order` should be `st7789.BGR` and `inversion_mode` should be `True`.
+  - 如果显示为青色，`color_order`颜色顺序应为`st7789.BGR`，而`inversion_mode`反转模式应为`True`。
 
 ### colstart and rowstart
 
 Some displays have a frame buffer memory larger than the physical LCD or LED matrix. In these cases the driver must be configured with the position of the first physcial column and row pixels relative to the frame buffer.  Each rotation setting of the display may require different colstart and rowstart values.
 
-The driver automatically adjusts the colstart and rowstarts values for common 135x240, 240x240 and
-240x320 displays. These values can be overridden using the `offsets` method if the default values do not work for your display. The `offsets` method  should be called after any calls of the `rotation` method.
+某些显示器的帧缓冲存储器大于物理LCD或LED矩阵。在这些情况下，必须为驱动程序配置第一个物理列和行像素相对于帧缓冲区的位置。显示器的每个旋转设置可能需要不同的colstart和rowstart值。
+
+The driver automatically adjusts the colstart and rowstarts values for common 135x240, 240x240 and 240x320 displays. These values can be overridden using the `offsets` method if the default values do not work for your display. The `offsets` method  should be called after any calls of the `rotation` method.
+
+驱动程序会自动调整常用135x240、240x240和240x320显示器的colstart和rowstarts值。如果默认值不适用于您的显示，则可以使用`offsets`（偏移量）方法覆盖这些值。应在调用`rotation`方法之后调用`offsets`方法。
 
 #### 128x128 st7735 cfg_helper.py example
 
@@ -74,11 +95,17 @@ for rotation 3 use offset(0, 0)
 
 ## Pre-compiled firmware files
 
+## 预编译固件文件
+
 The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
 MicroPython v1.17-231-g0892ebe09 compiled with ESP IDF v4.2 using CMake
+
+固件目录包含各种设备的预编译固件，其中包含st7789 C驱动程序和固化的python字体文件。有关字体文件的详细信息，请参阅字体文件夹中的README.md文件。
+
+使用CMake使用ESP IDF v4.2编译的MicroPython v1.17-231-g0892ebe09
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -91,12 +118,16 @@ T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
 
 ## Additional Modules
 
+## 附加模块
+
 Module             | Source
 ------------------ | -----------------------------------------------------------
 axp202c            | https://github.com/lewisxhe/AXP202X_Libraries
 focaltouch         | https://gitlab.com/mooond/t-watch2020-esp32-with-micropython
 
 ## Video Examples
+
+## 视频示例
 
 Example               | Video
 --------------------- | -----------------------------------------------------------
@@ -113,19 +144,29 @@ TWATCH-2020 watch.py  | https://youtu.be/NItKb6umMc4
 
 This is a work in progress.
 
+这是一项正在进行的工作。
+
 ## Thanks go out to:
 
+## 致谢：
+
 - https://github.com/devbis for the original driver this is based on.
+- 基于此原始驱动程序。
 - https://github.com/hklang10 for letting me know of the new mp_raise_ValueError().
+- 让我知道新的 mp_raise_ValueError().
 - https://github.com/aleggon for finding the correct offsets for a 240x240
   display and discovering issues compiling for STM32 based boards.
-
+- 查找240x240显示器的正确偏移量，并发现基于STM32的板的编译问题。
 -- Russ
 
 ## Overview
 
+## 概述
+
 This is a driver for MicroPython to handle cheap displays based on the ST7789
 chip.
+
+这是MicroPython基于ST7789芯片的廉价显示器的驱动程序。
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/ST7789.jpg" alt="ST7789 display photo"/>
@@ -134,10 +175,16 @@ chip.
 The driver is written in C. Firmware is provided for ESP32, ESP32 with SPIRAM,
 pyboard1.1, and Raspberry Pi Pico devices.
 
+驱动程序是用C编写的。为ESP32，带有SPIRAM的ESP32、pyboard1.1和Raspberry Pi Pico设备提供固件。
+
 
 # Setup MicroPython Build Environment in Ubuntu 20.04.2
 
+# 在Ubuntu 20.04.2中设置MicroPython构建环境。
+
 Update and upgrade Ubuntu using apt-get if you are using a new install of Ubuntu or the Windows Subsystem for Linux.
+
+如果您正在使用新安装的Ubuntu或Linux Windows子系统，请使用`apt-get`更新和升级Ubuntu。
 
 ```bash
 sudo apt-get -y update
@@ -146,11 +193,15 @@ sudo apt-get -y upgrade
 
 Use apt-get to install the required build tools.
 
+使用apt-get安装所需的构建工具。
+
 ```bash
 sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtualenv python3-pip python3-virtualenv
 ```
 
 Clone the esp-idf SDK repo & install -- this usually takes several minutes
+
+克隆esp idf SDK repo&install--这通常需要几分钟的时间
 
 ```bash
 git clone --recursive https://github.com/espressif/esp-idf.git
@@ -159,6 +210,8 @@ cd esp-idf/
 ```
 
 Source the esp-idf export.sh script to set the required environment variables. It's important that you source the file and not run it using ./export.sh. You will need to source this file before compiling MicroPython.
+
+获取 esp-idf export.sh 脚本以设置所需的环境变量。 重要的是您获取文件而不是使用 ./export.sh 运行它。 在编译 MicroPython 之前，您需要获取此文件的源代码。
 
 ```bash
 source export.sh
@@ -179,6 +232,8 @@ git clone https://github.com/russhughes/st7789_mpy.git
 
 Update the git submodules and compile the micropython cross-compiler
 
+更新git子模块并编译micropython交叉编译器
+
 ```bash
 cd micropython/
 git submodule update --init
@@ -190,6 +245,8 @@ cd ports/esp32
 
 Copy any .py files you want to include in the firmware as frozen python modules to the modules subdirectory in ports/esp32. Be aware there is a limit to the flash space available. You will know you have exceeded this limit if you receive an error message saying the code won't fit in the partition or if your firmware continuously reboots with an error.
 
+将要包含在固件中的任何 .py 文件作为固化的 python 模块复制到端口/esp32 中的模块子目录。 请注意，可用闪存空间是有限的。 如果您收到一条错误消息，指出代码不适合该分区，或者您的固件不断重启并出现错误，您就会知道您已超出此限制。 
+
 For example:
 
 ```bash
@@ -200,11 +257,15 @@ cp ../../../st7789_mpy/fonts/vector/scripts.py modules
 
 Build the MicroPython firmware with the driver and frozen .py files in the modules directory. If you did not add any .py files to the modules directory you can leave out the FROZEN_MANIFEST and FROZEN_MPY_DIR settings.
 
+使用模块目录中的驱动程序和固化的 .py 文件构建 MicroPython 固件。 如果您没有将任何 .py 文件添加到模块目录中，您可以省略 FROZEN_MANIFEST 和 FROZEN_MPY_DIR 设置。 
+
 ```bash
 make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake FROZEN_MANIFEST="" FROZEN_MPY_DIR=$UPYDIR/modules
 ```
 
 Erase and flash the firmware to your device. Set PORT= to the ESP32's usb serial port. I could not get the usb serial port to work under the Windows Subsystem (WSL2) for Linux. If you have the same issue you can copy the firmware.bin file and use the Windows esptool.py to flash your device.
+
+擦除和烧录固件到您的设备。 将 PORT= 设置为 ESP32 的 USB 串口。 我无法让 USB 串行端口在适用于 Linux 的 Windows 子系统 (WSL2) 下工作。 如果您遇到同样的问题，您可以复制 firmware.bin 文件并使用 Windows esptool.py 来烧录您的设备。 
 
 ```bash
 make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/ttyUSB0 erase
@@ -213,11 +274,15 @@ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake PORT=/dev/tt
 
 The firmware.bin file will be in the build-GENERIC directory. To flash using the python esptool.py utility. Use pip3 to install the esptool if it's not already installed.
 
+firmware.bin 文件将位于 build-GENERIC 目录中。 使用 python esptool.py 烧录。 如果尚未安装 esptool，请使用 pip3 安装它。 
+
 ```bash
 pip3 install esptool
 ```
 
 Set PORT= to the ESP32's usb serial port
+
+设置 PORT= 为 ESP32 的 USB 串口 
 
 ```bash
 esptool.py --port COM3 erase_flash
@@ -225,11 +290,15 @@ esptool.py --chip esp32 --port COM3 write_flash -z 0x1000 firmware.bin
 ```
 ## CMake building instructions for MicroPython 1.14 and later
 
+## MicroPython 1.14 及更高版本的 CMake 构建说明 
+
 for ESP32:
 
     $ cd micropython/ports/esp32
 
 And then compile the module with specified USER_C_MODULES dir
+
+然后使用指定的 USER_C_MODULES 目录编译模块 
 
     $ make USER_C_MODULES=../../../../st7789_mpy/st7789/micropython.cmake
 
@@ -239,13 +308,18 @@ for Raspberry Pi PICO:
 
 And then compile the module with specified USER_C_MODULES dir
 
+然后使用指定的 USER_C_MODULES 目录编译模块 
+
     $ make USER_C_MODULES=../../../st7789_mpy/st7789/micropython.cmake
 
 ## Working examples
 
+## 工作示例
+
 This module was tested on ESP32, STM32 based pyboard v1.1 and the Raspberry Pi
 Pico. You have to provide a `SPI` object and the pin to use for the `dc' input of the screen.
 
+该模块在 ESP32、基于 STM32 的 pyboard v1.1 和 Raspberry Pi Pico 上进行了测试。 您必须提供一个`SPI`对象和用于屏幕`dc`输入的引脚。 
 
     # ESP32
 
@@ -258,36 +332,57 @@ Pico. You have to provide a `SPI` object and the pin to use for the `dc' input o
 
 I was not able to run the display with a baud rate over 40MHZ.
 
+我无法以超过 40MHZ 的波特率运行显示器。
+
 ## Methods
+
+## 方法 
 
 - `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, buffer_size)`
 
     ### Required positional arguments:
-    - `spi` spi device
+    ### 必要的位置参数： 
+    - `spi` spi device 
+    - `spi` SPI设备 
     - `width` display width
+    - `width` 显示宽度
     - `height` display height
+    - `height` 显示高度 
+    
     ### Required keyword arguments:
+    ### 必需的关键字参数： 
     - `dc` sets the pin connected to the display data/command selection input. This parameter is always required.
+    - `dc` 设置连接到显示数据/命令选择输入的引脚。 此参数始终是必需的。 
 
     ### Optional keyword arguments:
+    ### 可选的关键字参数： 
 
     - `reset` sets the pin connected to the displays hardware reset input. If the displays reset pin is tied high the `reset` parameter is not required.
+    - `reset` 设置连接到显示器硬件复位输入的引脚。 如果显示器复位引脚被拉高，则不需要`reset`参数。 
 
     - `cs` sets the pin connected to the displays chip select input. If the displays CS pin is tied low, the display must be the only device connected to the SPI port. The display will always be the selected device and the `cs` parameter is not required.
+    - `cs` 设置连接到显示器芯片选择输入的引脚。如果显示器 CS 引脚被拉低，则显示器必须是唯一连接到 SPI 端口的设备。显示器将始终是选定的设备，不需要 `cs` 参数。
 
     - `backlight` sets the pin connected to the displays backlight enable input. The displays backlight input can often be left floating or disconnected as the backlight on some displays are always powered on and cannot be turned off.
+    - `backlight` 设置连接到显示器背光启用输入的引脚。由于某些显示器上的背光始终处于开启状态且无法关闭，因此显示器背光输入通常会悬空或断开连接。
 
     - `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
+    - `旋转` 0-0 度、1-90 度、2-180 度、3-270 度
 
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
+    - `color_order` 设置驱动程序使用的颜色顺序，支持st7789.RGB 和 st7789.BGR 。
 
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
+    - `buffer_size` 如果没有指定buffer_size，则根据需要创建和释放动态分配的缓冲区。如果指定了 buffer_size，它必须足够大以包含所使用的最大位图、字体字符和/或解码的 JPG 图像（行 * 列 * 2 字节，RGB565 表示法中的 16 位颜色）。动态分配速度较慢，可能会导致堆碎片，因此应启用垃圾回收 (GC)。 
 
 - `inversion_mode(bool)` Sets the display color inversion mode if True,
    clears the display color inversion mode if false.
+- `inversion_mode(bool)` 如果为 True，则设置显示颜色反转模式，
+    如果为 false，则清除显示颜色反转模式。
 
 - `madctl(value)` Returns the current value of the MADCTL register.
    Optionally sets the MADCTL register if a value is passed to the method.
+- `madctl(value)` 返回 MADCTL 寄存器的当前值。如果将值传递给此方法，则可选择设置 MADCTL 寄存器。 
 
   Constant Name    | Value | Description
   ---------------- | ----- | ----------------------
@@ -299,41 +394,60 @@ I was not able to run the display with a baud rate over 40MHZ.
   st7789_RGB       | 0x00  | RGB color order
   st7789_BGR       | 0x08  | BGR color order
 
+  常数名称 | 值 | 描述
+   ---------------- | ----- | ---------------
+   st7789.MADCTL_MY | 0x80 | 页面地址顺序
+   st7789_MADCTL_MX | 0x40 | 列地址顺序
+   st7789_MADCTL_MV | 0x20 | 页/列顺序
+   st7789_MADCTL_ML | 0x10 | 线路地址顺序
+   st7789_MADCTL_MH | 0x04 | 显示数据锁存顺序
+   st7789_RGB | 0x00 | RGB 颜色顺序
+   st7789_BGR | 0x08 | BGR颜色顺序 
+
+
+
 - `on()`
 
   Turn on the backlight pin if one was defined during init.
+  如果在初始化期间定义了背光引脚，则打开背光引脚。
 
 - `off()`
 
   Turn off the backlight pin if one was defined during init.
+  如果在 init 期间定义了背光引脚，则关闭背光引脚。
 
 - `pixel(x, y, color)`
 
   Set the specified pixel to the given `color`.
+  将指定像素设置为给定的`color`。
 
 - `line(x0, y0, x1, y1, color)`
 
-  Draws a single line with the provided `color` from (`x0`, `y0`) to
-  (`x1`, `y1`).
+  Draws a single line with the provided `color` from (`x0`, `y0`) to (`x1`, `y1`).
+  使用提供的 `color`从 (`x0`, `y0`) 到（`x1`，`y1`） 绘制一条线。
 
 - `hline(x, y, length, color)`
 
   Draws a single horizontal line with the provided `color` and `length`
   in pixels. Along with `vline`, this is a fast version with reduced
   number of SPI calls.
+  使用提供的`color`和`length`以像素为单位绘制一条水平线。 与 `vline` 一起，这是一个快速版本，减少了 SPI 调用的数量。 
 
 - `vline(x, y, length, color)`
 
   Draws a single horizontal line with the provided `color` and `length`
   in pixels.
+  使用提供的`color`和`length`以像素为单位绘制一条水平线。 
 
 - `rect(x, y, width, height, color)`
 
   Draws a rectangle from (`x`, `y`) with corresponding dimensions
+  从具有相应尺寸的 (`x`, `y`) 绘制一个矩形
 
 - `fill_rect(x, y, width, height, color)`
 
   Fill a rectangle starting from (`x`, `y`) coordinates
+  填充从 (`x`, `y`) 坐标开始的矩形
 
 - `circle(x, y, r, color)`
 
@@ -343,11 +457,14 @@ I was not able to run the display with a baud rate over 40MHZ.
 - `fill_circle(x, y, r, color)`
 
   Draws a filled circle with radius `r` centered at the (`x`, `y`) coordinates in the given `color`.
+  绘制一个半径为 r 的实心圆，以给定的颜色中的 (`x`, `y`) 坐标为圆心。 
 
 - `blit_buffer(buffer, x, y, width, height)`
 
   Copy bytes() or bytearray() content to the screen internal memory.
   Note: every color requires 2 bytes in the array
+  将 bytes() 或 bytearray() 内容复制到屏幕内部存储器中。
+  注意：每种颜色在数组中需要 2 个字节 
 
 - `text(font, s, x, y[, fg, bg])`
 
