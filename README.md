@@ -546,8 +546,9 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `polygon_center(polygon)`
 
-   Return the center of the `polygon` as an (x, y) tuple. The `polygon` should
-   consist of a list of (x, y) tuples forming a closed convex polygon.
+  Return the center of the `polygon` as an (x, y) tuple. The `polygon` should
+  consist of a list of (x, y) tuples forming a closed convex polygon.
+  将 `polygon` 的中心作为 (x, y) 元组返回。 `polygon` 应该由一个 (x, y) 元组列表组成，形成一个封闭的凸多边形。
 
 - `fill_polygon(polygon, x, y, color[, angle, center_x, center_y])`
 
@@ -555,8 +556,10 @@ I was not able to run the display with a baud rate over 40MHZ.
   The polygon may be rotated `angle` radians about the `center_x` and
   `center_y` point. The polygon should consist of a list of (x, y) tuples
   forming a closed convex polygon.
+  在给定的`color`中的`x`, `y`坐标处绘制一个填充的`polygon`多边形。多边形可以围绕`center_x`和`center_y`点旋转`angle`弧度。 多边形应由形成闭合凸多边形的 (x, y) 元组列表组成。
 
   See the TWATCH-2020 `watch.py` demo for an example.
+  有关示例，请参阅 TWATCH-2020 `watch.py` 演示。
 
 - `polygon(polygon, x, y, color, angle, center_x, center_y)`
 
@@ -564,8 +567,10 @@ I was not able to run the display with a baud rate over 40MHZ.
   may be rotated `angle` radians a bout the `center_x` and `center_y` point.
   The polygon should consist of a list of (x, y) tuples forming a closed
   convex polygon.
+  在给定的`color`中的`x`, `y`坐标处绘制一个`polygon`多边形（非填充）。多边形可以围绕`center_x`和`center_y`点旋转`angle`弧度。 多边形应由形成闭合凸多边形的 (x, y) 元组列表组成。
 
   See the T-Display `roids.py` for an example.
+  有关示例，请参阅 T-Display `roids.py`。
 
 - `bounding([status])`
 
@@ -573,11 +578,14 @@ I was not able to run the display with a baud rate over 40MHZ.
   written to. Initially tracking is disabled, pass a True value to enable
   tracking and False to disable. Passing a True or False parameter will reset
   the current bounding rectangle to (display_width, display_height, 0, 0).
+  边界打开和关闭跟踪已写入的显示区域。 最初跟踪被禁用，传递一个 True 值来启用跟踪和 False 禁用。 传递 True 或 False 参数会将当前边界矩形重置为 (display_width, display_height, 0, 0)。
 
   Returns a four integer tuple containing (min_x, min_y, max_x, max_y) indicating
   the area of the display that has been written to since the last clearing.
+  返回一个包含 (min_x, min_y, max_x, max_y) 的四整数元组，指示自上次清除以来已写入的显示区域。
 
   See the TWATCH-2020 `watch.py` demo for an example.
+  有关示例，请参阅 TWATCH-2020 `watch.py` 演示。
 
 - `bitmap(bitmap, x , y [, index])`
 
@@ -586,15 +594,18 @@ I was not able to run the display with a baud rate over 40MHZ.
   method to select from multiple bitmaps contained a `bitmap` module. The
   `index` is used to calculate the offset to the beginning of the desired bitmap
   using the modules HEIGHT, WIDTH and BPP values.
+  使用指定的 `x`、`y` 坐标作为 `bitmap` 的左上角绘制 `bitmap`。 可选的`index` 参数提供了一种从包含`bitmap` 模块的多个位图中进行选择的方法。 `index` 用于使用模块 HEIGHT、WIDTH 和 BPP 值计算所需位图开头的偏移量。
 
   The `imgtobitmap.py` utility creates compatible 1 to 8 bit per pixel bitmap modules
   from image files using the Pillow Python Imaging Library.
+  `imgtobitmap.py` 实用程序使用 Pillow Python 成像库从图像文件创建兼容的 1 到 8 位每像素位图模块。
 
   The `monofont2bitmap.py` utility creates compatible 1 to 8 bit per pixel
   bitmap modules from Monospaced True Type fonts. See the `inconsolata_16.py`,
   `inconsolata_32.py` and `inconsolata_64.py` files in the `examples/lib` folder
   for sample modules and the `mono_font.py` program for an example using the
   generated modules.
+  `monofont2bitmap.py` 实用程序从 Monospaced True Type 字体创建兼容的 1 到 8 位每像素位图模块。 有关示例模块，请参阅 `examples/lib` 文件夹中的 `inconsolata_16.py`、`inconsolata_32.py` 和 `inconsolata_64.py` 文件，有关使用生成的模块的示例，请参阅 `mono_font.py` 程序。
 
   The character sizes, bit per pixel, foreground, background
   colors and the characters to include in the bitmap module may be specified as
@@ -602,31 +613,39 @@ I was not able to run the display with a baud rate over 40MHZ.
   one may be used to create antialiased characters at the expense of memory use.
   If you specify a buffer_size during the display initialization it must be
   large enough to hold the one character (HEIGHT * WIDTH * 2).
+  字符大小、每像素位数、前景、背景颜色和包含在位图模块中的字符可以指定为参数。 使用 -h 选项了解详细信息。 可以使用大于 1 的每像素位数设置来创建抗锯齿字符，但会占用内存。如果在显示初始化期间指定 buffer_size，它必须足够大以容纳一个字符 (HEIGHT * WIDTH * 2)。
 
 - `width()`
 
   Returns the current logical width of the display. (ie a 135x240 display
   rotated 90 degrees is 240 pixels wide)
+  返回显示的当前逻辑宽度。 （即旋转 90 度的 135x240 显示器为 240 像素宽）
 
 - `height()`
 
   Returns the current logical height of the display. (ie a 135x240 display
   rotated 90 degrees is 135 pixels high)
+  返回显示的当前逻辑高度。 （即旋转 90 度的 135x240 显示器是 135 像素高）
 
 - `rotation(r)`
 
   Set the rotates the logical display in a clockwise direction. 0-Portrait
   (0 degrees), 1-Landscape (90 degrees), 2-Inverse Portrait (180 degrees),
   3-Inverse Landscape (270 degrees)
+  设置顺时针方向旋转逻辑显示。 0-人像（0 度）、1-横向（90 度）、2-反向纵向（180 度）、3-反向横向（270 度）
 
-- `offset(x_start, y_start)` The memory in the ST7789 controller is
+- `offset(x_start, y_start)` 
+  The memory in the ST7789 controller is
   configured for a 240x320 display. When using a smaller display like a
   240x240 or 135x240 an offset needs to added to the x and y parameters so
   that the pixels are written to the memory area that corresponds to the
   visible display.  The offsets may need to be adjusted when rotating the
   display.
+  ST7789 控制器中的内存配置为 240x320 显示。 当使用较小的显示器（如 240x240 或 135x240）时，需要向 x 和 y 参数添加偏移量，以便将像素写入与可见显示器对应的内存区域。 旋转显示器时可能需要调整偏移量。
 
   For example the TTGO-TDisplay is 135x240 and uses the following offsets.
+  例如，TTGO-TDisplay 是 135x240 并使用以下偏移量。
+
   | Rotation | x_start | y_start |
   |----------|---------|---------|
   | 0        | 52      | 40      |
@@ -638,31 +657,40 @@ I was not able to run the display with a baud rate over 40MHZ.
   135x240 or 240x240 display. Your display may require using different offset
   values, if so, use the `offset` method after `rotation` to set the offset
   values.
+  当调用旋转方法时，驱动程序将调整 135x240 或 240x240 显示器的偏移量。 您的显示器可能需要使用不同的偏移值，如果是这样，请在 `rotation` 后使用 `offset` 方法来设置偏移值。
 
   The values needed for particular display may not be documented and may
   require some experimentation to determine the correct values. One technique
   is to draw a box the same size as the display and then make small changes
   to the offsets until the display looks correct. See the `cfg_helper.py` program
   in the examples folder for more information.
+  特定显示所需的值可能没有记录在案，可能需要一些实验来确定正确的值。 一种技术是绘制一个与显示大小相同的框，然后对偏移量进行小的更改，直到显示正确为止。 有关更多信息，请参阅示例文件夹中的“cfg_helper.py”程序。
 
 
 The module exposes predefined colors:
+该模块公开预定义的颜色： 
   `BLACK`, `BLUE`, `RED`, `GREEN`, `CYAN`, `MAGENTA`, `YELLOW`, and `WHITE`
-
+  “黑色”、“蓝色”、“红色”、“绿色”、“青色”、“洋红色”、“黄色”和“白色” 
 
 ## Helper functions
+
+## 辅助函数 
 
 - `color565(r, g, b)`
 
   Pack a color into 2-bytes rgb565 format
+  将颜色打包成 2 字节的 rgb565 格式
 
 - `map_bitarray_to_rgb565(bitarray, buffer, width, color=WHITE, bg_color=BLACK)`
 
   Convert a `bitarray` to the rgb565 color `buffer` that is suitable for blitting.
   Bit 1 in `bitarray` is a pixel with `color` and 0 - with `bg_color`.
+  将 `bitarray` 转换为适合 blitting 的 rgb565 颜色 `buffer`。`bitarray` 中的第 1 位是带有 `color` 和 0 - 带有 `bg_color` 的像素。
 
   This is a helper with a good performance to print text with a high
   resolution font. You can use an awesome tool
   https://github.com/peterhinch/micropython-font-to-py
   to generate a bitmap fonts from .ttf and use them as a frozen bytecode from
   the ROM memory.
+  这是一个具有良好性能的助手，可以使用高分辨率字体打印文本。 您可以使用一个很棒的工具从 .ttf 生成位图字体，并将它们用作 ROM 存储器中的固化字节码。
+  https://github.com/peterhinch/micropython-font-to-py
