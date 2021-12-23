@@ -474,6 +474,7 @@ I was not able to run the display with a baud rate over 40MHZ.
   `bg`, otherwise the foreground color defaults to `WHITE` and the background
   color defaults to `BLACK`.  See the `README.md` in the `fonts/bitmap`
   directory for example fonts.
+  使用指定的位图 `font` 将文本写入显示器，坐标为文本的左上角。 文本的前景色和背景色可以通过可选参数`fg`和`bg`设置，否则前景色默认为`WHITE`，背景色默认为`BLACK`。 有关示例字体，请参阅 `fonts/bitmap` 目录中的 `README.md`。 
 
 - `write(bitmap_font, s, x, y[, fg, bg, background_tuple, fill_flag])`
 
@@ -482,13 +483,17 @@ I was not able to run the display with a baud rate over 40MHZ.
   foreground and background colors of the text can be set by the optional
   arguments `fg` and `bg`, otherwise the foreground color defaults to `WHITE`
   and the background color defaults to `BLACK`.
+  使用指定的比例或等宽位图字体模块将文本写入显示器，坐标为文本的左上角。文本的前景色和背景色可以通过可选参数`fg`和`bg`设置，否则前景色默认为`WHITE`，背景色默认为`BLACK`。
 
   Transparency can be emulated by providing a `background_tuple` containing
   (bitmap_buffer, width, height).  This is the same format used by the jpg_decode
   method. See examples/T-DISPLAY/clock/clock.py for an example.
+  透明度可以通过提供一个包含 (bitmap_buffer, width, height) 的 `background_tuple` 来模拟。 这与 jpg_decode 方法使用的格式相同。 有关示例，请参见 examples/T-DISPLAY/clock/clock.py。
 
   See the `README.md` in the `truetype/fonts` directory for example fonts.
   Returns the width of the string as printed in pixels. Accepts UTF8 encoded strings.
+  有关示例字体，请参阅 `truetype/fonts` 目录中的 `README.md`。
+  返回打印的字符串宽度（以像素为单位）。 接受 UTF8 编码的字符串。 
 
   The `font2bitmap` utility creates compatible 1 bit per pixel bitmap modules
   from Proportional or Monospaced True Type fonts. The character size,
@@ -496,10 +501,12 @@ I was not able to run the display with a baud rate over 40MHZ.
   module may be specified as parameters. Use the -h option for details. If you
   specify a buffer_size during the display initialization it must be large
   enough to hold the widest character (HEIGHT * MAX_WIDTH * 2).
+  `font2bitmap` 实用程序从比例或等宽 True Type 字体创建兼容的每像素 1 位位图模块。 字符大小、前景色、背景色和包含在位图模块中的字符可以被指定为参数。 使用 -h 选项了解详细信息。 如果在显示初始化期间指定 buffer_size，它必须足够大以容纳最宽的字符 (HEIGHT * MAX_WIDTH * 2)。
 
 - `write_len(bitap_font, s)`
 
   Returns the width of the string in pixels if printed in the specified font.
+  如果以指定字体打印，则返回字符串的宽度（以像素为单位）。
 
 - `draw(vector_font, s, x, y[, fg, scale])`
 
@@ -511,6 +518,7 @@ I was not able to run the display with a baud rate over 40MHZ.
   point or an integer value. The `scale` value defaults to 1.0. See the
   README.md in the `vector/fonts` directory for example fonts and the utils
   directory for a font conversion program.
+  使用指定的 hershey 矢量字体将文本绘制到显示器上，坐标为文本的左下角。 文本的前景色可以通过可选参数 `fg` 设置，否则前景色默认为 `WHITE`。 文本的大小可以通过指定一个 `scale` 值来缩放。 `scale` 值必须大于 0，并且可以是浮点数或整数值。 `scale` 值默认为 1.0。 请参阅“vector/fonts”目录中的 README.md，例如字体和字体转换程序的 utils 目录。
 
 - `jpg(jpg_filename, x, y [, method])`
 
@@ -522,16 +530,19 @@ I was not able to run the display with a baud rate over 40MHZ.
   by passing `SLOW` for method. The `SLOW` method will draw the image a piece
   at a time using the Minimum Coded Unit (MCU, typically a multiple of 8x8)
   of the image.
+  在给定的 `x` 和 `y` 坐标处在显示器上绘制 JPG 文件作为图像的左上角。 解码和显示 JPG 所需的内存可能相当大，因为全屏 320x240 JPG 至少需要 3100 字节的工作区+ 320 * 240 * 2 字节的内存来缓冲图像。 需要比可用内存大的缓冲区的 Jpg 图像可以通过传递 `SLOW` 方法来绘制。 `SLOW` 方法将使用图像的最小编码单元（MCU，通常是 8x8 的倍数）一次绘制一幅图像。
 
 - `jpg_decode(jpg_filename [, x, y, width, height])`
 
   Decode a jpg file and return it or a portion of it as a tuple composed of
   (buffer, width, height). The buffer is a color565 blit_buffer compatible byte
   array. The buffer will require width * height * 2 bytes of memory.
+  解码一个 jpg 文件并将其或其中的一部分作为由（缓冲区、宽度、高度）组成的元组返回。 缓冲区是一个 color565 blit_buffer 兼容字节数组。 缓冲区将需要宽度 * 高度 * 2 字节的内存。
 
   If the optional x, y, width and height parameters are given the buffer will
   only contain the specified area of the image. See examples/T-DISPLAY/clock/clock.py
   examples/T-DISPLAY/toasters_jpg/toasters_jpg.py for examples.
+  如果给出了可选的 x、y、宽度和高度参数，则缓冲区将仅包含图像的指定区域。 有关示例，请参见 examples/T-DISPLAY/clock/clock.py examples/T-DISPLAY/toasters_jpg/toasters_jpg.py。 
 
 - `polygon_center(polygon)`
 
