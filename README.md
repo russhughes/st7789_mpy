@@ -143,6 +143,8 @@ Clone the esp-idf SDK repo & install -- this usually takes several minutes
 ```bash
 git clone --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf/
+git checkout release/v4.2
+git pull
 ./install.sh
 ```
 
