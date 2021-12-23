@@ -125,6 +125,8 @@ pyboard1.1, and Raspberry Pi Pico devices.
 
 # Setup MicroPython Build Environment in Ubuntu 20.04.2
 
+See the MicroPython [README.md](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment) if you run into any build issues not directly related to the st7789 driver. The recommended MicroPython build instructions may have changed. 
+
 Update and upgrade Ubuntu using apt-get if you are using a new install of Ubuntu or the Windows Subsystem for Linux.
 
 ```bash
@@ -138,13 +140,29 @@ Use apt-get to install the required build tools.
 sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtualenv python3-pip python3-virtualenv
 ```
 
-Clone the esp-idf SDK repo & install -- this usually takes several minutes
+### Install a compatible esp-idf SDK
+
+The MicroPython README.md states: "The ESP-IDF changes quickly and MicroPython only supports certain versions. Currently MicroPython supports v4.0.2, v4.1.1 and v4.2, although other IDF v4 versions may also work."  I have had good luck using IDF v4.2.
+
+Clone the esp-idf SDK repo -- this usually takes several minutes
 
 ```bash
-git clone --recursive https://github.com/espressif/esp-idf.git
+git clone -b v4.2 --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf/
-git checkout release/v4.2
 git pull
+```
+
+If you already have a copy of the IDF you can checkout a version compatible with MicroPython and update the submodules using:
+
+```bash
+$ cd esp-idf
+$ git checkout v4.2
+$ git submodule update --init --recursive
+```
+
+Install the esp-idf SDK.
+
+```bash
 ./install.sh
 ```
 
