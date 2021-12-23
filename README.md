@@ -20,11 +20,8 @@ I modified the original driver for one of my projects to add:
 - 使用8位和16位宽位图字体绘制文本
 - Drawing text using Hershey vector fonts
 - 使用Hershey vector字体绘制文本
-- Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram
-- 绘制JPG，包括绘制JPG大于可用ram的慢速模式
-  using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
-  使用TJpgDec-微型JPEG解压器R0。01d。从…起
-  http://elm-chan.org/fsw/tjpgd/00index.html
+- Drawing JPG's, including a SLOW mode to draw jpg's larger than available ram using the TJpgDec - Tiny JPEG Decompressor R0.01d. from http://elm-chan.org/fsw/tjpgd/00index.html
+- 绘制 JPG，包括使用 TJpgDec - Tiny JPEG Decompressor R0.01d 绘制大于可用内存的 jpg 的慢速模式。 来自 http://elm-chan.org/fsw/tjpgd/00index.html
 - Drawing and rotating Polygons and filled Polygons.
 - 绘制和旋转多边形以及填充多边形。
 - Tracking bounds
