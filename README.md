@@ -268,7 +268,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, buffer_size)`
+- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, inversion_mode, buffer_size)`
 
     ### Required positional arguments:
     - `spi` spi device
@@ -288,6 +288,8 @@ I was not able to run the display with a baud rate over 40MHZ.
     - `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
 
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
+
+    - `inversion` Sets the display color inversion mode if True, clears the display color inversion mode if false.
 
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
 
