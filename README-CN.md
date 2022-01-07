@@ -177,11 +177,7 @@ pyboard1.1, and Raspberry Pi Pico devices.
 
 # Setup MicroPython Build Environment in Ubuntu 20.04.2
 
-<<<<<<< HEAD:README-CN.md
 # 在Ubuntu 20.04.2中设置MicroPython构建环境。
-=======
-See the MicroPython [README.md](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment) if you run into any build issues not directly related to the st7789 driver. The recommended MicroPython build instructions may have changed. 
->>>>>>> upstream/master:README.md
 
 Update and upgrade Ubuntu using apt-get if you are using a new install of Ubuntu or the Windows Subsystem for Linux.
 
@@ -200,31 +196,13 @@ Use apt-get to install the required build tools.
 sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtualenv python3-pip python3-virtualenv
 ```
 
-### Install a compatible esp-idf SDK
-
-The MicroPython README.md states: "The ESP-IDF changes quickly and MicroPython only supports certain versions. Currently MicroPython supports v4.0.2, v4.1.1 and v4.2, although other IDF v4 versions may also work."  I have had good luck using IDF v4.2.
-
-Clone the esp-idf SDK repo -- this usually takes several minutes
+Clone the esp-idf SDK repo & install -- this usually takes several minutes
 
 克隆esp idf SDK repo&install--这通常需要几分钟的时间
 
 ```bash
-git clone -b v4.2 --recursive https://github.com/espressif/esp-idf.git
+git clone --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf/
-git pull
-```
-
-If you already have a copy of the IDF you can checkout a version compatible with MicroPython and update the submodules using:
-
-```bash
-$ cd esp-idf
-$ git checkout v4.2
-$ git submodule update --init --recursive
-```
-
-Install the esp-idf SDK.
-
-```bash
 ./install.sh
 ```
 
@@ -355,13 +333,9 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-<<<<<<< HEAD:README-CN.md
 ## 方法 
 
 - `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, buffer_size)`
-=======
-- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, inversion_mode, buffer_size)`
->>>>>>> upstream/master:README.md
 
     ### Required positional arguments:
     ### 必要的位置参数： 
@@ -394,8 +368,6 @@ I was not able to run the display with a baud rate over 40MHZ.
 
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
     - `color_order` 设置驱动程序使用的颜色顺序，支持st7789.RGB 和 st7789.BGR 。
-
-    - `inversion` Sets the display color inversion mode if True, clears the display color inversion mode if false.
 
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
     - `buffer_size` 如果没有指定buffer_size，则根据需要创建和释放动态分配的缓冲区。如果指定了 buffer_size，它必须足够大以包含所使用的最大位图、字体字符和/或解码的 JPG 图像（行 * 列 * 2 字节，RGB565 表示法中的 16 位颜色）。动态分配速度较慢，可能会导致堆碎片，因此应启用垃圾回收 (GC)。 

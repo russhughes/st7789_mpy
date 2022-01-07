@@ -264,9 +264,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(st7789_ST7789_sleep_mode_obj, st7789_ST7789_sle
 STATIC mp_obj_t st7789_ST7789_inversion_mode(mp_obj_t self_in, mp_obj_t value)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-	self->inversion = mp_obj_is_true(value);
-	if (self->inversion) {
+	if (mp_obj_is_true(value)) {
 		write_cmd(self, ST7789_INVON, NULL, 0);
 	} else {
 		write_cmd(self, ST7789_INVOFF, NULL, 0);
@@ -1049,12 +1047,7 @@ STATIC mp_obj_t st7789_ST7789_init(mp_obj_t self_in)
 
 	set_rotation(self);
 
-	if (self->inversion) {
-		write_cmd(self, ST7789_INVON, NULL, 0);
-	} else {
-		write_cmd(self, ST7789_INVOFF, NULL, 0);
-	}
-
+	write_cmd(self, ST7789_INVON, NULL, 0);
 	mp_hal_delay_ms(10);
 	write_cmd(self, ST7789_NORON, NULL, 0);
 	mp_hal_delay_ms(10);
@@ -1691,8 +1684,8 @@ STATIC void RotatePolygon(Polygon *polygon, Point center, mp_float_t angle)
 	if (polygon->length == 0)
 		return; /* reject null polygons */
 
-	mp_float_t cosAngle = cosf(angle);
-	mp_float_t sinAngle = sinf(angle);
+	mp_float_t cosAngle = cos(angle);
+	mp_float_t sinAngle = sin(angle);
 
 	for (int i = 0; i < polygon->length; i++) {
 		mp_float_t dx = (polygon->points[i].x - center.x);
@@ -2015,7 +2008,6 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		ARG_backlight,
 		ARG_rotation,
 		ARG_color_order,
-		ARG_inversion,
 		ARG_buffer_size
 	};
 	static const mp_arg_t allowed_args[] = {
@@ -2028,7 +2020,6 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		{MP_QSTR_backlight, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_rotation, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 		{MP_QSTR_color_order, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ST7789_MADCTL_RGB}},
-		{MP_QSTR_inversion, MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = true}},
 		{MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 	};
 	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -2047,7 +2038,6 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 	self->height		   = args[ARG_height].u_int;
 	self->rotation		   = args[ARG_rotation].u_int % 4;
 	self->color_order	   = args[ARG_color_order].u_int;
-	self->inversion 	   = args[ARG_inversion].u_bool;
 	self->buffer_size	   = args[ARG_buffer_size].u_int;
 
 	if (self->buffer_size) {
