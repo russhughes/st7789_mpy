@@ -8,3 +8,4 @@ sphinx/build
 *.P
 .DS_Store
 .history
+README-CN.md
