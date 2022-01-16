@@ -66,7 +66,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython v1.17-231-g0892ebe09 compiled with ESP IDF v4.2 using CMake
+MicroPython v1.17-333-gcf258c898 compiled with ESP IDF v4.2 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -125,7 +125,7 @@ pyboard1.1, and Raspberry Pi Pico devices.
 
 # Setup MicroPython Build Environment in Ubuntu 20.04.2
 
-See the MicroPython [README.md](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment) if you run into any build issues not directly related to the st7789 driver. The recommended MicroPython build instructions may have changed. 
+See the MicroPython [README.md](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment) if you run into any build issues not directly related to the st7789 driver. The recommended MicroPython build instructions may have changed.
 
 Update and upgrade Ubuntu using apt-get if you are using a new install of Ubuntu or the Windows Subsystem for Linux.
 
@@ -268,12 +268,13 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotation, color_order, inversion_mode, buffer_size)`
+- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotations, rotation, color_order, inversion, options, buffer_size)`
 
     ### Required positional arguments:
     - `spi` spi device
     - `width` display width
     - `height` display height
+
     ### Required keyword arguments:
     - `dc` sets the pin connected to the display data/command selection input. This parameter is always required.
 
@@ -285,16 +286,34 @@ I was not able to run the display with a baud rate over 40MHZ.
 
     - `backlight` sets the pin connected to the displays backlight enable input. The displays backlight input can often be left floating or disconnected as the backlight on some displays are always powered on and cannot be turned off.
 
-    - `rotation` 0-0 degrees, 1-90 degrees, 2-180 degrees, 3-270 degrees
+    - `rotations` sets the orientation table for each of the rotations. The orientation table is a list of tuples for each rotation that define the MADCTL register, width, height, start_x, and start_y values.
+
+      Display | Default Orientation Tables
+      ------- | --------------------------
+      240x320 | [(0x00, 240, 320,  0,  0), (0x60, 320, 240,  0,  0), (0xc0, 240, 320,  0,  0), (0xa0, 320, 240,  0,  0)]
+      240x240 | [(0x00, 240, 240,  0,  0), (0x60, 240, 240,  0,  0), (0xc0, 240, 240,  0, 80), (0xa0, 240, 240, 80,  0)]
+      135x240 | [(0x00, 135, 240, 52, 40), (0x60, 240, 135, 40, 53), (0xc0, 135, 240, 53, 40), (0xa0, 240, 135, 40, 52)]
+       other  | [(0x00, width, height, 0, 0)]
+
+      You may define as many rotations in the list as you wish.
+
+    - `rotation` sets the display rotation according to the orientation table. The default orientation table defines four counter-clockwise rotations as 0-Portrait (0 degrees), 1- Landscape (90 degrees), 2- Reverse Portrait (180 degrees), and 3- Reverse Landscape (270 degrees) for 240x320, 240x240 and 123x240 displays with the LCD's ribbon cable at the bottom of the display. The default rotation being Portrait (0 degrees).
 
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
 
     - `inversion` Sets the display color inversion mode if True, clears the display color inversion mode if false.
 
+    - `options` Sets driver option flags.
+
+      Option | Description
+      ------ | -----------
+      st7789.WRAP | pixels, lines, polygons and Hershey text will wrap around the display both horizontally and vertically.
+      st7789.WRAP_H | pixels, lines, polygons and Hershey text will wrap around the display horizontally.
+      st7789.WRAP_V | pixels, lines, polygons and Hershey text will wrap around the display vertically.
+
     - `buffer_size` If a buffer_size is not specified a dynamically allocated buffer is created and freed as needed. If a buffer_size is specified it must be large enough to contain the largest bitmap, font character and/or decoded JPG image used (Rows * Columns * 2 bytes, 16bit colors in RGB565 notation). Dynamic allocation is slower and can cause heap fragmentation so garbage collection (GC) should be enabled.
 
-- `inversion_mode(bool)` Sets the display color inversion mode if True,
-   clears the display color inversion mode if false.
+- `inversion_mode(bool)` Sets the display color inversion mode if True, clears the display color inversion mode if False.
 
 - `madctl(value)` Returns the current value of the MADCTL register.
    Optionally sets the MADCTL register if a value is passed to the method.
@@ -405,6 +424,10 @@ I was not able to run the display with a baud rate over 40MHZ.
   README.md in the `vector/fonts` directory for example fonts and the utils
   directory for a font conversion program.
 
+- `draw_len(vector_font, s[, scale])`
+
+  Returns the width of the string in pixels if drawn with the specified font.
+
 - `jpg(jpg_filename, x, y [, method])`
 
   Draw JPG file on the display at the given `x` and `y` coordinates as the upper
@@ -449,7 +472,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
   See the T-Display `roids.py` for an example.
 
-- `bounding([status])`
+- `bounding({status, as_rect})`
 
   Bounding turns on and off tracking the area of the display that has been
   written to. Initially tracking is disabled, pass a True value to enable
@@ -458,6 +481,9 @@ I was not able to run the display with a baud rate over 40MHZ.
 
   Returns a four integer tuple containing (min_x, min_y, max_x, max_y) indicating
   the area of the display that has been written to since the last clearing.
+
+  If `as_rect` parameter is True, the returned tuple will contain (min_x, min_y, width, height)
+  values.
 
   See the TWATCH-2020 `watch.py` demo for an example.
 
@@ -497,7 +523,7 @@ I was not able to run the display with a baud rate over 40MHZ.
 
 - `rotation(r)`
 
-  Set the rotates the logical display in a clockwise direction. 0-Portrait
+  Set the rotates the logical display in a counter-clockwise direction. 0-Portrait
   (0 degrees), 1-Landscape (90 degrees), 2-Inverse Portrait (180 degrees),
   3-Inverse Landscape (270 degrees)
 

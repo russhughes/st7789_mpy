@@ -44,47 +44,64 @@
 #include "st7789.h"
 #include "tjpgd565.h"
 
-#define _swap_int(a, b) \
-	{                   \
-		int t = a;      \
-		a	  = b;      \
-		b	  = t;      \
-	}
-#define _swap_int16_t(a, b) \
-	{                       \
-		int16_t t = a;      \
-		a		  = b;      \
-		b		  = t;      \
-	}
+#define _swap_int(a, b) { int t = a; a = b; b = t; }s
+#define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
 #define _swap_bytes(val) ((((val) >> 8) & 0x00FF) | (((val) << 8) & 0xFF00))
-
 #define ABS(N) (((N) < 0) ? (-(N)) : (N))
 #define mp_hal_delay_ms(delay) (mp_hal_delay_us(delay * 1000))
 
-#define CS_LOW()                           \
-	{                                      \
-		if (self->cs) {                    \
-			mp_hal_pin_write(self->cs, 0); \
-		}                                  \
-	}
-#define CS_HIGH()                          \
-	{                                      \
-		if (self->cs) {                    \
-			mp_hal_pin_write(self->cs, 1); \
-		}                                  \
-	}
+#define CS_LOW() { 						\
+	if (self->cs) {                    	\
+		mp_hal_pin_write(self->cs, 0); 	\
+	}                                  	\
+}
+
+#define CS_HIGH() {                     \
+	if (self->cs) {                    	\
+		mp_hal_pin_write(self->cs, 1); 	\
+	}                                  	\
+}
+
 #define DC_LOW() (mp_hal_pin_write(self->dc, 0))
 #define DC_HIGH() (mp_hal_pin_write(self->dc, 1))
-#define RESET_LOW()                           \
-	{                                         \
-		if (self->reset)                      \
-			mp_hal_pin_write(self->reset, 0); \
-	}
-#define RESET_HIGH()                          \
-	{                                         \
-		if (self->reset)                      \
-			mp_hal_pin_write(self->reset, 1); \
-	}
+
+#define RESET_LOW() {      					\
+	if (self->reset)                      	\
+		mp_hal_pin_write(self->reset, 0); 	\
+}
+
+#define RESET_HIGH() {                      \
+	if (self->reset)                      	\
+		mp_hal_pin_write(self->reset, 1); 	\
+}
+
+// Default st7789 display orientation tables
+// can be overridden during init(), madctl values
+// will be combined with color_mode
+//
+
+//{ madctl, width, height, colstart, rowstart }
+
+st7789_rotation_t ORIENTATIONS_240x320[4] = {
+	{ 0x00, 240, 320,  0,  0},
+	{ 0x60, 320, 240,  0,  0},
+	{ 0xc0, 240, 320,  0,  0},
+	{ 0xa0, 320, 240,  0,  0}
+};
+
+st7789_rotation_t ORIENTATIONS_240x240[4] = {
+	{0x00, 240, 240,  0,  0},
+	{0x60, 240, 240,  0,  0},
+	{0xc0, 240, 240,  0, 80},
+	{0xa0, 240, 240, 80,  0}
+};
+
+st7789_rotation_t ORIENTATIONS_135x240[4] = {
+	{0x00, 135, 240, 52, 40},
+    {0x60, 240, 135, 40, 53},
+    {0xc0, 135, 240, 53, 40},
+    {0xa0, 240, 135, 40, 52}
+};
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len)
 {
@@ -163,9 +180,21 @@ STATIC void fill_color_buffer(mp_obj_base_t *spi_obj, uint16_t color, int length
 	}
 }
 
-void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t color)
+int mod(int x, int m) {
+    int r = x % m;
+    return (r < 0) ? r + m : r;
+}
+
+void draw_pixel(st7789_ST7789_obj_t *self, int16_t x, int16_t y, uint16_t color)
 {
-	if ((x < self->width) && (y < self->height)) {
+	if ((self->options & OPTIONS_WRAP)) {
+		if ((self->options & OPTIONS_WRAP_H) &&  ((x >= self->width) || (x < 0)))
+			x = mod(x, self->width);
+		if ((self->options & OPTIONS_WRAP_V) && ((y >= self->height) || (y < 0)))
+			y = mod(y, self->height);
+	}
+
+	if ((x < self->width) && (y < self->height) && (x >= 0) && (y >= 0)) {
 		uint8_t hi = color >> 8, lo = color & 0xff;
 		set_window(self, x, y, x, y);
 		DC_HIGH();
@@ -178,47 +207,59 @@ void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t colo
 
 void fast_hline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t w, uint16_t color)
 {
-	if (y >= 0 && self->width > x && self->height > y) {
-		if (0 > x) {
-			w += x;
-			x = 0;
-		}
+	if ((self->options & OPTIONS_WRAP) == 0) {
+		if (y >= 0 && self->width > x && self->height > y) {
+			if (0 > x) {
+				w += x;
+				x = 0;
+			}
 
-		if (self->width < x + w) {
-			w = self->width - x;
-		}
+			if (self->width < x + w) {
+				w = self->width - x;
+			}
 
-		if (w > 0) {
-			int16_t x2 = x + w - 1;
-			set_window(self, x, y, x2, y);
-			DC_HIGH();
-			CS_LOW();
-			fill_color_buffer(self->spi_obj, color, w);
-			CS_HIGH();
+			if (w > 0) {
+				int16_t x2 = x + w - 1;
+				set_window(self, x, y, x2, y);
+				DC_HIGH();
+				CS_LOW();
+				fill_color_buffer(self->spi_obj, color, w);
+				CS_HIGH();
+			}
+		}
+	} else {
+		for(int d=0; d<w; d++) {
+			draw_pixel(self, x + d, y, color);
 		}
 	}
 }
 
 STATIC void fast_vline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t h, uint16_t color)
 {
-	if (x >= 0 && self->width > x && self->height > y) {
-		if (0 > y) {
-			h += y;
-			y = 0;
+	if ((self->options & OPTIONS_WRAP) == 0) {
+		if (x >= 0 && self->width > x && self->height > y) {
+			if (0 > y) {
+				h += y;
+				y = 0;
+			}
+
+			if (self->height < y + h) {
+				h = self->height - y;
+			}
+
+			if (h > 0) {
+				int16_t y2 = y + h - 1;
+
+				set_window(self, x, y, x, y2);
+				DC_HIGH();
+				CS_LOW();
+				fill_color_buffer(self->spi_obj, color, h);
+				CS_HIGH();
+			}
 		}
-
-		if (self->height < y + h) {
-			h = self->height - y;
-		}
-
-		if (h > 0) {
-			int16_t y2 = y + h - 1;
-
-			set_window(self, x, y, x, y2);
-			DC_HIGH();
-			CS_LOW();
-			fill_color_buffer(self->spi_obj, color, h);
-			CS_HIGH();
+	} else {
+		for (int d = 0; d < h; d++) {
+			draw_pixel(self, x, y + d, color);
 		}
 	}
 }
@@ -435,6 +476,7 @@ STATIC mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, st7789_ST7789_blit_buffer);
 
+
 STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self			 = MP_OBJ_TO_PTR(args[0]);
@@ -530,6 +572,63 @@ STATIC mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args)
 	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_obj, 5, 7, st7789_ST7789_draw);
+
+STATIC mp_obj_t st7789_ST7789_draw_len(size_t n_args, const mp_obj_t *args)
+{
+	char single_char_s[] = {0, 0};
+	const char *s;
+
+	mp_obj_module_t *hershey = MP_OBJ_TO_PTR(args[1]);
+
+	if (mp_obj_is_int(args[2])) {
+		mp_int_t c = mp_obj_get_int(args[2]);
+		single_char_s[0] = c & 0xff;
+		s = single_char_s;
+	} else {
+		s = mp_obj_str_get_str(args[2]);
+	}
+
+	mp_float_t scale = 1.0;
+	if (n_args > 3) {
+		if (mp_obj_is_float(args[3])) {
+			scale = mp_obj_float_get(args[3]);
+		}
+		if (mp_obj_is_int(args[3])) {
+			scale = (mp_float_t) mp_obj_get_int(args[3]);
+		}
+	}
+
+	mp_obj_dict_t *dict = MP_OBJ_TO_PTR(hershey->globals);
+	mp_obj_t * index_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_INDEX));
+	mp_buffer_info_t index_bufinfo;
+	mp_get_buffer_raise(index_data_buff, &index_bufinfo, MP_BUFFER_READ);
+	uint8_t *index = index_bufinfo.buf;
+
+	mp_obj_t * font_data_buff = mp_obj_dict_get(dict, MP_OBJ_NEW_QSTR(MP_QSTR_FONT));
+	mp_buffer_info_t font_bufinfo;
+	mp_get_buffer_raise(font_data_buff, &font_bufinfo, MP_BUFFER_READ);
+	int8_t *font = font_bufinfo.buf;
+
+	int16_t print_width = 0;
+	char c;
+	int16_t ii;
+
+	while ((c = *s++)) {
+		if (c >= 32 && c <= 127) {
+			ii = (c - 32) * 2;
+
+			int16_t offset = (index[ii] | (index[ii + 1] << 8)) +1;
+			int16_t left   = (int) (scale * (font[offset++] - 0x52) + 0.5);
+			int16_t right  = (int) (scale * (font[offset++] - 0x52) + 0.5);
+			int16_t width  = right - left;
+			print_width += width;
+		}
+	}
+
+	return mp_obj_new_int((int) print_width * scale);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_len_obj, 3, 4, st7789_ST7789_draw_len);
+
 
 STATIC uint32_t bs_bit		= 0;
 uint8_t *		bitmap_data = NULL;
@@ -921,69 +1020,48 @@ STATIC mp_obj_t st7789_ST7789_text(size_t n_args, const mp_obj_t *args)
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_text_obj, 5, 7, st7789_ST7789_text);
 
+
+// 0=Portrait, 1=Landscape, 2=Reverse Portrait (180), 3=Reverse Landscape (180)
+
 STATIC void set_rotation(st7789_ST7789_obj_t *self)
 {
 	uint8_t madctl_value = self->color_order;
 
-	if (self->rotation == 0) { // Portrait
-		self->width	 = self->display_width;
-		self->height = self->display_height;
-		if (self->display_height == 320 || self->display_width == 240) {
-			self->colstart = 0;
-			self->rowstart = 0;
-		} else if (self->display_width == 135) {
-			self->colstart = 52;
-			self->rowstart = 40;
-		}
-	} else if (self->rotation == 1) { // Landscape
-		madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MV;
-		self->width	 = self->display_height;
-		self->height = self->display_width;
-		if (self->display_height == 320 || self->display_width == 240) {
-			self->colstart = 0;
-			self->rowstart = 0;
-		} else if (self->display_width == 135) {
-			self->colstart = 40;
-			self->rowstart = 53;
-		}
-	} else if (self->rotation == 2) { // Inverted Portrait
-		madctl_value |= ST7789_MADCTL_MX | ST7789_MADCTL_MY;
-		self->width	 = self->display_width;
-		self->height = self->display_height;
-		if (self->display_height == 320) {
-			self->colstart = 0;
-			self->rowstart = 0;
-		} else if (self->display_width == 135) {
-			self->colstart = 53;
-			self->rowstart = 40;
-		} else if (self->display_width == 240) {
-			self->colstart = 0;
-			self->rowstart = 80;
-		}
+	if (self->rotation > self->rotations_len) {
+		mp_raise_msg_varg(
+			&mp_type_RuntimeError,
+			MP_ERROR_TEXT("Invalid rotation value %d > %d"), self->rotation, self->rotations_len
+		);
+	}
 
-	} else if (self->rotation == 3) { // Inverted Landscape
-		madctl_value |= ST7789_MADCTL_MV | ST7789_MADCTL_MY;
-		self->width	 = self->display_height;
-		self->height = self->display_width;
-		if (self->display_height == 320) {
-			self->colstart = 0;
-			self->rowstart = 0;
-		} else if (self->display_width == 135) {
-			self->colstart = 40;
-			self->rowstart = 52;
-		} else if (self->display_width == 240) {
-			self->colstart = 80;
-			self->rowstart = 0;
+	st7789_rotation_t *rotations = self->rotations;
+	if (rotations == NULL) {
+		if (self->display_width == 135 && self->display_height == 240) {
+			rotations = ORIENTATIONS_135x240;
+		} else if  (self->display_width == 240 && self->display_height == 240) {
+			rotations = ORIENTATIONS_240x240;
+		} else if (self->display_width == 240 && self->display_height == 320) {
+			rotations = ORIENTATIONS_240x320;
 		}
 	}
-	const uint8_t madctl[] = {madctl_value};
-	write_cmd(self, ST7789_MADCTL, madctl, 1);
+
+	if (rotations) {
+		st7789_rotation_t *rotation = &rotations[self->rotation];
+		madctl_value |= rotation->madctl;
+		self->width  = rotation->width;
+		self->height = rotation->height;
+		self->colstart = rotation->colstart;
+		self->rowstart = rotation->rowstart;
+	}
 
 	self->madctl = madctl_value & 0xff;
-	self->min_x	 = self->display_width;
-	self->min_y	 = self->display_height;
+	self->min_x	 = self->width;
+	self->min_y	 = self->height;
 	self->max_x	 = 0;
 	self->max_y	 = 0;
+
+	const uint8_t madctl[] = {madctl_value};
+	write_cmd(self, ST7789_MADCTL, madctl, 1);
 }
 
 STATIC mp_obj_t st7789_ST7789_rotation(mp_obj_t self_in, mp_obj_t value)
@@ -1933,23 +2011,23 @@ STATIC mp_obj_t st7789_ST7789_bounding(size_t n_args, const mp_obj_t *args)
 	mp_obj_t bounds[4] = {
 		mp_obj_new_int(self->min_x),
 		mp_obj_new_int(self->min_y),
-		mp_obj_new_int(self->max_x),
-		mp_obj_new_int(self->max_y)};
+		(n_args > 2 && mp_obj_is_true(args[2])) ? mp_obj_new_int(self->max_x-self->min_x+1) : mp_obj_new_int(self->max_x),
+		(n_args > 2 && mp_obj_is_true(args[2])) ? mp_obj_new_int(self->max_y-self->min_y+1) : mp_obj_new_int(self->max_y)};
 
 	if (n_args > 1) {
-		if (args[1] == mp_const_true)
+		if (mp_obj_is_true(args[1]))
 			self->bounding = 1;
 		else
 			self->bounding = 0;
 
-		self->min_x = self->display_width;
-		self->min_y = self->display_height;
+		self->min_x = self->width;
+		self->min_y = self->height;
 		self->max_x = 0;
 		self->max_y = 0;
 	}
 	return mp_obj_new_tuple(4, bounds);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bounding_obj, 1, 2, st7789_ST7789_bounding);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_bounding_obj, 1, 3, st7789_ST7789_bounding);
 
 STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&st7789_ST7789_write_obj)},
@@ -1966,6 +2044,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj)},
 	{MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj)},
 	{MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
+	{MP_ROM_QSTR(MP_QSTR_draw_len), MP_ROM_PTR(&st7789_ST7789_draw_len_obj)},
 	{MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&st7789_ST7789_bitmap_obj)},
 	{MP_ROM_QSTR(MP_QSTR_fill_rect), MP_ROM_PTR(&st7789_ST7789_fill_rect_obj)},
 	{MP_ROM_QSTR(MP_QSTR_fill), MP_ROM_PTR(&st7789_ST7789_fill_obj)},
@@ -2013,9 +2092,11 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		ARG_dc,
 		ARG_cs,
 		ARG_backlight,
+		ARG_rotations,
 		ARG_rotation,
 		ARG_color_order,
 		ARG_inversion,
+		ARG_options,
 		ARG_buffer_size
 	};
 	static const mp_arg_t allowed_args[] = {
@@ -2026,9 +2107,11 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 		{MP_QSTR_dc, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_cs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_backlight, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
+		{MP_QSTR_rotations, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
 		{MP_QSTR_rotation, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 		{MP_QSTR_color_order, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ST7789_MADCTL_RGB}},
 		{MP_QSTR_inversion, MP_ARG_KW_ONLY | MP_ARG_BOOL,  {.u_bool = true}},
+		{MP_QSTR_options, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 		{MP_QSTR_buffer_size, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
 	};
 	mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -2045,9 +2128,37 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 	self->width			   = args[ARG_width].u_int;
 	self->display_height   = args[ARG_height].u_int;
 	self->height		   = args[ARG_height].u_int;
-	self->rotation		   = args[ARG_rotation].u_int % 4;
+
+	self->rotations = NULL;
+	self->rotations_len = 4;
+
+	if (args[ARG_rotations].u_obj != MP_OBJ_NULL) {
+		size_t len;
+		mp_obj_t *rotations_array = MP_OBJ_NULL;
+		mp_obj_get_array(args[ARG_rotations].u_obj, &len, &rotations_array);
+		self->rotations_len = len;
+		self->rotations = m_new(st7789_rotation_t, self->rotations_len);
+		for (int i = 0; i < self->rotations_len; i++) {
+			mp_obj_t *rotation_tuple = NULL;
+			size_t rotation_tuple_len = 0;
+
+			mp_obj_tuple_get(rotations_array[i], &rotation_tuple_len, &rotation_tuple);
+			if (rotation_tuple_len != 5) {
+				mp_raise_ValueError("rotations tuple must have 5 elements");
+			}
+
+			self->rotations[i].madctl = mp_obj_get_int(rotation_tuple[0]);
+			self->rotations[i].width = mp_obj_get_int(rotation_tuple[1]);
+			self->rotations[i].height = mp_obj_get_int(rotation_tuple[2]);
+			self->rotations[i].colstart = mp_obj_get_int(rotation_tuple[3]);
+			self->rotations[i].rowstart = mp_obj_get_int(rotation_tuple[4]);
+		}
+	}
+
+	self->rotation		   = args[ARG_rotation].u_int % self->rotations_len;
 	self->color_order	   = args[ARG_color_order].u_int;
 	self->inversion 	   = args[ARG_inversion].u_bool;
+	self->options		   = args[ARG_options].u_int & 0xff;
 	self->buffer_size	   = args[ARG_buffer_size].u_int;
 
 	if (self->buffer_size) {
@@ -2102,8 +2213,10 @@ STATIC const mp_map_elem_t st7789_module_globals_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_MADCTL_ML), MP_ROM_INT(ST7789_MADCTL_ML)},
 	{MP_ROM_QSTR(MP_QSTR_MADCTL_MH), MP_ROM_INT(ST7789_MADCTL_MH)},
 	{MP_ROM_QSTR(MP_QSTR_RGB), MP_ROM_INT(ST7789_MADCTL_RGB)},
-	{MP_ROM_QSTR(MP_QSTR_BGR), MP_ROM_INT(ST7789_MADCTL_BGR)}
-
+	{MP_ROM_QSTR(MP_QSTR_BGR), MP_ROM_INT(ST7789_MADCTL_BGR)},
+	{MP_ROM_QSTR(MP_QSTR_WRAP), MP_ROM_INT(OPTIONS_WRAP)},
+	{MP_ROM_QSTR(MP_QSTR_WRAP_H), MP_ROM_INT(OPTIONS_WRAP_H)},
+	{MP_ROM_QSTR(MP_QSTR_WRAP_V), MP_ROM_INT(OPTIONS_WRAP_V)}
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_st7789_globals, st7789_module_globals_table);

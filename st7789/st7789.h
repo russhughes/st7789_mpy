@@ -5,12 +5,6 @@
 extern "C" {
 #endif
 
-#define ST7789_240x240_XSTART 0
-#define ST7789_240x240_YSTART 0
-#define ST7789_135x240_XSTART 52
-#define ST7789_135x240_YSTART 40
-
-
 // color modes
 #define COLOR_MODE_65K      0x50
 #define COLOR_MODE_262K     0x60
@@ -68,6 +62,10 @@ extern "C" {
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
+#define OPTIONS_WRAP_V 0x01
+#define OPTIONS_WRAP_H 0x02
+#define OPTIONS_WRAP   0x03
+
 typedef struct _Point {
    mp_float_t x;
    mp_float_t y;
@@ -78,6 +76,13 @@ typedef struct _Polygon {
     Point   *points;
 } Polygon;
 
+typedef struct _st7789_rotation_t {
+    uint8_t madctl;
+    uint16_t width;
+    uint16_t height;
+    uint16_t colstart;
+    uint16_t rowstart;
+} st7789_rotation_t;
 
 // this is the actual C-structure for our new object
 typedef struct _st7789_ST7789_obj_t {
@@ -95,9 +100,12 @@ typedef struct _st7789_ST7789_obj_t {
     uint8_t colstart;
     uint8_t rowstart;
     uint8_t rotation;
+    st7789_rotation_t *rotations;   // list of rotation tuples [(madctl, colstart, rowstart)]
+    uint8_t rotations_len;          // number of rotations
     uint8_t color_order;
     bool inversion;
     uint8_t madctl;
+    uint8_t options;            // options bit array
     mp_hal_pin_obj_t reset;
     mp_hal_pin_obj_t dc;
     mp_hal_pin_obj_t cs;
@@ -113,7 +121,7 @@ typedef struct _st7789_ST7789_obj_t {
 
 mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
-extern void draw_pixel(st7789_ST7789_obj_t *self, uint16_t x, uint16_t y, uint16_t color);
+extern void draw_pixel(st7789_ST7789_obj_t *self, int16_t x, int16_t y, uint16_t color);
 extern void fast_hline(st7789_ST7789_obj_t *self, int16_t x, int16_t y, int16_t w, uint16_t color);
 
 #ifdef  __cplusplus
