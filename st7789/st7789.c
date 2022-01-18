@@ -625,7 +625,7 @@ STATIC mp_obj_t st7789_ST7789_draw_len(size_t n_args, const mp_obj_t *args)
 		}
 	}
 
-	return mp_obj_new_int((int) print_width * scale);
+	return mp_obj_new_int(int(print_width * scale));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_len_obj, 3, 4, st7789_ST7789_draw_len);
 
@@ -1209,6 +1209,7 @@ STATIC mp_obj_t st7789_ST7789_vline(size_t n_args, const mp_obj_t *args)
 	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_vline_obj, 5, 5, st7789_ST7789_vline);
+
 
 // Circle/Fill_Circle by https://github.com/c-logic
 // https://github.com/russhughes/st7789_mpy/pull/46
@@ -2144,7 +2145,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 
 			mp_obj_tuple_get(rotations_array[i], &rotation_tuple_len, &rotation_tuple);
 			if (rotation_tuple_len != 5) {
-				mp_raise_ValueError("rotations tuple must have 5 elements");
+				mp_raise_ValueError(MP_ERROR_TEXT("rotations tuple must have 5 elements"));
 			}
 
 			self->rotations[i].madctl = mp_obj_get_int(rotation_tuple[0]);
