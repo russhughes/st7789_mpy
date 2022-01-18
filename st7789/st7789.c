@@ -625,7 +625,7 @@ STATIC mp_obj_t st7789_ST7789_draw_len(size_t n_args, const mp_obj_t *args)
 		}
 	}
 
-	return mp_obj_new_int(int(print_width * scale));
+	return mp_obj_new_int((int)(print_width * scale));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_len_obj, 3, 4, st7789_ST7789_draw_len);
 
@@ -1770,8 +1770,8 @@ STATIC void RotatePolygon(Polygon *polygon, Point center, mp_float_t angle)
 	if (polygon->length == 0)
 		return; /* reject null polygons */
 
-	mp_float_t cosAngle = cosf(angle);
-	mp_float_t sinAngle = sinf(angle);
+	mp_float_t cosAngle = MICROPY_FLOAT_C_FUN(cos)(angle);
+	mp_float_t sinAngle = MICROPY_FLOAT_C_FUN(sin)(angle);
 
 	for (int i = 0; i < polygon->length; i++) {
 		mp_float_t dx = (polygon->points[i].x - center.x);
