@@ -75,7 +75,8 @@
 		mp_hal_pin_write(self->reset, 1); 	\
 }
 
-// Default st7789 display orientation tables
+//
+// Default st7789 and st7735 display orientation tables
 // can be overridden during init(), madctl values
 // will be combined with color_mode
 //
@@ -102,6 +103,21 @@ st7789_rotation_t ORIENTATIONS_135x240[4] = {
     {0xc0, 135, 240, 53, 40},
     {0xa0, 240, 135, 40, 52}
 };
+
+st7789_rotation_t ORIENTATIONS_128x160[4] = {
+	{0x00, 128, 160, 0, 0},
+    {0x60, 160, 128, 0, 0},
+    {0xc0, 128, 160, 0, 0},
+    {0xa0, 160, 128, 0, 0}
+};
+
+st7789_rotation_t ORIENTATIONS_128x128[4] = {
+    {0x00, 128, 128, 2, 1},
+    {0x60, 128, 128, 1, 2},
+    {0xc0, 128, 128, 2, 3},
+    {0xa0, 128, 128, 3, 2}
+};
+
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len)
 {
@@ -1036,12 +1052,16 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self)
 
 	st7789_rotation_t *rotations = self->rotations;
 	if (rotations == NULL) {
-		if (self->display_width == 135 && self->display_height == 240) {
-			rotations = ORIENTATIONS_135x240;
+		if (self->display_width == 240 && self->display_height == 320) {
+			rotations = ORIENTATIONS_240x320;
 		} else if  (self->display_width == 240 && self->display_height == 240) {
 			rotations = ORIENTATIONS_240x240;
-		} else if (self->display_width == 240 && self->display_height == 320) {
-			rotations = ORIENTATIONS_240x320;
+		} else if (self->display_width == 135 && self->display_height == 240) {
+			rotations = ORIENTATIONS_135x240;
+		} else if (self->display_width == 128 && self->display_height == 160) {
+			rotations = ORIENTATIONS_128x160;
+		} else if (self->display_width == 128 && self->display_height == 128) {
+			rotations = ORIENTATIONS_128x128;
 		}
 	}
 

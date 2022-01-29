@@ -66,16 +66,18 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython MicroPython v1.18-5-g037b2c72a compiled with ESP IDF v4.2 using CMake
+MicroPython MicroPython v1.18-56-g517e82eb6 compiled with ESP IDF v4.2 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
 GENERIC-7789          | firmware.bin | Generic ESP32 devices
 GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
+GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices (JPG support not working)
 PYBV11                | firmware.dfu | Pyboard v1.1
 RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
 T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
 T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
+
 
 ## Additional Modules
 
@@ -286,18 +288,23 @@ I was not able to run the display with a baud rate over 40MHZ.
 
     - `backlight` sets the pin connected to the displays backlight enable input. The displays backlight input can often be left floating or disconnected as the backlight on some displays are always powered on and cannot be turned off.
 
-    - `rotations` sets the orientation table for each of the rotations. The orientation table is a list of tuples for each rotation that define the MADCTL register, width, height, start_x, and start_y values.
+    - `rotations` sets the orientation table. The orientation table is a list of tuples for each `rotation` that defines the MADCTL register, width, height, start_x, and start_y values.
+
+      Default `rotations` are included for the following st7789 and st7735 display sizes:
 
       Display | Default Orientation Tables
       ------- | --------------------------
       240x320 | [(0x00, 240, 320,  0,  0), (0x60, 320, 240,  0,  0), (0xc0, 240, 320,  0,  0), (0xa0, 320, 240,  0,  0)]
       240x240 | [(0x00, 240, 240,  0,  0), (0x60, 240, 240,  0,  0), (0xc0, 240, 240,  0, 80), (0xa0, 240, 240, 80,  0)]
       135x240 | [(0x00, 135, 240, 52, 40), (0x60, 240, 135, 40, 53), (0xc0, 135, 240, 53, 40), (0xa0, 240, 135, 40, 52)]
+      128x160 | [(0x00, 128, 160,  0,  0), (0x60, 160, 128,  0,  0), (0xc0, 128, 160,  0,  0), (0xa0, 160, 128,  0,  0)]
+      128x128 | [(0x00, 128, 128,  2,  1), (0x60, 128, 128,  1,  2), (0xc0, 128, 128,  2,  3), (0xa0, 128, 128,  3,  2)]
        other  | [(0x00, width, height, 0, 0)]
 
       You may define as many rotations in the list as you wish.
 
-    - `rotation` sets the display rotation according to the orientation table. The default orientation table defines four counter-clockwise rotations as 0-Portrait (0 degrees), 1- Landscape (90 degrees), 2- Reverse Portrait (180 degrees), and 3- Reverse Landscape (270 degrees) for 240x320, 240x240 and 123x240 displays with the LCD's ribbon cable at the bottom of the display. The default rotation being Portrait (0 degrees).
+    - `rotation` sets the display rotation according to the orientation table. The default orientation table defines four counter-clockwise rotations as 0-Portrait (0 degrees), 1- Landscape (90 degrees), 2- Reverse Portrait (180 degrees), and 3- Reverse Landscape (270 degrees) for 240x320, 240x240, 134x240, 128x160 and 128x128 displays with the LCD's ribbon cable at
+    the bottom of the display. The default rotation being Portrait (0 degrees).
 
     - `color_order` set the color order used by the driver st7789.RGB and st7789.BGR are supported.
 
@@ -328,6 +335,10 @@ I was not able to run the display with a baud rate over 40MHZ.
   st7789_RGB       | 0x00  | RGB color order
   st7789_BGR       | 0x08  | BGR color order
 
+- `init()`
+
+  Must be called to initalize the display.
+
 - `on()`
 
   Turn on the backlight pin if one was defined during init.
@@ -335,6 +346,10 @@ I was not able to run the display with a baud rate over 40MHZ.
 - `off()`
 
   Turn off the backlight pin if one was defined during init.
+
+- `fill(color)`
+
+  Fill the display with the specified color.
 
 - `pixel(x, y, color)`
 
