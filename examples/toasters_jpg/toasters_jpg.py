@@ -22,11 +22,12 @@ import st7789
 
 # Not suitable for esp32_7735_128 due to resolution
 # Not suitable for esp32_7735_160 due to resolution
-import tdisplay as Driver
+# import tdisplay as Driver
 # import twatch_2020_v2 as Driver
 # import ws_pico_114 as Driver
 # import ws_pico_13 as Driver
 # import ws_pico_2 as Driver
+import tdisplay_rp2040 as Driver
 
 tft = Driver.config(0)
 

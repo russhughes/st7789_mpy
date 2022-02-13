@@ -7,18 +7,7 @@ import random
 import math
 import utime
 import st7789
-
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
-
+import tft_config
 
 def between(left, right, along):
     """returns a point along the curve from left to right"""
@@ -46,14 +35,14 @@ def main():
     The big show!
     '''
 
-    tft = Driver.config(1)      # configure driver to rotate screen 90 degrees
+    tft = tft_config.config(1)  # configure driver to rotate screen 90 degrees
     tft.init()                  # initialize display
 
     height = tft.height()       # height of display in pixels
     width = tft.width()         # width if display in pixels
 
-    tfa = Driver.TFA	        # top free area when scrolling
-    bfa = Driver.BFA	        # bottom free area when scrolling
+    tfa = tft_config.TFA	    # top free area when scrolling
+    bfa = tft_config.BFA	    # bottom free area when scrolling
 
     scroll = 0                  # scroll position
     wheel = 0                   # color wheel position

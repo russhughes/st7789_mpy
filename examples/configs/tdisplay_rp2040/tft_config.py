@@ -12,7 +12,7 @@ def config(rotation=0, buffer_size=0, options=0):
     Pin(22, Pin.OUT, value=1)
 
     spi = SPI(0,
-        baudrate=40000000,
+        baudrate=62500000,
         polarity=1,
         phase=0,
         sck=Pin(2, Pin.OUT),

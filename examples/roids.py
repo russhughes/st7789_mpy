@@ -6,29 +6,14 @@ import math
 import random
 import utime
 import micropython
-from machine import Pin, SPI
 import st7789
+import tft_config
+import tft_buttons as Buttons
 
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
 
-tft = Driver.config(1, buffer_size=64*64*2)   # configure display driver
-
-# Select a config module for your Buttons
-import esp32_buttons as Buttons
-## import ws_pico_114_buttons as Buttons
-## import ws_pico_13_buttons as Buttons
-## import ws_pico_2_buttons as Buttons
-
+tft = tft_config.config(1, buffer_size=64*64*2)
 buttons = Buttons.Buttons()
+
 
 def main():
     '''

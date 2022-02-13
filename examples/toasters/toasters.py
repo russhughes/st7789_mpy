@@ -12,21 +12,8 @@ toasters.py - Flying Toasters
 import gc
 import time
 import random
-from machine import Pin, SPI
-
 import st7789
-
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
-
+import tft_config
 import toast_bitmaps
 
 TOASTER_FRAMES = [0, 1, 2, 3]
@@ -152,7 +139,7 @@ def main():
                 tft.bitmap(self.bitmaps, self.col, self.row, self.frames[self.step])
 
 
-    tft = Driver.config(1, buffer_size=64*62*2)   # configure display driver
+    tft = tft_config.config(1, buffer_size=64*62*2)   # configure display driver
 
     # init and clear screen
     tft.init()

@@ -7,21 +7,10 @@ hershey.py
 
 import random
 import utime
-from machine import Pin, SPI
 import st7789
+import tft_config
 
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
-
-tft = Driver.config(0, options=st7789.WRAP_V)
+tft = tft_config.config(0, options=st7789.WRAP_V)
 
 # Load several frozen fonts from flash
 
@@ -88,8 +77,8 @@ def main():
     width = tft.width()
 
     # Set up scrolling area
-    tfa = Driver.TFA
-    bfa = Driver.BFA
+    tfa = tft_config.TFA
+    bfa = tft_config.BFA
     tft.vscrdef(tfa, height, bfa)
 
     scroll = 0

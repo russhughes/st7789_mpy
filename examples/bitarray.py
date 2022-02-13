@@ -7,21 +7,12 @@ bitarray.py
 
 import time
 import random
-from machine import Pin, SPI
 import st7789
+import tft_config
 
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
 
-tft = Driver.config(1)
+tft = tft_config.config(1)
+
 
 SPRITE_WIDTH = 16
 SPRITE_HEIGHT = 16

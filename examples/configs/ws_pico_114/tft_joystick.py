@@ -1,4 +1,4 @@
-# input pins for ws_pico_114
+# input pins for ws_pico_114 v2 witjh Joystick
 
 from machine import Pin
 

@@ -8,7 +8,7 @@ BFA = 40	# bottom free area when scrolling
 
 def config(rotation=0, buffer_size=0, options=0):
     return st7789.ST7789(
-        SPI(1, baudrate=31250000, sck=Pin(10), mosi=Pin(11)),
+        SPI(1, baudrate=62500000, sck=Pin(10), mosi=Pin(11)),
         135,
         240,
         reset=Pin(12, Pin.OUT),

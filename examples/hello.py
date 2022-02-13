@@ -5,23 +5,12 @@ hello.py
 """
 
 import random
-from machine import Pin, SPI
 import utime
 import st7789
+import tft_config
 import vga1_bold_16x32 as font
 
-# Select a config module for your display
-## import esp32_7735_128 as Driver
-## import esp32_7735_160 as Driver
-import esp32_st7789 as Driver
-## import pybv11_st7789 as Driver
-## import tdisplay as Driver
-## import twatch_2020_v2 as Driver
-## import ws_pico_114 as Driver
-## import ws_pico_13 as Driver
-## import ws_pico_2 as Driver
-
-tft = Driver.config(0)
+tft = tft_config.config(0)
 
 def center(text):
     length = len(text)
