@@ -1170,7 +1170,7 @@ STATIC mp_obj_t st7789_ST7789_init(mp_obj_t self_in)
 		mp_hal_pin_write(self->backlight, 1);
 
 	write_cmd(self, ST7789_DISPON, NULL, 0);
-	mp_hal_delay_ms(500);
+	mp_hal_delay_ms(150);
 
 	return mp_const_none;
 }
@@ -2184,6 +2184,8 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 
 	if (self->buffer_size) {
 		self->i2c_buffer = m_malloc(self->buffer_size);
+	} else {
+		self->i2c_buffer = NULL;
 	}
 
 	if (args[ARG_dc].u_obj == MP_OBJ_NULL) {
@@ -2192,16 +2194,22 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 
 	if (args[ARG_reset].u_obj != MP_OBJ_NULL) {
 		self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);
+	}  else {
+		self->reset = 0;
 	}
 
 	self->dc = mp_hal_get_pin_obj(args[ARG_dc].u_obj);
 
 	if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
 		self->cs = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
+	}  else {
+		self->cs = 0;
 	}
 
 	if (args[ARG_backlight].u_obj != MP_OBJ_NULL) {
 		self->backlight = mp_hal_get_pin_obj(args[ARG_backlight].u_obj);
+	}  else {
+		self->backlight = 0;
 	}
 
 	self->bounding = 0;
