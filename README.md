@@ -572,6 +572,52 @@ I was not able to run the display with a baud rate over 40MHZ.
 The module exposes predefined colors:
   `BLACK`, `BLUE`, `RED`, `GREEN`, `CYAN`, `MAGENTA`, `YELLOW`, and `WHITE`
 
+## Scrolling
+
+The st7789 display controller contains a 240 by 320-pixel frame buffer used to store the pixels for
+the display. For scrolling, the frame buffer consists of three separate areas; The (`tfa`) top fixed
+area, the (`height`) scrolling area, and the (`bfa`) bottom fixed area. The `tfa` is the upper portion of
+the frame buffer in pixels not to scroll. The `height` is the center portion of the frame buffer in
+pixels to scroll. The `bfa` is the lower portion of the frame buffer in pixels not to scroll. These
+values control the ability to scroll the entire or a portion of the display.
+
+Displays that are 320 pixels high, setting the `tfa` to 0, `height` to 320 and `bfa` to 0 will allow
+scrolling the entire display. You can set the `tfa` and `bfa` to a non-zero value to scroll a portion of
+the display. `tfa` + `height` + `bfa` = should equal 320, otherwise the scrolling mode is undefined.
+
+Displays less than 320 pixels high, the `tfa`, `height`, and `bfa` will need to be adjusted to compensate
+for the smaller LCD panel. The actual values will vary depending on the configuration of the LCD
+panel. For example, scrolling the entire 135x240 TTGO T-Display requires a `tfa` value of 40, `height`
+value of 240, and `bfa` value of 40 (40+240+40=320) because the T-Display LCD shows 240 rows starting
+at the 40th row of the frame buffer, leaving the last 40 rows of the frame buffer undisplayed.
+
+Other displays like the Waveshare Pico LCD 1.3 inch 240x240 display require the `tfa` set to 0, `height`
+set to 240, and `bfa` set to 80 (0+240+80=320) to scroll the entire display. The Pico LCD 1.3 shows 240 rows
+starting at the 0th row of the frame buffer, leaving the last 80 rows of the frame buffer undisplayed.
+
+The `vscsad` method sets the (VSSA) Vertical Scroll Start Address. The VSSA sets the line in the
+frame buffer that will be the first line after the `tfa`.
+
+    The ST7789 datasheet warns:
+
+    The value of the vertical scrolling start address is absolute (with reference to the frame memory),
+    it must not enter the fixed area (defined by Vertical Scrolling Definition, otherwise undesirable
+    image will be displayed on the panel.
+
+- `vscrdef(tfa, height, bfa)` Set the vertical scrolling parameters.
+
+  `tfa` is the top fixed area in pixels. The top fixed area is the upper portion of the display
+  frame buffer, not scrolled.
+
+  `height` is the total height in pixels of the area scrolled.
+
+  `bfa` is the bottom fixed area in pixels. The bottom fixed area is the lower portion of the
+  display frame buffer not scrolled.
+
+- `vscsad(vssa)` Set the vertical scroll address.
+
+  `vssa` is the vertical scroll start address in pixels. The vertical scroll start address is the
+  line in the frame buffer that will be the first line after the TFA.
 
 ## Helper functions
 
