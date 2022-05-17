@@ -402,6 +402,11 @@ I could not run the display with a baud rate over 40MHZ.
 
   Turn off the backlight pin if one was defined during init.
 
+- `sleep_mode(value)`
+
+  If value is True, cause the display to enter sleep mode, otherwise wake up if value is False. During sleep display content may not be preserved.
+
+
 - `fill(color)`
 
   Fill the display with the specified color.
