@@ -399,7 +399,7 @@ def main():
     height = args.font_height
     width = args.font_height if args.font_width is None else args.font_width
     characters = get_chars(args.characters) if args.string is None else args.string
-    print(f'#{characters}')
+
     fnt = Font(font_file, width, height)
     fnt.write_python(characters, font_file)
 
