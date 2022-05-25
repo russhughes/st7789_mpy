@@ -47,37 +47,46 @@ import freetype
 
 
 def to_int(string):
+    """ Return integer value from a hex or decimal string"""
     return int(string, base=16) if string.startswith("0x") else int(string)
 
 
 def get_chars(string):
+    """ Return string comprised of given characters or range(s) of characters"""
     return ''.join(chr(b) for a in [
             (lambda sub: range(sub[0], sub[-1] + 1))
             (list(map(to_int, ele.split('-'))))
             for ele in string.split(',')] for b in a)
 
 
-def wrap_str(str, items_per_line=32):
-    lines = [
-        str[i : i + items_per_line]
-        for i in range(0, len(str), items_per_line)
-    ]
-
+def wrap_str(string, items_per_line=32):
+    """ Return a string wrapped to items_per_line with special care for escape characters"""
+    length = len(string)
+    lines = []
+    i = 0
+    end = 0
+    while length > end:
+        end = min(i + items_per_line, length)
+        if string[end - 1] == '\\':
+            end -= 2
+        lines.append(string[i : end])
+        i = end
     return "(\n    '" + "'\n    '".join(lines) + "'\n)"
 
 
 def wrap_bytes(lst, items_per_line=16):
+    """Return a string of items wrapped to items_per_line"""
     lines = [
-        "".join("\\x{:02x}".format(x) for x in lst[i : i + items_per_line])
+        "".join(f'\\x{x:02x}' for x in lst[i : i + items_per_line])
         for i in range(0, len(lst), items_per_line)
     ]
-
     return "    b'" + "'\\\n    b'".join(lines) + "'"
 
 
 def wrap_longs(lst, items_per_line=16):
+    """Return a string of longs wrapped to items_per_line"""
     lines = [
-        "".join("\\x{:02x}".format(x) for x in lst[i : i + items_per_line])
+        "".join(f'\\x{x:02x}' for x in lst[i : i + items_per_line])
         for i in range(0, len(lst), items_per_line)
     ]
     return "    b'" + "'\\\n    b'".join(lines) + "'"
@@ -307,8 +316,9 @@ class Font():
         # join all the bitmap strings together
         bit_string = ''.join(bits)
 
-        # escape '\' and '"' characters for char_map
-        char_map = wrap_str(text.replace('\\', '\\\\').replace('"', '\\"'))
+        # escape backslash, quote and single quote characters for char_map
+        text_escaped = text.replace('\\', '\\\\').replace('"', '\\"').replace("'", "\\'")
+        char_map = wrap_str(text_escaped)
 
         cmd_line = " ".join(map(shlex.quote, sys.argv))
         max_width = max(widths)
@@ -319,7 +329,7 @@ class Font():
         print(f'#     {cmd_line}')
         print()
 
-        print(f'MAP = {char_map}')
+        print(f'MAP = {char_map}\n')
         print('BPP = 1')
         print(f'HEIGHT = {height}')
         print(f'MAX_WIDTH = {max_width}')
@@ -388,9 +398,8 @@ def main():
     font_file = args.font_file
     height = args.font_height
     width = args.font_height if args.font_width is None else args.font_width
-    characters = ''.join(set(
-        get_chars(args.characters) if args.string is None else args.string))
-
+    characters = get_chars(args.characters) if args.string is None else args.string
+    print(f'#{characters}')
     fnt = Font(font_file, width, height)
     fnt.write_python(characters, font_file)
 
