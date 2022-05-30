@@ -1656,7 +1656,7 @@ STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 	const char *filename;
-	mp_int_t x, y, width = 0, height = 0;
+	mp_int_t x = 0, y = 0, width = 0, height = 0;
 
 	if (n_args == 2 || n_args == 6) {
 		filename = mp_obj_str_get_str(args[1]);
