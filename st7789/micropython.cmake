@@ -13,11 +13,6 @@ target_include_directories(usermod_st7789 INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}
 
 )
-target_compile_definitions(usermod_st7789 INTERFACE
-    MODULE_ST7789_ENABLED=1
-    MICROPY_PY_FILE_LIKE=1
-    EXPOSE_EXTRA_METHODS=1
-)
 
 # Link our INTERFACE library to the usermod target.
 target_link_libraries(usermod INTERFACE usermod_st7789)
