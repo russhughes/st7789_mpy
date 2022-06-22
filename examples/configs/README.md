@@ -10,6 +10,7 @@ esp32_st7789    | Generic ESP32 st7789 240x320 Display
 pybv11_st7789   | Pyboard Version 1.1 st7789 240x320 Display
 tdisplay_esp32  | TTGO T-DISPLAY ESP32 st7789 135x240 Display
 tdisplay_rp2040 | TTGO T-DISPLAY RP2040 st7789 135x240 Display
+t-picoc3        | TTGO T-PicoC3 st7789 135x240 Display
 twatch_2020_v2  | TTGO TWATCH-2020 v2 st7789 240x240 Display
 ws_pico_114     | Raspberry Pi Pico Waveshare-Pico-lcd-1.14 Display
 ws_pico_13      | Raspberry Pi Pico Waveshare-Pico-lcd-1.3 Display
