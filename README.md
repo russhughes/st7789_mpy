@@ -83,9 +83,10 @@ Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
 GENERIC-7789          | firmware.bin | Generic ESP32 devices
 GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
-GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices (JPG support not working)
+GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices
 PYBV11                | firmware.dfu | Pyboard v1.1
 RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
+RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040 (untested)
 T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
 T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
 
