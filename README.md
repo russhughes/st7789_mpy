@@ -331,8 +331,8 @@ I could not run the display with a baud rate over 40MHZ.
       cannot be turned off.
 
     - `rotations` sets the orientation table. The orientation table is a list
-      of tuples for each `rotation` that defines the MADCTL register, width,
-      height, start_x, and start_y values.
+      of tuples for each `rotation` used to set the MADCTL register, display width,
+      display height, start_x, and start_y values.
 
       Default `rotations` are included for the following st7789 and st7735
       display sizes:
@@ -349,11 +349,17 @@ I could not run the display with a baud rate over 40MHZ.
       You may define as many rotations as you wish.
 
     - `rotation` sets the display rotation according to the orientation table.
-    The default orientation table defines four counter-clockwise rotations as
-    0-Portrait (0 degrees), 1- Landscape (90 degrees), 2- Reverse Portrait (180
-    degrees), and 3- Reverse Landscape (270 degrees) for 240x320, 240x240,
-    134x240, 128x160 and 128x128 displays with the LCD's ribbon cable at the
-    bottom of the display. The default rotation is Portrait (0 degrees).
+
+      The default orientation table defines four counter-clockwise rotations for 240x320, 240x240,
+      134x240, 128x160 and 128x128 displays with the LCD's ribbon cable at the bottom of the display.
+      The default rotation is Portrait (0 degrees).
+
+      Index | Rotation
+      ----- | --------
+      0     | Portrait (0 degrees)
+      1     | Landscape (90 degrees)
+      2     | Reverse Portrait (180 degrees)
+      3     | Reverse Landscape (270 degrees)
 
     - `color_order` sets the color order used by the driver (st7789.RGB or st7789.BGR)
 
@@ -378,18 +384,34 @@ I could not run the display with a baud rate over 40MHZ.
 - `inversion_mode(bool)` Sets the display color inversion mode if True, clears
   the display color inversion mode if False.
 
-- `madctl(value)` Returns the current value of the MADCTL register. Optionally
-   sets the MADCTL register if a value is passed to the method.
+- `madctl(value)` Returns the current value of the MADCTL register or sets the MADCTL register if a value is passed to the
+   method. The MADCTL register is used to set the display rotation and color order.
 
-  Constant Name    | Value | Description
-  ---------------- | ----- | ----------------------
-  st7789.MADCTL_MY | 0x80  | Page Address Order
-  st7789_MADCTL_MX | 0x40  | Column Address Order
-  st7789_MADCTL_MV | 0x20  | Page/Column Order
-  st7789_MADCTL_ML | 0x10  | Line Address Order
-  st7789_MADCTL_MH | 0x04  | Display Data Latch Order
-  st7789_RGB       | 0x00  | RGB color order
-  st7789_BGR       | 0x08  | BGR color order
+  #### [MADCTL constants](#madctl-constants)
+
+    Constant Name    | Value | Description
+    ---------------- | ----- | ----------------------
+    st7789.MADCTL_MY | 0x80  | Page Address Order
+    st7789_MADCTL_MX | 0x40  | Column Address Order
+    st7789_MADCTL_MV | 0x20  | Page/Column Order
+    st7789_MADCTL_ML | 0x10  | Line Address Order
+    st7789_MADCTL_MH | 0x04  | Display Data Latch Order
+    st7789_RGB       | 0x00  | RGB color order
+    st7789_BGR       | 0x08  | BGR color order
+
+   #### [MADCTL examples](#madctl-examples)
+
+
+     Orientation | MADCTL Values for RGB color order, for BGR color order add 0x08 to the value.
+     ----------- | ---------------------------------------------------------------------------------
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_0.png" /> | 0x00
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_y.png" /> | 0x80 ( MADCTL_MY )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_x.png" /> | 0x40 ( MADCTL_MX )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_xy.png" /> | 0xC0 ( MADCTL_MX + MADCTL_MY )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_v.png" /> | 0x20 ( MADCTL_MV )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_vy.png" /> | 0xA0 ( MADCTL_MV + MADCTL_MY )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_vx.png" /> | 0x60 ( MADCTL_MV + MADCTL_MX )
+     <img src="https://raw.githubusercontent.com/russhughes/st7789_mpy/master/docs/madctl_vxy.png" /> | 0xE0 ( MADCTL_MV + MADCTL_MX + MADCTL_MY )
 
 - `init()`
 
