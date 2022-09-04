@@ -12,6 +12,7 @@ I modified the original driver for one of my projects to add:
 - Drawing JPGs, including a SLOW mode to draw jpg's larger than available ram
   using the TJpgDec - Tiny JPEG Decompressor R0.01d. from
   http://elm-chan.org/fsw/tjpgd/00index.html
+- Drawing PNGs using the pngle library from https://github.com/kikuchan/pngle
 - Drawing and rotating Polygons and filled Polygons.
 - Tracking bounds
 - Support for st7735 displays
@@ -77,16 +78,17 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython MicroPython v1.19.1-18-g6e868d47d compiled with ESP IDF v4.4 using CMake
+MicroPython MicroPython v1.19.1-292-g59e3348c1 compiled with ESP IDF v4.4 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
 GENERIC-7789          | firmware.bin | Generic ESP32 devices
 GENERIC_SPIRAM-7789   | firmware.bin | Generic ESP32 devices with SPI Ram
 GENERIC_C3            | firmware.bin | Generic ESP32-C3 devices
-PYBV11                | firmware.dfu | Pyboard v1.1
+LOLIN_S2_MINI         | firmware.bin | Wemos S2 mini
+PYBV11                | firmware.dfu | Pyboard v1.1 (No PNG)
 RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
-RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040 (untested)
+RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040
 T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
 T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
 
@@ -546,6 +548,15 @@ I could not run the display with a baud rate over 40MHZ.
   If the optional x, y, width, and height parameters are given, the buffer will
   only contain the specified area of the image. See examples/T-DISPLAY/clock/clock.py
   examples/T-DISPLAY/toasters_jpg/toasters_jpg.py for examples.
+
+- `png(png_filename, x, y)`
+
+  Draw a PNG file on the display at the given `x` and `y` coordinates as the
+  upper left corner of the image. The PNG will not be clipped it must be able to fully fit on the
+  display or it will not be drawn. The memory required to decode and display a PNG can be
+  considerable as such, the PNG will be drawn one line at a time or as many lines as will fit in
+  the `buffer_size` specified during the display initialization. Transparency is not currently
+  supported.
 
 - `polygon_center(polygon)`
 

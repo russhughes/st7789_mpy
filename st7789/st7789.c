@@ -42,7 +42,8 @@
 
 #include "mpfile.h"
 #include "st7789.h"
-#include "tjpgd565.h"
+#include "jpg/tjpgd565.h"
+#include "png/pngle.h"
 
 #define _swap_int(a, b) { int t = a; a = b; b = t; }s
 #define _swap_int16_t(a, b) { int16_t t = a; a = b; b = t; }
@@ -1607,7 +1608,6 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 	m_free(self->work); // Discard work area
 	return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_obj, 4, 5, st7789_ST7789_jpg);
 
 //
@@ -1729,8 +1729,153 @@ STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
 	mp_raise_TypeError(MP_ERROR_TEXT("jpg_decode requires either 2 or 6 arguments"));
 	return mp_const_none;
 }
-
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_decode_obj, 2, 6, st7789_ST7789_jpg_decode);
+
+//
+// PNG Routines using the pngle library from https://github.com/kikuchan/pngle
+// licensed under the MIT License
+//
+
+typedef struct _PNG_USER_DATA {
+	st7789_ST7789_obj_t *self;
+	uint16_t top;				// draw png starting at this row
+	uint16_t left;				// draw png statting at this column
+	uint16_t pixels;			// number of pixels that fit in buffer (must be a multiple of width)
+	uint16_t rows;				// number of rows that fit in buffer (or png height if < rows)
+	uint16_t pixel;				// index to current pixel in buffer
+	uint16_t row;				// current row
+	uint16_t col;				// current column
+	uint16_t *buffer;			// pointer to current pixel in buffer
+} PNG_USER_DATA;
+
+void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4])
+{
+	PNG_USER_DATA *user_data = pngle_get_user_data(pngle);
+	st7789_ST7789_obj_t *self = user_data->self;
+	pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
+	size_t buf_size = self->buffer_size;
+
+	uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));	// rgba[3] transparency
+
+	// initalize the user_data structure and optionally allocate line buffer on the first call
+	if (user_data->pixels == 0) {
+		// if no existing buffer, create one to hold a complete line
+		if (self->buffer_size == 0) {
+			buf_size = ihdr->width*2;
+			self->i2c_buffer = m_malloc(buf_size);
+			if (!self->i2c_buffer) {
+				mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
+			}
+		} else {
+			// check if existing buffer is large enough
+			if (self->buffer_size < buf_size) {
+				mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), buf_size);
+			}
+		}
+
+		user_data->rows = (buf_size / ihdr->width >> 1);
+		if (user_data->rows > ihdr->height)
+			user_data->rows = ihdr->height;
+
+		user_data->pixels = ihdr->width * user_data->rows;
+		user_data->pixel = 0;
+		user_data->row = 0;
+		user_data->col = 0;
+		user_data->buffer = self->i2c_buffer;
+	}
+
+	// check if the buffer needs to flushed to the display
+	if (user_data->pixels == user_data->pixel) {
+		set_window(
+			self,
+			user_data->left,
+			user_data->top,
+			user_data->left+ihdr->width-1,
+			y-1
+		);
+
+		DC_HIGH();
+		CS_LOW();
+		write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, user_data->pixels*2);
+		CS_HIGH();
+
+		user_data->pixel = 0;
+		user_data->col = 0;
+		user_data->row = 0;
+		user_data->top += user_data->rows;
+		user_data->buffer = self->i2c_buffer;
+	}
+
+	*user_data->buffer++ = color;
+	user_data->pixel++;
+
+	user_data->col++;
+	if (user_data->col == ihdr->width -1) {
+		user_data->col = 0;
+		user_data->row++;
+	}
+}
+
+#define PNG_FILE_BUFFER_SIZE 256
+
+STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
+{
+	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+	const char *filename = mp_obj_str_get_str(args[1]);
+	mp_int_t x = mp_obj_get_int(args[2]);
+	mp_int_t y = mp_obj_get_int(args[3]);
+
+	char buf[PNG_FILE_BUFFER_SIZE];
+    int len, remain = 0;
+
+	PNG_USER_DATA user_data = {
+		self, y, x, 0, 0, 0, 0, 0, NULL
+	};
+
+    pngle_t *pngle = pngle_new();
+	pngle_set_user_data(pngle, (void *) &user_data);
+    pngle_set_draw_callback(pngle, pngle_on_draw);
+    self->fp = mp_open(filename, "rb");
+
+    while ((len = mp_readinto(self->fp, buf + remain, PNG_FILE_BUFFER_SIZE - remain)) > 0) {
+		int fed = pngle_feed(pngle, buf, remain + len);
+		if (fed < 0) {
+			mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("png decompress failed: %s"), pngle_error(pngle));
+		}
+		remain = remain + len - fed;
+		if (remain > 0) {
+			memmove(buf, buf + fed, remain);
+		}
+	}
+
+	// flush any remaining pixels to the display
+	if (user_data.pixel) {
+		pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
+		set_window(
+				self,
+				user_data.left,
+				user_data.top,
+				user_data.left+ihdr->width-1,
+				user_data.top+user_data.row-1
+			);
+
+		DC_HIGH();
+		CS_LOW();
+		write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, user_data.pixel*2);
+		CS_HIGH();
+	}
+
+	// free dynamic buffer
+	if (self->buffer_size == 0) {
+		m_free(self->i2c_buffer);
+	}
+
+    pngle_destroy(pngle);
+	mp_close(self->fp);
+	return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_png_obj, 4, 4, st7789_ST7789_png);
 
 //
 // Return the center of a polygon as an (x, y) tuple
@@ -2084,6 +2229,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 	{MP_ROM_QSTR(MP_QSTR_offset), MP_ROM_PTR(&st7789_ST7789_offset_obj)},
 	{MP_ROM_QSTR(MP_QSTR_jpg), MP_ROM_PTR(&st7789_ST7789_jpg_obj)},
 	{MP_ROM_QSTR(MP_QSTR_jpg_decode), MP_ROM_PTR(&st7789_ST7789_jpg_decode_obj)},
+  	{MP_ROM_QSTR(MP_QSTR_png), MP_ROM_PTR(&st7789_ST7789_png_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon_center), MP_ROM_PTR(&st7789_ST7789_polygon_center_obj)},
 	{MP_ROM_QSTR(MP_QSTR_polygon), MP_ROM_PTR(&st7789_ST7789_polygon_obj)},
 	{MP_ROM_QSTR(MP_QSTR_fill_polygon), MP_ROM_PTR(&st7789_ST7789_fill_polygon_obj)},

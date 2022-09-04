@@ -43,9 +43,9 @@ mp_file_t *mp_file_from_file_obj(mp_obj_t file_obj) {
     memset(file, 0, sizeof(*file));
     file->base.type = &mp_file_type;
     file->file_obj = file_obj;
-    file->readinto_fn = mp_const_none;
-    file->seek_fn = mp_const_none;
-    file->tell_fn = mp_const_none;
+    file->readinto_fn = mp_load_attr(file->file_obj, MP_QSTR_readinto);
+    file->seek_fn = mp_load_attr(file->file_obj, MP_QSTR_seek);
+    file->tell_fn = mp_load_attr(file->file_obj, MP_QSTR_tell);
 
     return file;
 }
@@ -60,10 +60,6 @@ mp_file_t *mp_open(const char *filename, const char *mode) {
 mp_int_t mp_readinto(mp_file_t *file, void *buf, size_t num_bytes) {
     mp_int_t nread;
 
-    if (file->readinto_fn == mp_const_none) {
-        file->readinto_fn = mp_load_attr(file->file_obj, MP_QSTR_readinto);
-    }
-
     mp_obj_t bytearray = mp_obj_new_bytearray_by_ref(num_bytes, buf);
     mp_obj_t bytes_read = mp_call_function_1(file->readinto_fn, bytearray);
     if (bytes_read == mp_const_none) {
@@ -74,18 +70,12 @@ mp_int_t mp_readinto(mp_file_t *file, void *buf, size_t num_bytes) {
 }
 
 off_t mp_seek(mp_file_t *file, off_t offset, int whence) {
-    if (file->seek_fn == mp_const_none) {
-        file->seek_fn = mp_load_attr(file->file_obj, MP_QSTR_seek);
-    }
     return mp_obj_get_int(mp_call_function_2(file->seek_fn,
                                              MP_OBJ_NEW_SMALL_INT(offset),
                                              MP_OBJ_NEW_SMALL_INT(whence)));
 }
 
 off_t mp_tell(mp_file_t *file) {
-    if (file->tell_fn == mp_const_none) {
-        file->tell_fn = mp_load_attr(file->file_obj, MP_QSTR_tell);
-    }
     return mp_obj_get_int(mp_call_function_0(file->tell_fn));
 }
 
