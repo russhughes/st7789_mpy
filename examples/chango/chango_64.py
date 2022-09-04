@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
-# Converted from Chango-Regular.ttf using:
-#     ./font2bitmap.py Chango-Regular.ttf 64 -c 0x20-0x7f
+# Converted from ../../fonts/truetype/Chango-Regular.ttf using:
+#     ../../utils/font2bitmap.py ../../fonts/truetype/Chango-Regular.ttf 64 -c 0x20-0x7f
 
-MAP = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+MAP = (
+    ' !\"#$%&\'()*+,-./0123456789:;<='
+    '>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ['
+    '\\]^_`abcdefghijklmnopqrstuvwxyz'
+    '{|}~'
+)
+
 BPP = 1
 HEIGHT = 68
 MAX_WIDTH = 98
