@@ -1,4 +1,5 @@
-/*-
+
+/*
  * MIT License
  *
  * Copyright (c) 2019 kikuchan
@@ -22,6 +23,10 @@
  * SOFTWARE.
  */
 
+//
+// Modified to use MicroPython managed memory - Russ Hughes Sep 2022
+//
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -30,6 +35,17 @@
 
 #include "miniz.h"
 #include "pngle.h"
+
+#include "py/obj.h"
+#include "py/objstr.h"
+#include "py/objmodule.h"
+#include "py/runtime.h"
+#include "py/builtin.h"
+#include "py/mphal.h"
+#include "extmod/machine_spi.h"
+#include "mpfile.h"
+
+#include "st7789.h"
 
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -42,8 +58,8 @@
 #endif
 
 #define PNGLE_ERROR(s) (pngle->error = (s), pngle->state = PNGLE_STATE_ERROR, -1)
-#define PNGLE_CALLOC(a, b, name) (debug_printf("[pngle] Allocating %zu bytes for %s\n", (size_t)(a) * (size_t)(b), (name)), calloc((size_t)(a), (size_t)(b)))
-
+#define PNGLE_CALLOC(a, b, name) (debug_printf("[pngle] Allocating %zu bytes for %s\n", (size_t)(a) * (size_t)(b), (name)), m_malloc((size_t)(a * b)))
+#define PNGLE_FREE(a) (m_free(a))
 #define PNGLE_UNUSED(x) (void)(x)
 
 typedef enum {
@@ -70,6 +86,9 @@ typedef enum {
 
 // typedef struct _pngle_t pngle_t; // declared in pngle.h
 struct _pngle_t {
+
+	st7789_ST7789_obj_t	*self;	// reference back to the MicroPython Object
+
 	pngle_ihdr_t hdr;
 
 	uint_fast8_t channels; // 0 indicates IHDR hasn't been processed yet
@@ -159,11 +178,15 @@ void pngle_reset(pngle_t *pngle)
 	pngle->state = PNGLE_STATE_INITIAL;
 	pngle->error = "No error";
 
-	if (pngle->scanline_ringbuf) free(pngle->scanline_ringbuf);
-	if (pngle->palette) free(pngle->palette);
-	if (pngle->trans_palette) free(pngle->trans_palette);
+	if (pngle->scanline_ringbuf) PNGLE_FREE(pngle->scanline_ringbuf);
+	pngle->self->scanline_ringbuf = NULL;  // Release for MicroPython GC
+	if (pngle->palette) PNGLE_FREE(pngle->palette);
+	pngle->self->palette = NULL;  // Release for MicroPython GC
+	if (pngle->trans_palette) PNGLE_FREE(pngle->trans_palette);
+	pngle->self->trans_palette = NULL;  // Release for MicroPython GC
 #ifndef PNGLE_NO_GAMMA_CORRECTION
-	if (pngle->gamma_table) free(pngle->gamma_table);
+	if (pngle->gamma_table) PNGLE_FREE(pngle->gamma_table);
+	pngle->self->gamma_table = NULL;  // Release for MicroPython GC
 #endif
 
 	pngle->scanline_ringbuf = NULL;
@@ -184,11 +207,12 @@ void pngle_reset(pngle_t *pngle)
 	tinfl_init(&pngle->inflator);
 }
 
-pngle_t *pngle_new()
+pngle_t *pngle_new(st7789_ST7789_obj_t *self)
 {
 	pngle_t *pngle = (pngle_t *)PNGLE_CALLOC(1, sizeof(pngle_t), "pngle_t");
 	if (!pngle) return NULL;
 
+	pngle->self = self;		// save reference back to MicroPython Object
 	pngle_reset(pngle);
 
 	return pngle;
@@ -198,7 +222,7 @@ void pngle_destroy(pngle_t *pngle)
 {
 	if (pngle) {
 		pngle_reset(pngle);
-		free(pngle);
+		PNGLE_FREE(pngle);
 	}
 }
 
@@ -373,8 +397,11 @@ static int set_interlace_pass(pngle_t *pngle, uint_fast8_t pass)
 
 	pngle->scanline_ringbuf_size = scanline_stride + bytes_per_pixel * 2; // 2 rooms for c/x and a
 
-	if (pngle->scanline_ringbuf) free(pngle->scanline_ringbuf);
+	if (pngle->scanline_ringbuf) PNGLE_FREE(pngle->scanline_ringbuf);
+	pngle->self->scanline_ringbuf = NULL;  // Release for MicroPython GC
+
 	if ((pngle->scanline_ringbuf = PNGLE_CALLOC(pngle->scanline_ringbuf_size, 1, "scanline ringbuf")) == NULL) return PNGLE_ERROR("Insufficient memory");
+	pngle->self->scanline_ringbuf = pngle->scanline_ringbuf;  // Protect from MicroPython GC
 
 	pngle->drawing_x = interlace_off_x[pngle->interlace_pass];
 	pngle->drawing_y = interlace_off_y[pngle->interlace_pass];
@@ -389,7 +416,8 @@ static int set_interlace_pass(pngle_t *pngle, uint_fast8_t pass)
 static int setup_gamma_table(pngle_t *pngle, uint32_t png_gamma)
 {
 #ifndef PNGLE_NO_GAMMA_CORRECTION
-	if (pngle->gamma_table) free(pngle->gamma_table);
+	if (pngle->gamma_table) PNGLE_FREE(pngle->gamma_table);
+	pngle->gamma_table = NULL;  // Release for MicroPython GC
 
 	if (pngle->display_gamma <= 0) return 0; // disable gamma correction
 	if (png_gamma == 0) return 0;
@@ -399,6 +427,7 @@ static int setup_gamma_table(pngle_t *pngle, uint32_t png_gamma)
 
 	pngle->gamma_table = PNGLE_CALLOC(1, maxval + 1, "gamma table");
 	if (!pngle->gamma_table) return PNGLE_ERROR("Insufficient memory");
+	pngle->self->gamma_table = pngle->gamma_table;  // Protect from MicroPython GC
 
 	for (int i = 0; i < maxval + 1; i++) {
 		pngle->gamma_table[i] = (uint8_t)floor(pow(i / (double)maxval, 100000.0 / png_gamma / pngle->display_gamma) * 255.0 + 0.5);
@@ -733,6 +762,8 @@ static int pngle_feed_internal(pngle_t *pngle, const uint8_t *buf, size_t len)
 			if (pngle->chunk_remain % 3) return PNGLE_ERROR("Invalid PLTE chunk size");
 			if (pngle->chunk_remain / 3 > MIN(256, (1UL << pngle->hdr.depth))) return PNGLE_ERROR("Too many palettes in PLTE");
 			if ((pngle->palette = PNGLE_CALLOC(pngle->chunk_remain / 3, 3, "palette")) == NULL) return PNGLE_ERROR("Insufficient memory");
+			pngle->self->palette = pngle->palette;  // Protect from MicroPython GC
+
 			pngle->n_palettes = 0;
 			break;
 

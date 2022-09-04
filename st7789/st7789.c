@@ -43,6 +43,8 @@
 #include "mpfile.h"
 #include "st7789.h"
 #include "jpg/tjpgd565.h"
+
+#define PNGLE_NO_GAMMA_CORRECTION
 #include "png/pngle.h"
 
 #define _swap_int(a, b) { int t = a; a = b; b = t; }s
@@ -1833,7 +1835,9 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
 		self, y, x, 0, 0, 0, 0, 0, NULL
 	};
 
-    pngle_t *pngle = pngle_new();
+	// allocate new pngle_t and store in self to protect memory from gc
+    self->work = pngle_new(self);
+	pngle_t *pngle = (pngle_t *) self->work;
 	pngle_set_user_data(pngle, (void *) &user_data);
     pngle_set_draw_callback(pngle, pngle_on_draw);
     self->fp = mp_open(filename, "rb");
@@ -1872,6 +1876,7 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
 	}
 
     pngle_destroy(pngle);
+	self->work = NULL;
 	mp_close(self->fp);
 	return mp_const_none;
 }

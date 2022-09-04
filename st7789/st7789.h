@@ -87,11 +87,17 @@ typedef struct _st7789_rotation_t {
 // this is the actual C-structure for our new object
 typedef struct _st7789_ST7789_obj_t {
     mp_obj_base_t base;
-
     mp_obj_base_t *spi_obj;
 	mp_file_t *fp;				// file object
 	uint16_t *i2c_buffer;		// resident buffer if buffer_size given
-    void *work;                 // work buffer for jpg decoding
+
+    // m_malloc'd pointers
+    void *work;                 // work buffer for jpg & png decoding
+    uint8_t *scanline_ringbuf;  // png scanline_ringbuf
+    uint8_t *palette;           // png palette
+    uint8_t *trans_palette;     // png trans_palette
+    uint8_t *gamma_table;       // png gamma_table
+
 	size_t buffer_size;         // resident buffer size, 0=dynamic
     uint16_t display_width;     // physical width
     uint16_t width;             // logical width (after rotation)
