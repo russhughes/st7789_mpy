@@ -558,7 +558,8 @@ I could not run the display with a baud rate over 40MHZ.
   one was specified during the display initialization. Since the driver does not contain a
   frame buffer, transparency is not supported. Providing a `True` value for the `mask` parameter
   will prevent pixels with a zero alpha channel value from being displayed.  Drawing masked PNG's is
-  slower than non-masked as each visible line segment is drawn separately.
+  slower than non-masked as each visible line segment is drawn separately. For an example of using a
+  mask, see the alien.py program in the examples/png folder.
 
 - `polygon_center(polygon)`
 
