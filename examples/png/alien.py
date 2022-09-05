@@ -1,16 +1,12 @@
 '''
 alien.py
 
-    Randomly draw a png
+    Randomly draw alien.png with alpha-channel masking
 
     The alien.png is from the Erik Flowers Weather Icons available from
     https://github.com/erikflowers/weather-icons and is licensed under
     SIL OFL 1.1
 
-    It was was converted from the wi-alien.svg icon using
-    ImageMagick's convert utility:
-
-    convert wi-alien.svg alien.png
 '''
 
 import gc
@@ -27,11 +23,10 @@ def main():
     Decode and draw png on display
     '''
 
-    tft = tft_config.config(1, buffer_size=2000)
+    tft = tft_config.config(1, buffer_size=30*2)
 
     # enable display and clear screen
     tft.init()
-    tft.fill(st7789.WHITE)
 
     # display png in random locations
     while True:
@@ -39,6 +34,8 @@ def main():
         tft.png(
             "alien.png",
             random.randint(0, tft.width() - 63),
-            random.randint(0, tft.height() - 63))
+            random.randint(0, tft.height() - 63),
+            True)
+
 
 main()

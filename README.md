@@ -549,14 +549,16 @@ I could not run the display with a baud rate over 40MHZ.
   only contain the specified area of the image. See examples/T-DISPLAY/clock/clock.py
   examples/T-DISPLAY/toasters_jpg/toasters_jpg.py for examples.
 
-- `png(png_filename, x, y)`
+- `png(png_filename, x, y [, mask])`
 
-  Draw a PNG file on the display at the given `x` and `y` coordinates as the
-  upper left corner of the image. The PNG will not be clipped it must be able to fully fit on the
-  display or it will not be drawn. The memory required to decode and display a PNG can be
-  considerable as such, the PNG will be drawn one line at a time or as many lines as will fit in
-  the `buffer_size` specified during the display initialization. Transparency is not currently
-  supported.
+  Draw a PNG file on the display with upper left corner of the image at the given `x` and `y`
+  coordinates. The PNG will not be clipped it must be able to fit fully on the display or it will
+  not be drawn. The memory required to decode and display a PNG can be considerable, as such, the
+  PNG will either be drawn one line at a time, or as many lines as will fit in the `buffer_size` if
+  one was specified during the display initialization. Since the driver does not contain a
+  frame buffer, transparency is not supported. Providing a `True` value for the `mask` parameter
+  will prevent pixels with a zero alpha channel value from being displayed.  Drawing masked PNG's is
+  slower than non-masked as each visible line segment is drawn separately.
 
 - `polygon_center(polygon)`
 

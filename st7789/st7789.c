@@ -1818,6 +1818,76 @@ void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t 
 	}
 }
 
+void pngle_on_draw_transparent(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4])
+{
+	PNG_USER_DATA *user_data = pngle_get_user_data(pngle);
+	st7789_ST7789_obj_t *self = user_data->self;
+	pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
+	size_t buf_size = self->buffer_size;
+
+	uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));
+	bool transp = (rgba[3] == 0);
+
+    // initalize the user_data structure and optionally allocate line buffer on the first call
+	if (user_data->pixels == 0) {
+		// if no existing buffer, create one to hold a complete line
+		if (self->buffer_size == 0) {
+			buf_size = ihdr->width*2;
+			self->i2c_buffer = m_malloc(buf_size);
+			if (!self->i2c_buffer) {
+				mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
+			}
+		} else {
+			// check if existing buffer is large enough
+			if (self->buffer_size < buf_size) {
+				mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), buf_size);
+			}
+		}
+
+		user_data->rows = (buf_size / ihdr->width >> 1);
+		if (user_data->rows > ihdr->height)
+			user_data->rows = ihdr->height;
+
+		user_data->pixels = ihdr->width * user_data->rows;
+		user_data->pixel = 0;
+		user_data->row = y;
+		user_data->col = x;
+		user_data->buffer = self->i2c_buffer;
+	}
+
+	// check if the buffer needs to flushed to the display
+
+	if ((transp || y != user_data->row) && user_data->pixel) {
+		set_window(
+			self,
+			user_data->left+user_data->col,
+			user_data->top+user_data->row,
+			user_data->left+user_data->col+user_data->pixel-1,
+			user_data->top+user_data->row
+		);
+
+		DC_HIGH();
+		CS_LOW();
+		write_spi(self->spi_obj, (uint8_t *) self->i2c_buffer, user_data->pixel*2);
+		CS_HIGH();
+
+		user_data->pixel = 0;
+		user_data->col = x;
+		user_data->row = y;
+		user_data->buffer = self->i2c_buffer;
+	}
+
+	if (!transp) {
+		if (user_data->pixel == 0) {
+			user_data->col = x;
+			user_data->row = y;
+		}
+
+		*user_data->buffer++ = color;
+		user_data->pixel++;
+	}
+}
+
 #define PNG_FILE_BUFFER_SIZE 256
 
 STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
@@ -1827,6 +1897,7 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
 	const char *filename = mp_obj_str_get_str(args[1]);
 	mp_int_t x = mp_obj_get_int(args[2]);
 	mp_int_t y = mp_obj_get_int(args[3]);
+	bool transparency = (n_args > 4) ? mp_obj_is_true(args[4]) : false;
 
 	char buf[PNG_FILE_BUFFER_SIZE];
     int len, remain = 0;
@@ -1839,7 +1910,12 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
     self->work = pngle_new(self);
 	pngle_t *pngle = (pngle_t *) self->work;
 	pngle_set_user_data(pngle, (void *) &user_data);
-    pngle_set_draw_callback(pngle, pngle_on_draw);
+
+	if (transparency)
+    	pngle_set_draw_callback(pngle, pngle_on_draw_transparent);
+	else
+		pngle_set_draw_callback(pngle, pngle_on_draw);
+
     self->fp = mp_open(filename, "rb");
 
     while ((len = mp_readinto(self->fp, buf + remain, PNG_FILE_BUFFER_SIZE - remain)) > 0) {
@@ -1873,14 +1949,15 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args)
 	// free dynamic buffer
 	if (self->buffer_size == 0) {
 		m_free(self->i2c_buffer);
+		self->i2c_buffer = NULL;
 	}
 
+	mp_close(self->fp);
     pngle_destroy(pngle);
 	self->work = NULL;
-	mp_close(self->fp);
 	return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_png_obj, 4, 4, st7789_ST7789_png);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_png_obj, 4, 5, st7789_ST7789_png);
 
 //
 // Return the center of a polygon as an (x, y) tuple

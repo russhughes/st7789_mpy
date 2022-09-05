@@ -9,7 +9,7 @@ bigbuckbunny.py
 import st7789
 import tft_config
 
-tft = tft_config.config(1, buffer_size=2048)
+tft = tft_config.config(1, buffer_size=4096)
 
 def main():
     '''
