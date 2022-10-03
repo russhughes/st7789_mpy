@@ -124,7 +124,11 @@ st7789_rotation_t ORIENTATIONS_128x128[4] = {
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len)
 {
+#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+	mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *) MP_OBJ_TYPE_GET_SLOT(spi_obj->type, protocol);
+#else
 	mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *) spi_obj->type->protocol;
+#endif
 	spi_p->transfer(spi_obj, len, buf, NULL);
 }
 
@@ -784,7 +788,7 @@ STATIC mp_obj_t st7789_ST7789_write(size_t n_args, const mp_obj_t *args)
 		self->i2c_buffer = m_malloc(buf_size);
 	}
 
-	// if fill is set, and background bitmap data is availabe copy the background
+	// if fill is set, and background bitmap data is available copy the background
 	// bitmap data into the buffer. The background buffer must be the size of the
 	// widest character in the font.
 
@@ -1471,7 +1475,7 @@ static int out_fast( // 1:Ok, 0:Aborted
 	uint8_t *src, *dst;
 	uint16_t y, bws, bwd;
 
-	// Copy the decompressed RGB rectanglar to the frame buffer (assuming RGB565)
+	// Copy the decompressed RGB rectangular to the frame buffer (assuming RGB565)
 	src = (uint8_t *) bitmap;
 	dst = dev->fbuf + 2 * (rect->top * dev->wfbuf + rect->left); // Left-top of destination rectangular
 	bws = 2 * (rect->right - rect->left + 1);					 // Width of source rectangular [byte]
@@ -1502,7 +1506,7 @@ static int out_slow( // 1:Ok, 0:Aborted
 	uint16_t wx2 = (rect->right - rect->left + 1) * 2;
 	uint16_t h	 = rect->bottom - rect->top + 1;
 
-	// Copy the decompressed RGB rectanglar to the frame buffer (assuming RGB565)
+	// Copy the decompressed RGB rectangular to the frame buffer (assuming RGB565)
 	src = (uint8_t *) bitmap;
 	dst = dev->fbuf; // Left-top of destination rectangular
 	for (y = rect->top; y <= rect->bottom; y++) {
@@ -1741,7 +1745,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_decode_obj, 2, 6, s
 typedef struct _PNG_USER_DATA {
 	st7789_ST7789_obj_t *self;
 	uint16_t top;				// draw png starting at this row
-	uint16_t left;				// draw png statting at this column
+	uint16_t left;				// draw png starting at this column
 	uint16_t pixels;			// number of pixels that fit in buffer (must be a multiple of width)
 	uint16_t rows;				// number of rows that fit in buffer (or png height if < rows)
 	uint16_t pixel;				// index to current pixel in buffer
@@ -1759,7 +1763,7 @@ void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t 
 
 	uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));	// rgba[3] transparency
 
-	// initalize the user_data structure and optionally allocate line buffer on the first call
+	// initialize the user_data structure and optionally allocate line buffer on the first call
 	if (user_data->pixels == 0) {
 		// if no existing buffer, create one to hold a complete line
 		if (self->buffer_size == 0) {
@@ -1828,7 +1832,7 @@ void pngle_on_draw_transparent(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t 
 	uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));
 	bool transp = (rgba[3] == 0);
 
-    // initalize the user_data structure and optionally allocate line buffer on the first call
+    // initialize the user_data structure and optionally allocate line buffer on the first call
 	if (user_data->pixels == 0) {
 		// if no existing buffer, create one to hold a complete line
 		if (self->buffer_size == 0) {
@@ -2320,6 +2324,20 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(st7789_ST7789_locals_dict, st7789_ST7789_locals_dict_table);
 /* methods end */
 
+
+#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+
+MP_DEFINE_CONST_OBJ_TYPE(
+	st7789_ST7789_type,
+	MP_QSTR_ST7789,
+	MP_TYPE_FLAG_NONE,
+	print, st7789_ST7789_print,
+	make_new, st7789_ST7789_make_new,
+	locals_dict, &st7789_ST7789_locals_dict
+);
+
+#else
+
 const mp_obj_type_t st7789_ST7789_type = {
 	{&mp_type_type},
 	.name		 = MP_QSTR_ST7789,
@@ -2327,6 +2345,8 @@ const mp_obj_type_t st7789_ST7789_type = {
 	.make_new	 = st7789_ST7789_make_new,
 	.locals_dict = (mp_obj_dict_t *) &st7789_ST7789_locals_dict,
 };
+
+#endif
 
 mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
 								size_t				 n_args,
@@ -2483,8 +2503,10 @@ const mp_obj_module_t mp_module_st7789 = {
 	.globals = (mp_obj_dict_t *) &mp_module_st7789_globals,
 };
 
-
 // use the following for older versions of MicroPython
-// MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789, MODULE_ST7789_ENABLE);
 
+#if MICROPY_VERSION >= 0x011300 // MicroPython 1.19 or later
 MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789);
+#else
+MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789, MODULE_ST7789_ENABLE);
+#endif
