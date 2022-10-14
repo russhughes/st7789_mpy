@@ -31,8 +31,6 @@
 extern "C" {
 #endif
 
-#define PNGLE_NO_GAMMA_CORRECTION 1
-
 // Main Pngle object
 typedef struct _pngle_t pngle_t;
 

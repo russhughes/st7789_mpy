@@ -43,8 +43,9 @@
 #include "py/builtin.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
-#include "../mpfile.h"
-#include "../st7789.h"
+#include "mpfile.h"
+
+#include "st7789.h"
 
 #ifndef MIN
 #define MIN(a, b) ((a) < (b) ? (a) : (b))

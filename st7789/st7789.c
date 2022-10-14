@@ -43,8 +43,6 @@
 #include "mpfile.h"
 #include "st7789.h"
 #include "jpg/tjpgd565.h"
-
-#define PNGLE_NO_GAMMA_CORRECTION
 #include "png/pngle.h"
 
 #define _swap_int(a, b) { int t = a; a = b; b = t; }s
@@ -91,6 +89,13 @@ st7789_rotation_t ORIENTATIONS_240x320[4] = {
 	{ 0x60, 320, 240,  0,  0},
 	{ 0xc0, 240, 320,  0,  0},
 	{ 0xa0, 320, 240,  0,  0}
+};
+
+st7789_rotation_t ORIENTATIONS_170x320[4] = {
+	{0x00, 170, 320, 35, 0},
+	{0x60, 320, 170, 0, 35},
+	{0xc0, 170, 320, 35, 0},
+	{0xa0, 320, 170, 0, 35}
 };
 
 st7789_rotation_t ORIENTATIONS_240x240[4] = {
@@ -1061,6 +1066,8 @@ STATIC void set_rotation(st7789_ST7789_obj_t *self)
 	if (rotations == NULL) {
 		if (self->display_width == 240 && self->display_height == 320) {
 			rotations = ORIENTATIONS_240x320;
+		} else if (self->display_width == 170 && self->display_height == 320) {
+			rotations = ORIENTATIONS_170x320;
 		} else if  (self->display_width == 240 && self->display_height == 240) {
 			rotations = ORIENTATIONS_240x240;
 		} else if (self->display_width == 135 && self->display_height == 240) {

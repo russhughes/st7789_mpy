@@ -46,7 +46,7 @@ rotation setting of the display may require different colstart and rowstart
 values.
 
 The driver automatically sets the `colstart` and `rowstart` values for common
-135x240, 240x240 and 240x320 displays. If the default values do not work for
+135x240, 240x240, 170x320 and 240x320 displays. If the default values do not work for
 your display, these values can be overridden using the `offsets` method. The
 `offsets` method should be called after any `rotation` method calls.
 
@@ -78,7 +78,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython MicroPython v1.19.1-292-g59e3348c1 compiled with ESP IDF v4.4 using CMake
+MicroPython v1.19.1-18-g6e868d47d compiled with ESP IDF v4.4 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
@@ -342,6 +342,7 @@ I could not run the display with a baud rate over 40MHZ.
       Display | Default Orientation Tables
       ------- | --------------------------
       240x320 | [(0x00, 240, 320,  0,  0), (0x60, 320, 240,  0,  0), (0xc0, 240, 320,  0,  0), (0xa0, 320, 240,  0,  0)]
+      170x320 |	[(0x00, 170, 320, 35, 0), (0x60, 320, 170, 0, 35), (0xc0, 170, 320, 35, 0), (0xa0, 320, 170, 0, 35)]
       240x240 | [(0x00, 240, 240,  0,  0), (0x60, 240, 240,  0,  0), (0xc0, 240, 240,  0, 80), (0xa0, 240, 240, 80,  0)]
       135x240 | [(0x00, 135, 240, 52, 40), (0x60, 240, 135, 40, 53), (0xc0, 135, 240, 53, 40), (0xa0, 240, 135, 40, 52)]
       128x160 | [(0x00, 128, 160,  0,  0), (0x60, 160, 128,  0,  0), (0xc0, 128, 160,  0,  0), (0xa0, 160, 128,  0,  0)]
