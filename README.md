@@ -529,16 +529,18 @@ I could not run the display with a baud rate over 40MHZ.
 
   Returns the string's width in pixels if drawn with the specified font.
 
-- `jpg(jpg_filename, x, y [, method])`
+- `jpg(jpg, x, y [, method])`
 
-  Draw a JPG file on the display at the given `x` and `y` coordinates as the
-  upper left corner of the image. The memory required to decode and display a
-  JPG can be considerable as a full-screen 320x240 JPG would require at least
-  3100 bytes for the working area + 320 * 240 * 2 bytes of ram to buffer the
-  image. Jpg images that would require a buffer larger than available memory
-  can be drawn by passing `SLOW` for the `method`. The `SLOW` `method` will
-  draw the image one piece at a time using the Minimum Coded Unit (MCU,
-  typically a multiple of 8x8) of the image.
+  Draw a `jpg` on the display with the given `x` and `y` coordinates as the
+  upper left corner of the image. `jpg` may be a string containing a filename
+  or a buffer containing the JPEG image data.
+
+  The memory required to decode and display a JPG can be considerable as a full-screen
+  320x240 JPG would require at least 3100 bytes for the working area + 320 * 240 * 2
+  bytes of ram to buffer the image. Jpg images that would require a buffer larger than
+  available memory can be drawn by passing `SLOW` for the `method`. The `SLOW` `method`
+  will draw the image one piece at a time using the Minimum Coded Unit (MCU, typically
+  a multiple of 8x8) of the image. The default method is `FAST`.
 
 - `jpg_decode(jpg_filename [, x, y, width, height])`
 

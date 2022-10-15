@@ -1445,18 +1445,43 @@ typedef struct {
 	unsigned int bottom; // jpg crop bottom row
 
 	st7789_ST7789_obj_t *self; // display object
+
+	// for buffer input function
+	uint8_t* data;
+	unsigned int dataIdx;
+	unsigned int dataLen;
+
 } IODEV;
+
+static unsigned int buffer_in_func( // Returns number of bytes read (zero on error)
+	JDEC		*jd,				// Decompression object
+	uint8_t		*buff,				// Pointer to the read buffer (null to remove data)
+	unsigned int nbyte)				// Number of bytes to read/remove
+{
+	IODEV *dev = (IODEV *) jd->device;
+
+	if (dev->dataIdx + nbyte > dev->dataLen) {
+		nbyte = dev->dataLen - dev->dataIdx;
+	}
+
+	if (buff) {
+		memcpy(buff, (uint8_t *) (dev->data + dev->dataIdx), nbyte);
+	}
+
+	dev->dataIdx += nbyte;
+	return nbyte;
+}
 
 //
 // file input function
 //
 
-static unsigned int in_func( // Returns number of bytes read (zero on error)
-	JDEC *		 jd,		 // Decompression object
-	uint8_t *	 buff,		 // Pointer to the read buffer (null to remove data)
-	unsigned int nbyte)		 // Number of bytes to read/remove
+static unsigned int file_in_func( // Returns number of bytes read (zero on error)
+	JDEC		*jd,			  // Decompression object
+	uint8_t		*buff,			  // Pointer to the read buffer (null to remove data)
+	unsigned int nbyte)			  // Number of bytes to read/remove
 {
-	IODEV *		 dev = (IODEV *) jd->device; // Device identifier for the session (5th argument of jd_prepare function)
+	IODEV *dev = (IODEV *) jd->device; // Device identifier for the session (5th argument of jd_prepare function)
 	unsigned int nread;
 
 	if (buff) { // Read data from input stream
@@ -1546,10 +1571,28 @@ static int out_slow( // 1:Ok, 0:Aborted
 STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+	static unsigned int (*input_func)(JDEC*, uint8_t*, unsigned int) = NULL;
+	mp_buffer_info_t bufinfo;
+	IODEV  devid;
 
-	const char *filename = mp_obj_str_get_str(args[1]);
-	mp_int_t	x		 = mp_obj_get_int(args[2]);
-	mp_int_t	y		 = mp_obj_get_int(args[3]);
+	if (mp_obj_is_type(args[1], &mp_type_bytes)) {
+		mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+		devid.dataIdx = 0;
+		devid.data = bufinfo.buf;
+		devid.dataLen = bufinfo.len;
+		input_func = buffer_in_func;
+		self->fp = MP_OBJ_NULL;
+	} else {
+		const char *filename = mp_obj_str_get_str(args[1]);
+		self->fp = mp_open(filename, "rb");
+		devid.fp = self->fp;
+		input_func = file_in_func;
+		devid.data = MP_OBJ_NULL;
+		devid.dataLen = 0;
+	}
+
+	mp_int_t x = mp_obj_get_int(args[2]);
+	mp_int_t y = mp_obj_get_int(args[3]);
 
 	mp_int_t mode;
 
@@ -1563,14 +1606,11 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 	JRESULT res;						  // Result code of TJpgDec API
 	JDEC	jdec;						  // Decompression object
 	self->work = (void *) m_malloc(3100); // Pointer to the work area
-	IODEV  devid;						  // User defined device identifier
 	size_t bufsize;
 
-	self->fp = mp_open(filename, "rb");
-	devid.fp = self->fp;
-	if (devid.fp) {
+	if (input_func && (devid.fp || devid.data)) {
 		// Prepare to decompress
-		res = jd_prepare(&jdec, in_func, self->work, 3100, &devid);
+		res = jd_prepare(&jdec, input_func, self->work, 3100, &devid);
 		if (res == JDR_OK) {
 			// Initialize output device
 			if (mode == JPG_MODE_FAST) {
@@ -1616,7 +1656,11 @@ STATIC mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args)
 		} else {
 			mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
 		}
-		mp_close(devid.fp);
+
+		if (self->fp) {
+			mp_close(self->fp);
+			self->fp = MP_OBJ_NULL;
+		}
 	}
 	m_free(self->work); // Discard work area
 	return mp_const_none;
@@ -1668,12 +1712,29 @@ static int out_crop( // 1:Ok, 0:Aborted
 STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
 {
 	st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-	const char *filename;
+
+	static unsigned int (*input_func)(JDEC*, uint8_t*, unsigned int) = NULL;
+	mp_buffer_info_t bufinfo;
+	IODEV  devid;
+
+	if (mp_obj_is_type(args[1], &mp_type_bytes)) {
+		mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_READ);
+		devid.dataIdx = 0;
+		devid.data = bufinfo.buf;
+		devid.dataLen = bufinfo.len;
+		input_func = buffer_in_func;
+		self->fp = MP_OBJ_NULL;
+	} else {
+		const char *filename = mp_obj_str_get_str(args[1]);
+		self->fp = mp_open(filename, "rb");
+		devid.fp = self->fp;
+		input_func = file_in_func;
+		devid.data = MP_OBJ_NULL;
+		devid.dataLen = 0;
+	}
 	mp_int_t x = 0, y = 0, width = 0, height = 0;
 
 	if (n_args == 2 || n_args == 6) {
-		filename = mp_obj_str_get_str(args[1]);
-
 		if (n_args == 6) {
 			x      	 = mp_obj_get_int(args[2]);
 			y	   	 = mp_obj_get_int(args[3]);
@@ -1685,14 +1746,11 @@ STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
 
 		JRESULT res;						  // Result code of TJpgDec API
 		JDEC	jdec;						  // Decompression object
-		IODEV  devid;						  // User defined device identifier
 		size_t bufsize = 0;
 
-		self->fp = mp_open(filename, "rb");
-		devid.fp = self->fp;
-		if (devid.fp) {
+	if (input_func && (devid.fp || devid.data)) {
 			// Prepare to decompress
-			res = jd_prepare(&jdec, in_func, self->work, 3100, &devid);
+			res = jd_prepare(&jdec, input_func, self->work, 3100, &devid);
 			if (res == JDR_OK) {
 
 				if (n_args < 6) {
@@ -1726,7 +1784,10 @@ STATIC mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args)
 			} else {
 				mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
 			}
-			mp_close(devid.fp);
+			if (self->fp) {
+				mp_close(self->fp);
+				self->fp = MP_OBJ_NULL;
+			}
 		}
 		m_free(self->work); // Discard work area
 
