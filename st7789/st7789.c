@@ -129,7 +129,7 @@ st7789_rotation_t ORIENTATIONS_128x128[4] = {
 
 STATIC void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len)
 {
-#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+#ifdef MP_OBJ_TYPE_GET_SLOT
 	mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *) MP_OBJ_TYPE_GET_SLOT(spi_obj->type, protocol);
 #else
 	mp_machine_spi_p_t *spi_p = (mp_machine_spi_p_t *) spi_obj->type->protocol;
@@ -2392,8 +2392,7 @@ STATIC const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(st7789_ST7789_locals_dict, st7789_ST7789_locals_dict_table);
 /* methods end */
 
-
-#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+#ifdef MP_OBJ_TYPE_GET_SLOT
 
 MP_DEFINE_CONST_OBJ_TYPE(
 	st7789_ST7789_type,
@@ -2401,7 +2400,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 	MP_TYPE_FLAG_NONE,
 	print, st7789_ST7789_print,
 	make_new, st7789_ST7789_make_new,
-	locals_dict, &st7789_ST7789_locals_dict
+	locals_dict, (mp_obj_dict_t *) &st7789_ST7789_locals_dict
 );
 
 #else

@@ -105,15 +105,14 @@ STATIC const mp_rom_map_elem_t mp_file_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(mp_file_locals_dict, mp_file_locals_dict_table);
 
-
-#if MICROPY_OBJ_TYPE_REPR == MICROPY_OBJ_TYPE_REPR_SLOT_INDEX
+#ifdef MP_OBJ_TYPE_GET_SLOT
 
 static MP_DEFINE_CONST_OBJ_TYPE(
 	mp_file_type,
 	MP_QSTR_mp_file,
 	MP_TYPE_FLAG_NONE,
 	print, mp_file_print,
-	locals_dict, &mp_file_locals_dict
+	locals_dict, (mp_obj_dict_t *) &mp_file_locals_dict
 );
 
 #else
