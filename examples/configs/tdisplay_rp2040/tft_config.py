@@ -13,7 +13,7 @@ def config(rotation=0, buffer_size=0, options=0):
 
     spi = SPI(0,
         baudrate=62500000,
-        polarity=1,
+        polarity=0,
         phase=0,
         sck=Pin(2, Pin.OUT),
         mosi=Pin(3, Pin.OUT),
@@ -25,6 +25,7 @@ def config(rotation=0, buffer_size=0, options=0):
         240,
         cs=Pin(5, Pin.OUT),
         dc=Pin(1, Pin.OUT),
+        reset=Pin(6, Pin.OUT),
         backlight=Pin(4, Pin.OUT),
         rotation=rotation,
         options=options,
