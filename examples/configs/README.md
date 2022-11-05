@@ -20,9 +20,11 @@ ws_pico_2       | Raspberry Pi Pico Waveshare-Pico-lcd-2 Display
 
 These following folders contain buttons.py config modules that are used by the roids.py example program to configure the buttons.
 
-Folder        | Device
-------------- | -------------------------------------------------
-esp32_buttons | Generic ESP32 buttons as used on my breadboard.
-ws_pico_114   | Raspberry Pi Pico Waveshare-Pico-lcd-1.14 Display
-ws_pico_13    | Raspberry Pi Pico Waveshare-Pico-lcd-1.3 Display
-ws_pico_2     | Raspberry Pi Pico Waveshare-Pico-lcd-2 Display
+Folder          | Device
+--------------- | -------------------------------------------------
+esp32_buttons   | Generic ESP32 buttons as used on my breadboard.
+ws_pico_114     | Raspberry Pi Pico Waveshare-Pico-lcd-1.14 Display
+ws_pico_13      | Raspberry Pi Pico Waveshare-Pico-lcd-1.3 Display
+ws_pico_2       | Raspberry Pi Pico Waveshare-Pico-lcd-2 Display
+tdisplay_esp32  | TTGO T-DISPLAY ESP32
+tdisplay_rp2040 | TTGO T-DISPLAY RP2040

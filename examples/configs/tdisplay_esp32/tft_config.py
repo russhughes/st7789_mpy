@@ -8,7 +8,7 @@ BFA = 40
 
 def config(rotation=0, buffer_size=0, options=0):
     return st7789.ST7789(
-        SPI(1, baudrate=30000000, sck=Pin(18), mosi=Pin(19)),
+        SPI(2, baudrate=40000000, sck=Pin(18), mosi=Pin(19), miso=None),
         135,
         240,
         reset=Pin(23, Pin.OUT),

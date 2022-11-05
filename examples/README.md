@@ -75,6 +75,19 @@
     https://www.youtube.com/watch?v=O_lDBnvH1Sw
 
 
+## pinball.py
+
+    Minimal pinball game in MicroPython based on code from Ten Minute Physics Tutorial
+    "How to write a pinball simulation"
+
+    Tutorial Links:
+        https://matthias-research.github.io/pages/tenMinutePhysics/
+        https://youtu.be/NhVUCsXp-Uo
+
+    GamePlay Video:
+        https://youtu.be/y0B3i_UmEU8
+
+
 ## proverbs.py
 
     Displays what I hope are chinese proverbs in simplified chinese to test UTF-8 font support.
