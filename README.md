@@ -91,6 +91,7 @@ RP2                   | firmware.uf2 | Raspberry Pi Pico RP2040
 RP2W                  | firmware.uf2 | Raspberry Pi PicoW RP2040
 T-DISPLAY             | firmware.bin | LILYGO® TTGO T-Display
 T-Watch-2020          | firmware.bin | LILYGO® T-Watch 2020
+WIO_TERMINAL          | firmware.bin | Seeed Wio Terminal
 
 
 ## Additional Modules
@@ -371,9 +372,9 @@ I could not run the display with a baud rate over 40MHZ.
 
     - `options` Sets driver option flags.
 
-      Option | Description
-      ------ | -----------
-      st7789.WRAP | pixels, lines, polygons, and Hershey text will wrap around the display both horizontally and vertically.
+      Option        | Description
+      ------------- | -----------
+      st7789.WRAP   | pixels, lines, polygons, and Hershey text will wrap around the display both horizontally and vertically.
       st7789.WRAP_H | pixels, lines, polygons, and Hershey text will wrap around the display horizontally.
       st7789.WRAP_V | pixels, lines, polygons, and Hershey text will wrap around the display vertically.
 

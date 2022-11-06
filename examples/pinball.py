@@ -771,5 +771,9 @@ elif buttons.name == 'ws_pico_2':
     left_flipper = buttons.key2
     right_flipper = buttons.key1
 
+elif buttons.name == 'wio_terminal':
+    left_flipper = buttons.center
+    right_flipper = buttons.button1
+
 table = Table()
 start_game()
