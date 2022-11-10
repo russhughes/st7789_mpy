@@ -53,10 +53,10 @@ extern "C" {
 #define ST7789_RDID4   0xDD
 
 // Color definitions
-#define	BLACK   0x0000
-#define	BLUE    0x001F
-#define	RED     0xF800
-#define	GREEN   0x07E0
+#define BLACK   0x0000
+#define BLUE    0x001F
+#define RED     0xF800
+#define GREEN   0x07E0
 #define CYAN    0x07FF
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
@@ -67,13 +67,13 @@ extern "C" {
 #define OPTIONS_WRAP   0x03
 
 typedef struct _Point {
-   mp_float_t x;
-   mp_float_t y;
+    mp_float_t x;
+    mp_float_t y;
 } Point;
 
 typedef struct _Polygon {
-    int     length;
-    Point   *points;
+    int length;
+    Point *points;
 } Polygon;
 
 typedef struct _st7789_rotation_t {
@@ -88,8 +88,8 @@ typedef struct _st7789_rotation_t {
 typedef struct _st7789_ST7789_obj_t {
     mp_obj_base_t base;
     mp_obj_base_t *spi_obj;
-	mp_file_t *fp;				// file object
-	uint16_t *i2c_buffer;		// resident buffer if buffer_size given
+    mp_file_t *fp;              // file object
+    uint16_t *i2c_buffer;       // resident buffer if buffer_size given
 
     // m_malloc'd pointers
     void *work;                 // work buffer for jpg & png decoding
@@ -98,7 +98,7 @@ typedef struct _st7789_ST7789_obj_t {
     uint8_t *trans_palette;     // png trans_palette
     uint8_t *gamma_table;       // png gamma_table
 
-	size_t buffer_size;         // resident buffer size, 0=dynamic
+    size_t buffer_size;         // resident buffer size, 0=dynamic
     uint16_t display_width;     // physical width
     uint16_t width;             // logical width (after rotation)
     uint16_t display_height;    // physical width
@@ -108,6 +108,7 @@ typedef struct _st7789_ST7789_obj_t {
     uint8_t rotation;
     st7789_rotation_t *rotations;   // list of rotation tuples [(madctl, colstart, rowstart)]
     uint8_t rotations_len;          // number of rotations
+    mp_obj_t custom_init;           // custom init sequence
     uint8_t color_order;
     bool inversion;
     uint8_t madctl;

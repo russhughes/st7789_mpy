@@ -164,13 +164,13 @@ sudo apt-get -y install build-essential libffi-dev git pkg-config cmake virtuale
 
 The MicroPython README.md states: "The ESP-IDF changes quickly, and MicroPython
 only supports certain versions. Currently, MicroPython supports v4.0.2, v4.1.1,
-and v4.2, although other IDF v4 versions may also work."  I have had good luck
-using IDF v4.2.
+and v4.2 although other IDF v4 versions may also work."  I have had good luck
+using IDF v4.4
 
 Clone the esp-idf SDK repo -- this usually takes several minutes.
 
 ```bash
-git clone -b v4.2 --recursive https://github.com/espressif/esp-idf.git
+git clone -b v4.4 --recursive https://github.com/espressif/esp-idf.git
 cd esp-idf/
 git pull
 ```
@@ -180,7 +180,7 @@ with MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.2
+$ git checkout v4.4
 $ git submodule update --init --recursive
 ```
 
@@ -306,7 +306,7 @@ I could not run the display with a baud rate over 40MHZ.
 
 ## Methods
 
-- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotations, rotation, color_order, inversion, options, buffer_size)`
+- `st7789.ST7789(spi, width, height, dc, reset, cs, backlight, rotations, rotation, custom_init, color_order, inversion, options, buffer_size)`
 
     ### Required positional arguments:
     - `spi` spi device
@@ -365,7 +365,12 @@ I could not run the display with a baud rate over 40MHZ.
       2     | Reverse Portrait (180 degrees)
       3     | Reverse Landscape (270 degrees)
 
-    - `color_order` sets the color order used by the driver (st7789.RGB or st7789.BGR)
+    - `custom_init` List of display configuration commands to send to the display during the display init().
+        The list contains tuples with a bytes object, optionally followed by a delay specified in ms. The first
+        byte of the bytes object contains the command to send optionally followed by data bytes.
+        See the `examples/configs/t_dongle_s3/tft_config.py` file or an example.
+
+    - `color_order` Sets the color order used by the driver (st7789.RGB or st7789.BGR)
 
     - `inversion` Sets the display color inversion mode if True, clears the
       display color inversion mode if false.
