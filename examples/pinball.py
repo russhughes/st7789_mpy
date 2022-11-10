@@ -312,7 +312,7 @@ class Table():
 
     def __init__(self):
         """create a new table"""
-        self.gravity = Vector2(0.0, -0.60)
+        self.gravity = Vector2(0.0, -0.80)
         self.dt = 1.0 / FPS
         self.ticks = int(self.dt * 1000)
         self.game_over = False
@@ -651,12 +651,15 @@ def ball_countdown():
         time.sleep(1)
 
     center_on(' ', 1.3, st7789.WHITE, bold_font)
+    if REDRAW_EVERY_FRAME is False:
+        table.draw_border()
+        table.draw_obstacles()
 
 
 def print_game_over(color=st7789.RED):
     """print game over"""
-    center_on(" GAME ", 1.55, color, bold_font)
-    center_on(" OVER ", 1.30, color, bold_font)
+    center_on("GAME", 1.65, color, bold_font)
+    center_on("OVER", 1.30, color, bold_font)
     center_on(" Press ", 0.82, color, font)
     center_on(" Button ", 0.72, color, font)
     center_on(" To ",  0.62, color, font)
@@ -759,6 +762,10 @@ elif buttons.name == 'tdisplay_rp2040':
     left_flipper = buttons.left
     right_flipper = buttons.right
 
+elif buttons.name == 't-display-s3':
+    left_flipper = buttons.left
+    right_flipper = buttons.right
+
 elif buttons.name == 'ws_pico_114':
     left_flipper = buttons.key3
     right_flipper = buttons.key2
@@ -774,6 +781,12 @@ elif buttons.name == 'ws_pico_2':
 elif buttons.name == 'wio_terminal':
     left_flipper = buttons.center
     right_flipper = buttons.button1
+
+elif buttons.name == 't-dongle-s3':     # not practical, but why not
+    left_flipper = buttons.button
+    right_flipper = buttons.button
+    REDRAW_EVERY_FRAME = False
+
 
 table = Table()
 start_game()
