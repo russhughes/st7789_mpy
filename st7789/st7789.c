@@ -648,14 +648,14 @@ STATIC mp_obj_t st7789_ST7789_draw_len(size_t n_args, const mp_obj_t *args) {
             ii = (c - 32) * 2;
 
             int16_t offset = (index[ii] | (index[ii + 1] << 8)) + 1;
-            int16_t left = (int)(scale * (font[offset++] - 0x52) + 0.5);
-            int16_t right = (int)(scale * (font[offset++] - 0x52) + 0.5);
+            int16_t left =  font[offset++] - 0x52;
+            int16_t right = font[offset++] - 0x52;
             int16_t width = right - left;
             print_width += width;
         }
     }
 
-    return mp_obj_new_int((int)(print_width * scale));
+    return mp_obj_new_int((int)(print_width * scale + 0.5));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_draw_len_obj, 3, 4, st7789_ST7789_draw_len);
 
