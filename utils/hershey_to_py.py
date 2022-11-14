@@ -103,7 +103,8 @@ def parse_line(keyword_dict, line):
     return the key and match result from the first match.
     """
     for key, rx in keyword_dict.items():
-        if match := rx.search(line):
+        match = rx.search(line)
+        if match:
             return key, match
 
     return None, None
@@ -162,7 +163,8 @@ def hershey_load(glyph_file_name, map_file_name=None):
                 if line[0] == '#':
                     continue
 
-                if match := map_line.search(line.rstrip()):
+                match = map_line.search(line.rstrip())
+                if match:
                     begin = int(match['begin'])
                     end = int(match['end'])
                     if end > 0:
