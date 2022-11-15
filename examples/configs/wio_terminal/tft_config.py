@@ -49,7 +49,7 @@ def config(rotation=0, buffer_size=0, options=0):
         (0x28, 320, 240, 0, 0)
     ]
     return st7789.ST7789(
-        SPI(7, baudrate=14000000, sck=Pin("LCD_SCK"), mosi=Pin("LCD_MOSI")),
+        SPI(7, baudrate=24000000, sck=Pin("LCD_SCK"), mosi=Pin("LCD_MOSI")),
         240,
         320,
         reset=Pin("LCD_RESET", Pin.OUT),
