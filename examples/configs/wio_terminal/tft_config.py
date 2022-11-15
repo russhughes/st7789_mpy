@@ -29,7 +29,6 @@ def config(rotation=0, buffer_size=0, options=0):
         (b'\xC1\x10',),			         # Power control,SAP[2:0];BT[3:0]
         (b'\xC5\x3E\x28',),			     # vcm control
         (b'\xC7\x86',),			         # vcm control 2
-        (b'\x36\x48',),			         # memory access control
         (b'\x3A\x55',),			         # pixel format
         (b'\xB1\x00\x18',),			     # frameration control,normal mode full colours
         (b'\xB6\x08\x82\x27',),		     # display function control
@@ -39,14 +38,14 @@ def config(rotation=0, buffer_size=0, options=0):
         (b'\xE0\x0F\x31\x2B\x0C\x0E\x08\x4E\xF1\x37\x07\x10\x03\x0E\x09\x00',),
         # set negative gamma correction
         (b'\xE1\x00\x0E\x14\x03\x11\x07\x31\xC1\x48\x08\x0F\x0C\x31\x36\x0F',),
-        (b'\x29', 100)                   # display on
+        (b'\x29', 100),                  # display on
     ]
 
     custom_rotations = [
+        (0x48, 240, 320, 0, 0),
+        (0x28, 320, 240, 0, 0),
         (0x88, 240, 320, 0, 0),
         (0xe8, 320, 240, 0, 0),
-        (0x48, 240, 320, 0, 0),
-        (0x28, 320, 240, 0, 0)
     ]
     return st7789.ST7789(
         SPI(7, baudrate=24000000, sck=Pin("LCD_SCK"), mosi=Pin("LCD_MOSI")),
