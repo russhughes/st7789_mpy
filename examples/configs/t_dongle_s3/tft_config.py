@@ -21,32 +21,32 @@ def config(rotation=0, buffer_size=0, options=0):
     custom_init = [
         (b'\x01', 150),
         (b'\x11', 255),
-        (b'\xb1\x01\x2c\x2d'),
-        (b'\xb2\x01\x2c\x2d'),
-        (b'\xb3\x01\x2c\x2d\x01\x2c\x2d'),
-        (b'\xb4\x07'),
-        (b'\xc0\xa2\x02\x84'),
-        (b'\xc1\xc5'),
-        (b'\xc2\x0a\x00'),
-        (b'\xc3\x8a\x2a'),
-        (b'\xc4\x8a\xee'),
-        (b'\xc5\x0e'),
-        (b'\x21'),
-        (b'\x36\x00'),
-        (b'\x3a\x05'),
-        (b'\x2a\x00\x01\x00\x7f'),
-        (b'\x2b\x00\x01\x00\x9f'),
-        (b'\xe0\x02\x1c\x07\x12\x37\x32\x29\x2d\x29\x25\x2b\x39\x00\x01\x03\x10'),
-        (b'\xe1\x03\x1d\x07\x06\x2e\x2c\x29\x2d\x2e\x2e\x37\x3f\x00\x00\x02\x10'),
+        (b'\xb1\x01\x2c\x2d',),
+        (b'\xb2\x01\x2c\x2d',),
+        (b'\xb3\x01\x2c\x2d\x01\x2c\x2d',),
+        (b'\xb4\x07',),
+        (b'\xc0\xa2\x02\x84',),
+        (b'\xc1\xc5',),
+        (b'\xc2\x0a\x00',),
+        (b'\xc3\x8a\x2a',),
+        (b'\xc4\x8a\xee',),
+        (b'\xc5\x0e',),
+        (b'\x21',),
+        (b'\x36\x08',),
+        (b'\x3a\x05',),
+        (b'\x2a\x00\x01\x00\x7f',),
+        (b'\x2b\x00\x01\x00\x9f',),
+        (b'\xe0\x02\x1c\x07\x12\x37\x32\x29\x2d\x29\x25\x2b\x39\x00\x01\x03\x10',),
+        (b'\xe1\x03\x1d\x07\x06\x2e\x2c\x29\x2d\x2e\x2e\x37\x3f\x00\x00\x02\x10',),
         (b'\x13', 10),
         (b'\x29', 100),
     ]
 
     custom_rotations = [
-        (0x00,  80, 160, 26,  1),
-        (0x60, 160,  80,  1, 26),
-        (0xc0,  80, 160, 26,  1),
-        (0xa0, 160,  80,  1, 26)
+        (0x08,  80, 160, 26,  1),
+        (0x68, 160,  80,  1, 26),
+        (0xc8,  80, 160, 26,  1),
+        (0xa8, 160,  80,  1, 26)
     ]
 
     return st7789.ST7789(
