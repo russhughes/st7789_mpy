@@ -1,4 +1,4 @@
-"""Example showing how to deocode glyph bitmaps from a font module"""
+"""Example showing how to decode glyph bitmaps from a font module"""
 
 import proverbs_font as font
 
