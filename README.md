@@ -15,7 +15,7 @@ I modified the original driver for one of my projects to add:
 - Drawing PNGs using the pngle library from https://github.com/kikuchan/pngle
 - Drawing and rotating Polygons and filled Polygons.
 - Tracking bounds
-- Support for st7735 displays
+- Custom init capability to support st7735, ili9341, ili9342 and other displays. See the examples/configs folder for M5Stack Core, M5Stack Core2, T-DONGLE-S3 and Wio_Terminal devices.
 
 Included are 12 bitmap fonts derived from classic pc text mode fonts, 26
 Hershey vector fonts and several example programs for different devices.
