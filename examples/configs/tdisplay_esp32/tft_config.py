@@ -1,5 +1,20 @@
-""" LilyGo T-DISPLAY 135x240 ST7789 display """
+""" LilyGo T-DISPLAY 135x240 ST7789 display
 
+    NOTE: Reduce the SPI baudrate below 26.7MHz unless you are using my compiled firmware or you modify
+    the spi_device_interface_config_t devcfg.flags setting in the micropython/ports/esp machine_hw_spi.c
+    file to include the SPI_DEVICE_NO_DUMMY flag.
+
+    for example change line 262 in micropython/ports/esp32/machine_hw_spi.c from this:
+
+        .flags = self->firstbit == MICROPY_PY_MACHINE_SPI_LSB ? SPI_DEVICE_TXBIT_LSBFIRST | SPI_DEVICE_RXBIT_LSBFIRST : 0,
+
+    to this:
+
+        .flags = self->firstbit == MICROPY_PY_MACHINE_SPI_LSB ? SPI_DEVICE_TXBIT_LSBFIRST | SPI_DEVICE_RXBIT_LSBFIRST : 0 | SPI_DEVICE_NO_DUMMY,
+
+    Recompile and flash the firmware and you can use the 40MHz speed.
+
+"""
 from machine import Pin, SPI
 import st7789
 
