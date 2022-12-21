@@ -2599,10 +2599,8 @@ const mp_obj_module_t mp_module_st7789 = {
     .globals = (mp_obj_dict_t *)&mp_module_st7789_globals,
 };
 
-// use the following for older versions of MicroPython
-
-#if MICROPY_VERSION >= 0x011300         // MicroPython 1.19 or later
-MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789);
-#else
+#if !defined(MICROPY_VERSION) || MICROPY_VERSION <= 70144
 MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789, MODULE_ST7789_ENABLE);
+#else
+MP_REGISTER_MODULE(MP_QSTR_st7789, mp_module_st7789);
 #endif
