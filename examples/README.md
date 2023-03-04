@@ -1,5 +1,16 @@
 # Example Programs
 
+All of the example programs requrire a `tft_config.py` module to confiure the display. Some examples
+also require a `tft_buttons.py` module to configure buttons.  See the config directory for example
+configuration modules for various devices and displays.
+
+***Special Note for ESP32 devices:***
+
+    To use SPI baudrates above 26.6MHz you must use my firmware or modify the micropython
+    source code to increase the SPI baudrate limit by adding SPI_DEVICE_NO_DUMMY to the
+    .flag member of the spi_device_interface_config_t struct in the machine_hw_spi_init_internal.c
+    file.  Not doing so will cause the ESP32 to crash if you use a baudrate that is too high.
+
 
 ## bitarray.py
 
