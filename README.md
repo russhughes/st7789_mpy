@@ -293,7 +293,11 @@ Pico. You have to provide an `SPI` object and the pin to use for the `dc' input
 of the screen.
 
 
-    # ESP32
+    # ESP32 Example
+    # To use baudrates above 26.6MHz you must use my firmware or modify the micropython
+    # source code to increase the SPI baudrate limit by adding SPI_DEVICE_NO_DUMMY to the
+    # .flag member of the spi_device_interface_config_t struct in the machine_hw_spi_init_internal.c
+    # file.  Not doing so will cause the ESP32 to crash if you use a baudrate that is too high.
 
     import machine
     import st7789
@@ -301,8 +305,6 @@ of the screen.
     display = st7789.ST7789(spi, 240, 240, reset=machine.Pin(4, machine.Pin.OUT), dc=machine.Pin(2, machine.Pin.OUT))
     display.init()
 
-
-I could not run the display with a baud rate over 40MHZ.
 
 ## Methods
 
