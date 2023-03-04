@@ -7,6 +7,7 @@ Folder          | Device
 esp32_7735_128  | Generic ESP32 st7735 128x128 Display
 esp32_7735_160  | Generic ESP32 st7735 128x160 Display
 esp32_st7789    | Generic ESP32 st7789 240x320 Display
+esp32_box_lite  | ESP32 Box and Box Lite ili9342c 320x240 Display
 m5stack_core    | M5Stack Core ili9342 320x240 Display
 m5stack_core2   | M5Stack Core2 ili9342 320x240 Display
 pybv11_st7789   | Pyboard Version 1.1 st7789 240x320 Display

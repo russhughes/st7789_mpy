@@ -1,4 +1,4 @@
-"""ESP32 Box or Box Lite with ST7789 320x240 display"""
+"""ESP32 Box or Box Lite with ili9342c 320x240 display"""
 
 from machine import Pin, SPI, freq
 import st7789
@@ -52,6 +52,11 @@ def config(rotation=0, buffer_size=0, options=0):
 
     # Set clock to 240MHz
     freq(240000000)
+
+    # To use baudrates above 26.6MHz you must use my firmware or modify the micropython
+    # source code to increase the SPI baudrate limit by adding SPI_DEVICE_NO_DUMMY to the
+    # .flag member of the spi_device_interface_config_t struct in the machine_hw_spi_init_internal.c
+    # file.  Not doing so will cause the ESP32 to crash if you use a baudrate that is too high.
 
     return st7789.ST7789(
         SPI(1, baudrate=40000000, sck=Pin(7), mosi=Pin(6)),
