@@ -489,12 +489,12 @@ of the screen.
 
 - `text(font, s, x, y[, fg, bg])`
 
-  Write text to the display using the specified bitmap `font` with the
-  coordinates as the upper-left corner of the text. The optional arguments `fg`
-  and `bg` can set the foreground and background colors of the text; otherwise
-  the foreground color defaults to `WHITE`, and the background color defaults
-  to `BLACK`. See the `README.md` in the `fonts/bitmap` directory for example
-  fonts.
+  Write `s` (integer, string or bytes) to the display using the specified bitmap
+  `font` with the coordinates as the upper-left corner of the text. The optional
+  arguments `fg` and `bg` can set the foreground and background colors of the
+  text; otherwise the foreground color defaults to `WHITE`, and the background
+  color defaults to `BLACK`. See the `README.md` in the `fonts/bitmap` directory
+  for example fonts.
 
 - `write(bitmap_font, s, x, y[, fg, bg, background_tuple, fill_flag])`
 

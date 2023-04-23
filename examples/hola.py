@@ -25,7 +25,7 @@ def center(text):
 def main():
     tft.init()
     tft.fill(st7789.RED)
-    center(b'\xAEHello\xAF')
+    center(b'\xADHola!')
     utime.sleep(2)
     tft.fill(st7789.BLACK)
 
@@ -39,7 +39,7 @@ def main():
             for _ in range(128):
                 tft.text(
                     font,
-                    b'Hello!',
+                    b'\xADHola!',
                     random.randint(0, col_max),
                     random.randint(0, row_max),
                     st7789.color565(
