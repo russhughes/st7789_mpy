@@ -78,7 +78,7 @@ The firmware directory contains pre-compiled firmware for various devices with
 the st7789 C driver and frozen python font files. See the README.md file in the
 fonts folder for more information on the font files.
 
-MicroPython v1.19.1-18-g6e868d47d compiled with ESP IDF v4.4 using CMake
+MicroPython MicroPython v1.20.0 compiled with ESP IDF v4.4.4 using CMake
 
 Directory             | File         | Device
 --------------------- | ------------ | ----------------------------------
