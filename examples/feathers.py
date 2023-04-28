@@ -51,7 +51,7 @@ def main():
     tft.vscsad(scroll + tfa)        # set scroll position
     tft.fill(st7789.BLACK)          # clear screen
 
-    half = (height >> 1) - 1    # half the height of the dislay
+    half = (height >> 1) - 1    # half the height of the display
     interval = 0                # steps between new points
     increment = 0               # increment per step
     counter = 1                 # step counter, overflow to start

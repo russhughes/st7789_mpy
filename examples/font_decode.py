@@ -5,7 +5,7 @@ import proverbs_font as font
 text = "师父领进门，修行在个人"
 
 def get_bitmap_offset(index):
-    """ Return the bitmap bit offset for the glpyh at `index`"""
+    """ Return the bitmap bit offset for the glyph at `index`"""
     offset_first = index * font.OFFSET_WIDTH
     offset = 0
     for offset_byte in range(font.OFFSET_WIDTH):

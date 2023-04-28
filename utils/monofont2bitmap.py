@@ -131,7 +131,7 @@ def main():
     else:
         characters = args.string
 
-    forground = args.foreground
+    foreground = args.foreground
     background = args.background
 
     # load font and get size of characters string in pixels
@@ -143,7 +143,7 @@ def main():
 
     # draw all specified characters in the image
     draw = ImageDraw.Draw(im)
-    draw.text((0, 0), characters, font=font, color=forground)
+    draw.text((0, 0), characters, font=font, color=foreground)
 
     # convert image to a palletized image with the requested color depth
     bpp_im = im.convert(mode='P', palette=Image.ADAPTIVE, colors=1 << bpp)

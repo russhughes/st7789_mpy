@@ -84,7 +84,7 @@ def main():
                 -self.dir_col, self.height, st7789.BLACK)
 
         def erase(self):
-            '''erase last postion of sprite'''
+            '''erase last position of sprite'''
             tft.fill_rect(
                 self.last_col, self.last_row, self.width, self.height, st7789.BLACK)
 

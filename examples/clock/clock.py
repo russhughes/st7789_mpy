@@ -47,7 +47,7 @@ class Button:
     """
     Debounced pin handler
 
-    Modifed from https://gist.github.com/jedie/8564e62b0b8349ff9051d7c5a1312ed7
+    Modified from https://gist.github.com/jedie/8564e62b0b8349ff9051d7c5a1312ed7
     """
     def __init__(self, pin, callback, trigger=Pin.IRQ_FALLING, debounce=350):
         self.callback = callback

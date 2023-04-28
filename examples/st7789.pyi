@@ -383,7 +383,7 @@ class ST7789:
 
     def init(self):
         """
-        Must be called to initalize the display.
+        Must be called to initialize the display.
         """
 
     def on(self):
