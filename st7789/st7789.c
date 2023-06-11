@@ -1836,159 +1836,91 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_jpg_decode_obj, 2, 6, s
 // licensed under the MIT License
 //
 
+// Define struct for user data to be used in PNG drawing functions
 typedef struct _PNG_USER_DATA {
-    st7789_ST7789_obj_t *self;
-    uint16_t top;                   // draw png starting at this row
-    uint16_t left;                  // draw png starting at this column
-    uint16_t pixels;                // number of pixels that fit in buffer (must be a multiple of width)
-    uint16_t rows;                  // number of rows that fit in buffer (or png height if < rows)
-    uint16_t pixel;                 // index to current pixel in buffer
-    uint16_t row;                   // current row
-    uint16_t col;                   // current column
-    uint16_t *buffer;               // pointer to current pixel in buffer
+    st7789_ST7789_obj_t *self;     // pointer to ST7789 object
+    int ofs_x;                     // x offset of image
+    int ofs_y;                     // y offset of image
+    uint16_t pixels;               // number of pixels in buffer
+    uint16_t row;                  // row in the buffer
+    uint16_t first;                // first column in buffer
+    uint16_t last;                 // last column in buffer
+    bool has_transparency;         // true if image has transparent pixels
+    uint16_t *buffer;              // pointer to current pixel in buffer
+
 } PNG_USER_DATA;
 
-void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4]) {
-    PNG_USER_DATA *user_data = pngle_get_user_data(pngle);
-    st7789_ST7789_obj_t *self = user_data->self;
-    pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
-    size_t buf_size = self->buffer_size;
-
-    uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));     // rgba[3] transparency
-
-    // initialize the user_data structure and optionally allocate line buffer on the first call
-    if (user_data->pixels == 0) {
-        // if no existing buffer, create one to hold a complete line
-        if (self->buffer_size == 0) {
-            buf_size = ihdr->width * 2;
-            self->i2c_buffer = m_malloc(buf_size);
-            if (!self->i2c_buffer) {
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
-            }
-        } else {
-            // check if existing buffer is large enough
-            if (self->buffer_size < buf_size) {
-                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), buf_size);
-            }
-        }
-
-        user_data->rows = (buf_size / ihdr->width >> 1);
-        if (user_data->rows > ihdr->height) {
-            user_data->rows = ihdr->height;
-        }
-
-        user_data->pixels = ihdr->width * user_data->rows;
-        user_data->pixel = 0;
-        user_data->row = 0;
-        user_data->col = 0;
-        user_data->buffer = self->i2c_buffer;
-    }
-
-    // check if the buffer needs to flushed to the display
-    if (user_data->pixels == user_data->pixel) {
-        set_window(
-            self,
-            user_data->left,
-            user_data->top,
-            user_data->left + ihdr->width - 1,
-            y - 1);
-
+void png_flush(st7789_ST7789_obj_t *self, PNG_USER_DATA *user_data) {
+        set_window(self, user_data->first, user_data->row, user_data->last, user_data->row);
         DC_HIGH();
         CS_LOW();
         write_spi(self->spi_obj, (uint8_t *)self->i2c_buffer, user_data->pixels * 2);
         CS_HIGH();
-
-        user_data->pixel = 0;
-        user_data->col = 0;
-        user_data->row = 0;
-        user_data->top += user_data->rows;
+        // reset buffer pointer and pixel count
         user_data->buffer = self->i2c_buffer;
-    }
-
-    *user_data->buffer++ = color;
-    user_data->pixel++;
-
-    user_data->col++;
-    if (user_data->col == ihdr->width - 1) {
-        user_data->col = 0;
-        user_data->row++;
-    }
+        user_data->pixels = 0;
 }
 
-void pngle_on_draw_transparent(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4]) {
-    PNG_USER_DATA *user_data = pngle_get_user_data(pngle);
-    st7789_ST7789_obj_t *self = user_data->self;
-    pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
-    size_t buf_size = self->buffer_size;
-
-    uint16_t color = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));
-    bool transp = (rgba[3] == 0);
-
-    // initialize the user_data structure and optionally allocate line buffer on the first call
-    if (user_data->pixels == 0) {
-        // if no existing buffer, create one to hold a complete line
-        if (self->buffer_size == 0) {
-            buf_size = ihdr->width * 2;
-            self->i2c_buffer = m_malloc(buf_size);
-            if (!self->i2c_buffer) {
-                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory"));
-            }
-        } else {
-            // check if existing buffer is large enough
-            if (self->buffer_size < buf_size) {
-                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), buf_size);
-            }
-        }
-
-        user_data->rows = (buf_size / ihdr->width >> 1);
-        if (user_data->rows > ihdr->height) {
-            user_data->rows = ihdr->height;
-        }
-
-        user_data->pixels = ihdr->width * user_data->rows;
-        user_data->pixel = 0;
-        user_data->row = y;
-        user_data->col = x;
-        user_data->buffer = self->i2c_buffer;
-    }
-
-    // check if the buffer needs to flushed to the display
-
-    if ((transp || y != user_data->row) && user_data->pixel) {
-        set_window(
-            self,
-            user_data->left + user_data->col,
-            user_data->top + user_data->row,
-            user_data->left + user_data->col + user_data->pixel - 1,
-            user_data->top + user_data->row);
-
-        DC_HIGH();
-        CS_LOW();
-        write_spi(self->spi_obj, (uint8_t *)self->i2c_buffer, user_data->pixel * 2);
-        CS_HIGH();
-
-        user_data->pixel = 0;
-        user_data->col = x;
-        user_data->row = y;
-        user_data->buffer = self->i2c_buffer;
-    }
-
-    if (!transp) {
-        if (user_data->pixel == 0) {
-            user_data->col = x;
-            user_data->row = y;
-        }
-
-        *user_data->buffer++ = color;
-        user_data->pixel++;
-    }
+void png_new_row(PNG_USER_DATA *user_data, uint16_t row, uint16_t col) {
+        user_data->row = row;                                       // save first row
+        user_data->first = col;                                     // save first column
+        user_data->last = col;                                      // save last column
 }
 
-#define PNG_FILE_BUFFER_SIZE 256
+// PNG drawing function for non-transparent images
+void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t rgba[4]) {
+    PNG_USER_DATA *user_data = pngle_get_user_data(pngle);          // pointer to user_data
+    st7789_ST7789_obj_t *self = user_data->self;                    // pointer to ST7789 object
+    int row = y + user_data->ofs_y;                                 // display row
+    int col = x + user_data->ofs_x;                                 // display column
+
+    // skip if this pixel is outside the display
+    if (col < 0 || row < 0 || col >= self->width || row > self->height) {
+        return;
+    }
+
+    pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);                     // pointer to image header
+    size_t min_buffer_size = ihdr->width * 2;                       // minimum buffer size for one line of pixels
+
+    if (user_data->buffer == NULL) {                                // on the first call to this function
+        if (self->buffer_size == 0) {                               // If no buffer has been allocated yet
+            user_data->buffer = m_malloc(min_buffer_size);          // Allocate buffer for one line of pixels
+            if (user_data->buffer == NULL) {                        // If allocation failed raise an exception
+                mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory allocating i2c buffer"));
+            }
+        } else {            
+            if (self->buffer_size < min_buffer_size) {              // Check if existing buffer is large enough
+                mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), min_buffer_size);
+            }
+            user_data->buffer = self->i2c_buffer;                   // Use existing buffer
+        }
+        self->i2c_buffer = user_data->buffer;                       // Set buffer pointer to start of buffer
+        png_new_row(user_data, row, col);                           // Start new row
+    }
+
+    // Flush the buffer if pixels are in the buffer and the row changes 
+    //  or if the pixel is transparent and transparency is enabled
+    if (user_data->pixels > 0 && (row != user_data->row || (user_data->has_transparency && rgba[3] == 0))) {        
+        png_flush(self, user_data);
+        png_new_row(user_data, row, col);
+    }
+    
+    // if transparency is enabled and the pixel is transparent skip it.
+    if (user_data->has_transparency && (rgba[3] == 0)) {
+        png_new_row(user_data, row, col);
+        return;
+    }
+
+    // Convert RGBA to 16-bit color, swap bytes, add to buffer
+    *user_data->buffer++ = _swap_bytes(color565(rgba[0], rgba[1], rgba[2]));
+    user_data->pixels++;
+    user_data->last = col;
+}
+
+#define PNG_FILE_BUFFER_SIZE 256    // Size of buffer for reading PNG file
 
 STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-
     const char *filename = mp_obj_str_get_str(args[1]);
     mp_int_t x = mp_obj_get_int(args[2]);
     mp_int_t y = mp_obj_get_int(args[3]);
@@ -1998,22 +1930,24 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
     int len, remain = 0;
 
     PNG_USER_DATA user_data = {
-        self, y, x, 0, 0, 0, 0, 0, NULL
+        .self = self, 
+        .ofs_x = x, 
+        .ofs_y = y, 
+        .pixels = 0, 
+        .row = 0, 
+        .first = 0, 
+        .last = 0, 
+        .has_transparency = transparency, 
+        .buffer = NULL
     };
 
     // allocate new pngle_t and store in self to protect memory from gc
     self->work = pngle_new(self);
     pngle_t *pngle = (pngle_t *)self->work;
     pngle_set_user_data(pngle, (void *)&user_data);
-
-    if (transparency) {
-        pngle_set_draw_callback(pngle, pngle_on_draw_transparent);
-    } else {
-        pngle_set_draw_callback(pngle, pngle_on_draw);
-    }
+    pngle_set_draw_callback(pngle, pngle_on_draw);
 
     self->fp = mp_open(filename, "rb");
-
     while ((len = mp_readinto(self->fp, buf + remain, PNG_FILE_BUFFER_SIZE - remain)) > 0) {
         int fed = pngle_feed(pngle, buf, remain + len);
         if (fed < 0) {
@@ -2025,20 +1959,8 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    // flush any remaining pixels to the display
-    if (user_data.pixel) {
-        pngle_ihdr_t *ihdr = pngle_get_ihdr(pngle);
-        set_window(
-            self,
-            user_data.left,
-            user_data.top,
-            user_data.left + ihdr->width - 1,
-            user_data.top + user_data.row - 1);
-
-        DC_HIGH();
-        CS_LOW();
-        write_spi(self->spi_obj, (uint8_t *)self->i2c_buffer, user_data.pixel * 2);
-        CS_HIGH();
+    if (user_data.pixels > 0) {
+        png_flush(self, &user_data);
     }
 
     // free dynamic buffer
