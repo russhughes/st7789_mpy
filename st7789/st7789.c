@@ -51,34 +51,48 @@
 #define ABS(N) (((N) < 0) ? (-(N)) : (N))
 #define mp_hal_delay_ms(delay) (mp_hal_delay_us(delay * 1000))
 
-#define CS_LOW()                           \
-    {                                      \
-        if (self->cs) {                    \
-            mp_hal_pin_write(self->cs, 0); \
-        }                                  \
-    }
+// GPIO_NUM_NC is not defined in all ports, you may have to change this to
+// a different value or type depending on your port. This works for esp32,
+// stm32, and the samd ports that I've tested.
 
-#define CS_HIGH()                          \
-    {                                      \
-        if (self->cs) {                    \
-            mp_hal_pin_write(self->cs, 1); \
-        }                                  \
-    }
+#ifndef GPIO_NUM_NC
+  #ifdef  STM32_HAL_H
+    #define GPIO_NUM_NC NULL
+  #else
+    #define GPIO_NUM_NC -1
+  #endif
+#endif
+
+#define CS_LOW()                       \
+{                                      \
+    if (self->cs != GPIO_NUM_NC) {     \
+        mp_hal_pin_write(self->cs, 0); \
+    }                                  \
+}
+
+#define CS_HIGH()                      \
+{                                      \
+    if (self->cs != GPIO_NUM_NC) {     \
+        mp_hal_pin_write(self->cs, 1); \
+    }                                  \
+}
 
 #define DC_LOW() (mp_hal_pin_write(self->dc, 0))
 #define DC_HIGH() (mp_hal_pin_write(self->dc, 1))
 
 #define RESET_LOW()                         \
-    {                                       \
-        if (self->reset)                    \
+{                                           \
+    if (self->reset != GPIO_NUM_NC) {       \
         mp_hal_pin_write(self->reset, 0);   \
-    }
+    }                                       \
+}
 
 #define RESET_HIGH()                        \
-    {                                       \
-        if (self->reset)                    \
+{                                           \
+    if (self->reset != GPIO_NUM_NC) {       \
         mp_hal_pin_write(self->reset, 1);   \
-    }
+    }                                       \
+}
 
 //
 // Default st7789 and st7735 display orientation tables
@@ -1229,7 +1243,7 @@ STATIC mp_obj_t st7789_ST7789_init(mp_obj_t self_in) {
 
     st7789_ST7789_fill_rect(6, args);
 
-    if (self->backlight) {
+    if (self->backlight != GPIO_NUM_NC) {
         mp_hal_pin_write(self->backlight, 1);
     }
 
@@ -1240,7 +1254,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_init_obj, st7789_ST7789_init);
 STATIC mp_obj_t st7789_ST7789_on(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->backlight) {
+    if (self->backlight != GPIO_NUM_NC) {
         mp_hal_pin_write(self->backlight, 1);
         mp_hal_delay_ms(10);
     }
@@ -1252,7 +1266,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_on_obj, st7789_ST7789_on);
 STATIC mp_obj_t st7789_ST7789_off(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->backlight) {
+    if (self->backlight != GPIO_NUM_NC) {
         mp_hal_pin_write(self->backlight, 0);
         mp_hal_delay_ms(10);
     }
@@ -1888,7 +1902,7 @@ void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t 
             if (user_data->buffer == NULL) {                        // If allocation failed raise an exception
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("out of memory allocating i2c buffer"));
             }
-        } else {            
+        } else {
             if (self->buffer_size < min_buffer_size) {              // Check if existing buffer is large enough
                 mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("buffer too small. %zu bytes required."), min_buffer_size);
             }
@@ -1898,13 +1912,13 @@ void pngle_on_draw(pngle_t *pngle, uint32_t x, uint32_t y, uint32_t w, uint32_t 
         png_new_row(user_data, row, col);                           // Start new row
     }
 
-    // Flush the buffer if pixels are in the buffer and the row changes 
+    // Flush the buffer if pixels are in the buffer and the row changes
     //  or if the pixel is transparent and transparency is enabled
-    if (user_data->pixels > 0 && (row != user_data->row || (user_data->has_transparency && rgba[3] == 0))) {        
+    if (user_data->pixels > 0 && (row != user_data->row || (user_data->has_transparency && rgba[3] == 0))) {
         png_flush(self, user_data);
         png_new_row(user_data, row, col);
     }
-    
+
     // if transparency is enabled and the pixel is transparent skip it.
     if (user_data->has_transparency && (rgba[3] == 0)) {
         png_new_row(user_data, row, col);
@@ -1930,14 +1944,14 @@ STATIC mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
     int len, remain = 0;
 
     PNG_USER_DATA user_data = {
-        .self = self, 
-        .ofs_x = x, 
-        .ofs_y = y, 
-        .pixels = 0, 
-        .row = 0, 
-        .first = 0, 
-        .last = 0, 
-        .has_transparency = transparency, 
+        .self = self,
+        .ofs_x = x,
+        .ofs_y = y,
+        .pixels = 0,
+        .row = 0,
+        .first = 0,
+        .last = 0,
+        .has_transparency = transparency,
         .buffer = NULL
     };
 
@@ -2474,7 +2488,7 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     if (args[ARG_reset].u_obj != MP_OBJ_NULL) {
         self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);
     } else {
-        self->reset = 0;
+        self->reset = GPIO_NUM_NC;
     }
 
     self->dc = mp_hal_get_pin_obj(args[ARG_dc].u_obj);
@@ -2482,13 +2496,13 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
         self->cs = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
     } else {
-        self->cs = 0;
+        self->cs = GPIO_NUM_NC;
     }
 
     if (args[ARG_backlight].u_obj != MP_OBJ_NULL) {
         self->backlight = mp_hal_get_pin_obj(args[ARG_backlight].u_obj);
     } else {
-        self->backlight = 0;
+        self->backlight = GPIO_NUM_NC;
     }
 
     self->bounding = 0;
