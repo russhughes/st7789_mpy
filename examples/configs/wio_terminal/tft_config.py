@@ -53,7 +53,7 @@ def config(rotation=0, buffer_size=0, options=0):
         320,
         reset=Pin("LCD_RESET", Pin.OUT),
         cs=Pin("LCD_CS", Pin.OUT),
-        dc=Pin("LCD_DC", Pin.OUT),
+        dc=Pin("LCD_D_C", Pin.OUT),
         backlight=Pin("LED_LCD", Pin.OUT),
         custom_init=custom_init,
         rotations=custom_rotations,
