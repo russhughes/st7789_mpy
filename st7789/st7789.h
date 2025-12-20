@@ -113,10 +113,10 @@ typedef struct _st7789_ST7789_obj_t {
     bool inversion;
     uint8_t madctl;
     uint8_t options;            // options bit array
-    mp_hal_pin_obj_t reset;
-    mp_hal_pin_obj_t dc;
-    mp_hal_pin_obj_t cs;
-    mp_hal_pin_obj_t backlight;
+    mp_obj_t reset;
+    mp_obj_t dc;
+    mp_obj_t cs;
+    mp_obj_t backlight;
 
     uint8_t bounding;
     uint16_t min_x;
