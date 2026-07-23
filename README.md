@@ -1,3 +1,10 @@
+Dennis-89 has added a function that returns the error message from `jd_prepare`. 
+Originally, there was only one message: `jpg prepare failed`, for all errors.
+
+With the new function, working with images is now much easier, 
+as the reason for the error is displayed. This allows for more targeted 
+adjustments to the image being used. The generated error messages are taken
+from the comments in the source code.
 
 # ST7789 Driver for MicroPython
 

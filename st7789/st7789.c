@@ -25,6 +25,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
+ * January 13, 2026
+ * Dennis-89 added a function to return the error message of 'jd_prepare'
  */
 
 #define __ST7789_VERSION__ "0.2.1"
@@ -156,6 +159,28 @@ st7789_rotation_t ORIENTATIONS_128x128[4] = {
     {0xc0, 128, 128, 2, 3},
     {0xa0, 128, 128, 3, 2}
 };
+
+static char * getErrorDescription(char response) {
+    switch (response) {
+        case JDR_INTR:
+            return "Interrupted by output function.";
+        case JDR_INP:
+            return "Device error or wrong termination of input stream";
+        case JDR_MEM1:
+            return "Insufficient memory pool for the image";
+        case JDR_MEM2:
+            return "Insufficient stream input buffer";
+        case JDR_PAR:
+            return "Parameter error";
+        case JDR_FMT1:
+            return "Data format error (may be damaged data)";
+        case JDR_FMT2:
+            return "Right format but not supported";
+        case JDR_FMT3:
+            return "Not supported JPEG standard";
+    }
+    return "Unexcepted Error will preparing";
+ }
 
 static void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len) {
     #ifdef MP_OBJ_TYPE_GET_SLOT
@@ -1708,8 +1733,8 @@ static mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
                     write_spi(self->spi_obj, (uint8_t *)self->i2c_buffer, bufsize);
                     CS_HIGH();
                 }
-            } else {
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg decompress failed."));
+            }else {
+                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT(getErrorDescription(res)));
             }
             if (self->buffer_size == 0) {
                 m_free(self->i2c_buffer);           // Discard frame buffer
@@ -1717,7 +1742,7 @@ static mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
             }
             devid.fbuf = MP_OBJ_NULL;
         } else {
-            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT(getErrorDescription(res)));
         }
 
         if (self->fp) {
@@ -1840,7 +1865,7 @@ static mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args) {
                 }
 
             } else {
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("jpg prepare failed."));
+                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT(getErrorDescription(res)));
             }
             if (self->fp) {
                 mp_close(self->fp);
