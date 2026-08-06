@@ -187,9 +187,11 @@ static void write_cmd(st7789_ST7789_obj_t *self, uint8_t cmd, const uint8_t *dat
 
 static void set_window(st7789_ST7789_obj_t *self, uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
     if (x0 > x1 || x1 >= self->width) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Window x limits outside of the valid range"));
         return;
     }
     if (y0 > y1 || y1 >= self->height) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Window y limits outside of the valid range"));
         return;
     }
 
@@ -511,6 +513,194 @@ static mp_obj_t st7789_ST7789_line(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_line_obj, 6, 6, st7789_ST7789_line);
 
+static mp_obj_t st7789_ST7789_blit_bitmap(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t bitmap_buf_info;
+    mp_get_buffer_raise(args[1], &bitmap_buf_info, MP_BUFFER_READ);
+    mp_int_t x = mp_obj_get_int(args[2]);
+    mp_int_t y = mp_obj_get_int(args[3]);
+    mp_int_t w = mp_obj_get_int(args[4]);
+    mp_int_t h = mp_obj_get_int(args[5]);
+    mp_int_t bitmap_row_len = (w + 7) / 8;
+    if (bitmap_row_len * h > bitmap_buf_info.len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitmap does not include enough data"));
+    }
+    mp_int_t foreground = _swap_bytes(mp_obj_get_int(args[6]));
+    mp_int_t background = _swap_bytes(mp_obj_get_int(args[7]));
+    const uint16_t lookup[] = {(uint16_t)background, (uint16_t)foreground};
+    set_window(self, x, y, x + w - 1, y + h - 1);
+    DC_HIGH();
+    CS_LOW();
+
+    /*
+    1 bit per pixel (8 pixels per byte)
+    2 colors
+    */
+    const int buf_size = 128;
+    uint16_t temp[buf_size];
+    int limit = w * h;
+    int pixelx = 0;
+    const uint8_t *pixel_ptr = (const uint8_t *)bitmap_buf_info.buf;
+    uint8_t pixel = *pixel_ptr;
+    uint8_t lookup_index = (uint8_t)((pixel >> 7) & 0x01);
+    uint16_t color = lookup[lookup_index];
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        uint16_t *dst = temp;
+        for (int i = 0; i < count; ++i) {
+            // set dst with the current color
+            *dst++ = color;
+            if (++pixelx == w) {
+                // end of pixel row
+                pixelx = 0;
+                // current pixel value
+                pixel = *++pixel_ptr;
+            } else {
+                // prepare for next pixel
+                if (pixelx % 8 == 0) {
+                    // advance to next bitmap byte
+                    pixel = *++pixel_ptr;
+                } else {
+                    // advance to next pixel in the same byte
+                    pixel <<= 1;
+                }
+            }
+            // set current pixel's color
+            lookup_index = (uint8_t)((pixel >> 7) & 0x01);
+            color = lookup[lookup_index];
+        }
+        write_spi(self->spi_obj, (const uint8_t*)temp, count * 2);
+        limit -= count;
+    }
+    CS_HIGH();
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_bitmap_obj, 8, 8, st7789_ST7789_blit_bitmap);
+
+static mp_obj_t st7789_ST7789_blit_bitmap_mosaic(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t bitmap_buf_info;
+    mp_get_buffer_raise(args[1], &bitmap_buf_info, MP_BUFFER_READ);
+    mp_int_t bpp = mp_obj_get_int(args[2]);
+    if (bpp != 1 && bpp != 2 && bpp != 4 && bpp != 8) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bits_per_pixel, must be 1, 2, 4 or 8"));
+    }
+    mp_int_t x = mp_obj_get_int(args[3]);
+    mp_int_t y = mp_obj_get_int(args[4]);
+    mp_int_t w = mp_obj_get_int(args[5]);
+    mp_int_t h = mp_obj_get_int(args[6]);
+    int pixels_per_byte = 8 / bpp;
+    int bitmap_row_len = (w + pixels_per_byte - 1) / pixels_per_byte;
+    int bitmap_len = bitmap_row_len * h;
+    if (bitmap_len <= 0 || bitmap_len > bitmap_buf_info.len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("bitmap does not include enough data"));
+    }
+    mp_buffer_info_t lookup_buf_info;
+    mp_get_buffer_raise(args[7], &lookup_buf_info, MP_BUFFER_READ);
+    mp_int_t lookup_stridex = mp_obj_get_int(args[8]);
+    mp_int_t lookup_height = mp_obj_get_int(args[9]);
+    // make sure that at least two lookup entry exist
+    int lookup_max = lookup_buf_info.len / (lookup_stridex * lookup_height * 2) - 1;
+    if (lookup_height <= 0 || lookup_max <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("lookup does not include enough data"));
+    }
+
+    uint16_t w2 = w * lookup_stridex; // blit width
+    uint16_t h2 = h * lookup_height; // blit height
+    set_window(self, x, y, x + w2 - 1, y + h2 - 1);
+    DC_HIGH();
+    CS_LOW();
+
+    /*
+    algorithm:
+    Iterate through all the pixels and expand each pixel using the lookup table.
+    Each pixel becomes stridex * lookup_height color565 values arranged in the corresponding rectangle.
+    Things to note:
+    1) Pixels are packed in the bitmap (bpp) and each row starts on a new byte.
+    2) Lookup values are color565 values (16 bits).
+    */
+    const int buf_size = 256;
+    uint8_t temp[buf_size];
+    int limit = w2 * h2 * 2; // create this many pixel bytes
+    int pixelx = 0;
+    int lookupx = 0;
+    int lookupy = 0;
+    const uint8_t *bitmap_rowptr = (const uint8_t *)bitmap_buf_info.buf;
+    const uint8_t *bitmap_ptr = bitmap_rowptr;
+    const uint8_t *lookup_baseptr = (const uint8_t *)lookup_buf_info.buf;
+    const uint8_t *lookup_rowptr = lookup_baseptr;
+    /*
+    bpp 1: shift right 7 and mask 0x01
+    bpp 2: shift right 6 and mask 0x03
+    bpp 4: shift right 4 and mask 0x0f
+    bpp 8: shift right 0 and mask 0xff
+    */
+    int pixel_shift = (8 - bpp) % 8;
+    int pixel_mask = (1 << bpp) - 1;
+    int lookup_row_len = (lookup_max + 1) * lookup_stridex * 2;
+
+    // first bitmap byte
+    uint8_t bitmap_byte = *bitmap_ptr;
+    // first pixel
+    int pixel = (bitmap_byte >> pixel_shift) & pixel_mask;
+    // first pixel's lookup ptr
+    const uint8_t * lookup_ptr = lookup_rowptr + MIN(pixel, lookup_max) * lookup_stridex * 2;
+
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        uint8_t *dst = temp;
+        for (int i = 0; i < count / 2; ++i) {
+            // set dst with the current color
+            *dst++ = lookup_ptr[1]; // low byte
+            *dst++ = lookup_ptr[0]; // high byte
+            lookup_ptr += 2;
+            if (++lookupx == lookup_stridex) {
+                // end of stride - advance to next pixel
+                lookupx = 0;
+                if (++pixelx == w) {
+                    // end of bitmap row
+                    pixelx = 0;
+                    if (++lookupy == lookup_height) {
+                        // end of lookup
+                        lookupy = 0;
+                        // reset to the first lookup row
+                        lookup_rowptr = lookup_baseptr;
+                        // advance to the next bitmap row (first lookup row)
+                        bitmap_rowptr += bitmap_row_len;
+                    } else {
+                        // advance to the next lookup row (same bitmap row)
+                        lookup_rowptr += lookup_row_len;
+                    }
+                    // move bitmap ptr to the start of the bitmap row
+                    bitmap_ptr = bitmap_rowptr;
+                    // first bitmap byte of the bitmap row
+                    bitmap_byte = *bitmap_ptr;
+                } else {
+                    // next pixel
+                    if (pixelx % pixels_per_byte == 0) {
+                        // advance to next bitmap byte
+                        bitmap_byte = *++bitmap_ptr;
+                    } else {
+                        // advance to next pixel in the same bitmap byte
+                        bitmap_byte <<= bpp;
+                    }
+                }
+                // next pixel
+                pixel = (bitmap_byte >> pixel_shift) & pixel_mask;
+                // next pixel's lookup ptr
+                lookup_ptr = lookup_rowptr + MIN(pixel, lookup_max) * lookup_stridex * 2;
+            }
+        }
+        write_spi(self->spi_obj, temp, count);
+        limit -= count;
+    }
+    CS_HIGH();
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_bitmap_mosaic_obj, 10, 10, st7789_ST7789_blit_bitmap_mosaic);
+
 static mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t buf_info;
@@ -526,20 +716,117 @@ static mp_obj_t st7789_ST7789_blit_buffer(size_t n_args, const mp_obj_t *args) {
 
     const int buf_size = 256;
     int limit = MIN(buf_info.len, w * h * 2);
-    int chunks = limit / buf_size;
-    int rest = limit % buf_size;
-    int i = 0;
-    for (; i < chunks; i++) {
-        write_spi(self->spi_obj, (const uint8_t *)buf_info.buf + i * buf_size, buf_size);
-    }
-    if (rest) {
-        write_spi(self->spi_obj, (const uint8_t *)buf_info.buf + i * buf_size, rest);
+    const uint8_t *ptr = (const uint8_t *)buf_info.buf;
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        write_spi(self->spi_obj, ptr, count);
+        ptr += count;
+        limit -= count;
     }
     CS_HIGH();
 
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_obj, 6, 6, st7789_ST7789_blit_buffer);
+
+static mp_obj_t st7789_ST7789_blit_buffer_scaled(size_t n_args, const mp_obj_t *args) {
+    st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_buffer_info_t buf_info;
+    mp_get_buffer_raise(args[1], &buf_info, MP_BUFFER_READ);
+    mp_int_t x = mp_obj_get_int(args[2]);
+    mp_int_t y = mp_obj_get_int(args[3]);
+    mp_int_t w = mp_obj_get_int(args[4]);
+    mp_int_t h = mp_obj_get_int(args[5]);
+    if (w * h * 2 < buf_info.len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer does not include enough data"));
+    }
+    mp_buffer_info_t pattern_buf_info;
+    mp_get_buffer_raise(args[6], &pattern_buf_info, MP_BUFFER_READ);
+    mp_int_t scalex = mp_obj_get_int(args[7]);
+    if (scalex <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scalex must be >= 1"));
+    }
+    mp_int_t scaley = mp_obj_get_int(args[8]);
+    if (scaley <= 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("scaley must be >= 1"));
+    }
+    if (((scalex + 7) / 8) * scaley > pattern_buf_info.len) {
+        mp_raise_ValueError(MP_ERROR_TEXT("pattern data does not include enough data"));
+    }
+    mp_int_t background = mp_obj_get_int(args[9]);
+    uint8_t background_high = (background & 0xff00) >> 8;
+    uint8_t background_low = background & 0xff;
+
+    w *= scalex; // blit width
+    h *= scaley; // blit height
+    set_window(self, x, y, x + w - 1, y + h - 1);
+    DC_HIGH();
+    CS_LOW();
+
+    const int buf_size = 256;
+    uint8_t temp[buf_size];
+    int limit = w * h * 2;
+    int x0 = 0;
+    int y0 = 0;
+    int xp = 0;
+    const uint8_t *rowptr = (const uint8_t *)buf_info.buf;
+    const uint8_t *ptr = rowptr;
+    const uint8_t *pattern_baseptr = (const uint8_t *)pattern_buf_info.buf;
+    const uint8_t *pattern_rowptr = pattern_baseptr;
+    const uint8_t *pattern_ptr = pattern_ptr;
+    while (limit > 0) {
+        int count = MIN(limit, buf_size);
+        uint8_t *dst = temp;
+        for (int i = 0; i < count; i += 2)
+        {
+            // process a single pixel of the repeating pattern
+            if (((*pattern_ptr << (xp % 8)) & 0x80) != 0) {
+                // copy blit pixel
+                *dst++ = *ptr;
+                *dst++ = ptr[1];
+            } else {
+                // copy background
+                *dst++ = background_high;
+                *dst++ = background_low;
+            }
+            if (++xp == scalex) {
+                // end of pattern bytes
+                xp = 0; // use first bit of pattern
+                pattern_ptr = pattern_rowptr; // repeat the same pattern row
+            } else if (xp % 8 == 0) {
+                // end of current pattern byte
+                ++pattern_ptr; // advance to next pattern byte
+            }
+            if (++x0 % scalex == 0) {
+                // finished repeating pixel scalex times in the x direction
+                ptr += 2;
+                if (x0 == w) {
+                    // finished repeating a line
+                    x0 = 0; // start of row
+                    xp = 0; // use first bit of pattern
+                    if (++y0 < scaley) {
+                        // repeat row, advance pattern row
+                        ptr = rowptr; // copy from start of row
+                        pattern_rowptr += (scalex + 7) / 8; // advance to next pattern row
+                        pattern_ptr = pattern_rowptr; // use current pattern row
+                    } else {
+                        // finished repeating a row of pixels, restart pattern rows
+                        y0 = 0;
+                        rowptr = ptr; // advance to next row
+                        pattern_rowptr = pattern_baseptr; // use first pattern row
+                        pattern_ptr = pattern_rowptr; // use first pattern row
+                    }
+                }
+            }
+        }
+        write_spi(self->spi_obj, temp, count);
+        limit -= count;
+    }
+    CS_HIGH();
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_blit_buffer_scaled_obj, 10, 10, st7789_ST7789_blit_buffer_scaled);
 
 static mp_obj_t st7789_ST7789_draw(size_t n_args, const mp_obj_t *args) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -2357,7 +2644,10 @@ static const mp_rom_map_elem_t st7789_ST7789_locals_dict_table[] = {
     {MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&st7789_ST7789_off_obj)},
     {MP_ROM_QSTR(MP_QSTR_pixel), MP_ROM_PTR(&st7789_ST7789_pixel_obj)},
     {MP_ROM_QSTR(MP_QSTR_line), MP_ROM_PTR(&st7789_ST7789_line_obj)},
+    {MP_ROM_QSTR(MP_QSTR_blit_bitmap), MP_ROM_PTR(&st7789_ST7789_blit_bitmap_obj)},
+    {MP_ROM_QSTR(MP_QSTR_blit_bitmap_mosaic), MP_ROM_PTR(&st7789_ST7789_blit_bitmap_mosaic_obj)},
     {MP_ROM_QSTR(MP_QSTR_blit_buffer), MP_ROM_PTR(&st7789_ST7789_blit_buffer_obj)},
+    {MP_ROM_QSTR(MP_QSTR_blit_buffer_scaled), MP_ROM_PTR(&st7789_ST7789_blit_buffer_scaled_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw), MP_ROM_PTR(&st7789_ST7789_draw_obj)},
     {MP_ROM_QSTR(MP_QSTR_draw_len), MP_ROM_PTR(&st7789_ST7789_draw_len_obj)},
     {MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&st7789_ST7789_bitmap_obj)},

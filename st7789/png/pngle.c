@@ -213,12 +213,12 @@ void pngle_reset(pngle_t *pngle)
 	tinfl_init(&pngle->inflator);
 }
 
-pngle_t *pngle_new(st7789_ST7789_obj_t *self)
+pngle_t *pngle_new(void *self)
 {
 	pngle_t *pngle = (pngle_t *)PNGLE_CALLOC(1, sizeof(pngle_t), "pngle_t");
 	if (!pngle) return NULL;
 
-	pngle->self = self;		// save reference back to MicroPython Object
+	pngle->self = (st7789_ST7789_obj_t *)self;		// save reference back to MicroPython Object
 	pngle_reset(pngle);
 
 	return pngle;

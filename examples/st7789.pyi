@@ -244,6 +244,34 @@ class ST7789:
             color (int): 565 encoded color
         """
 
+    def blit_bitmap(self, bitmap: bytes, x: int, y: int, width: int, height: int, foreground: int, background: int):
+        """
+        Draw bitmap at the given location.
+        Args:
+            bitmap (bytes): Pixel data to copy to display
+            x (int): Top left corner x coordinate
+            y (int): Top left corner y coordinate
+            width (int): Width of data
+            height (int): Height of data
+            foreground (int): Pixel 1 color (565 color encoded)
+            background (int): Pixel 0 color (565 color encoded)
+        """
+
+    def blit_bitmap_mosaic(self, bitmap: bytes, bits_per_pixel: int, x: int, y: int, width: int, height: int, lookup: bytes, lookup_width: int, lookup_height: int):
+        """
+        Draw bitmap using a mosaic at the given location.
+        Args:
+            bitmap (bytes): Pixel data to copy to display
+            bits_per_pixel (int): Number of bits per pixel (1, 2, 4, or 8)
+            x (int): Top left corner x coordinate
+            y (int): Top left corner y coordinate
+            width (int): Width of data (bitmap rows start on a byte boundary)
+            height (int): Height of data
+            lookup (bytes): Lookup table for pixel bits, 565 color encoded, byte length is: (lookup_width * lookup_height * 2 * bits_per_pixel) / 8
+            lookup_stride (int): Lookup table stride (2 * width * lookup_stride bytes per row)
+            lookup_height (int): Lookup table height
+        """
+
     def blit_buffer(self, buffer: bytes, x: int, y: int, width: int, height: int):
         """
         Copy buffer to display at the given location.
@@ -253,6 +281,21 @@ class ST7789:
             y (int): Top left corner y coordinate
             width (int): Width
             height (int): Height
+        """
+
+    def blit_buffer_scaled(self, buffer: bytes, x: int, y: int, width: int, height: int, pattern: bytes, scalex: int, scaley: int, background: int):
+        """
+        Scale buffer to display at the given location.
+        Args:
+            buffer (bytes): Data to copy to display
+            x (int): Top left corner x coordinate
+            y (int): Top left corner y coordinate
+            width (int): Width of data
+            height (int): Height of data
+            pattern (bytes): Pattern to control copying, (scalex + 7)//8 * scaley bytes
+            scalex (int): scale pixel by scalex
+            scaley (int): scale pixel by scaley
+            background (int): 565 encoded backgound color (use here pattern is zero)
         """
 
     def rect(self, x: int, y: int, w: int, h: int, color: int):
