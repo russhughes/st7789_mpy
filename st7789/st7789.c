@@ -70,35 +70,35 @@
 #endif
 
 #define CS_LOW()                       \
-{                                      \
-    if (self->cs != GPIO_NUM_NC) {     \
-        mp_hal_pin_write(self->cs, 0); \
-    }                                  \
+{                                  \
+    if (self->cs != MP_OBJ_NULL) { \
+        pin_write(self->cs, 0);    \
+    }                              \
 }
 
 #define CS_HIGH()                      \
-{                                      \
-    if (self->cs != GPIO_NUM_NC) {     \
-        mp_hal_pin_write(self->cs, 1); \
-    }                                  \
+{                                   \
+    if (self->cs != MP_OBJ_NULL) {  \
+      pin_write(self->cs, 1);       \
+    }                               \
 }
 
-#define DC_LOW() (mp_hal_pin_write(self->dc, 0))
-#define DC_HIGH() (mp_hal_pin_write(self->dc, 1))
+#define DC_LOW() (pin_write(self->dc, 0))
+#define DC_HIGH() (pin_write(self->dc, 1))
 
 #define RESET_LOW()                         \
 {                                           \
-    if (self->reset != GPIO_NUM_NC) {       \
-        mp_hal_pin_write(self->reset, 0);   \
-    }                                       \
+    if (self->reset != MP_OBJ_NULL) { \
+        pin_write(self->reset, 0);    \
+    }                                 \
 }
 
-#define RESET_HIGH()                        \
-{                                           \
-    if (self->reset != GPIO_NUM_NC) {       \
-        mp_hal_pin_write(self->reset, 1);   \
-    }                                       \
-}
+#define RESET_HIGH()                  \
+	{                                   \
+		if (self->reset != MP_OBJ_NULL) { \
+			pin_write(self->reset, 1);      \
+		}                                 \
+	}
 
 //
 // Default st7789 and st7735 display orientation tables
@@ -156,6 +156,18 @@ st7789_rotation_t ORIENTATIONS_128x128[4] = {
     {0xc0, 128, 128, 2, 3},
     {0xa0, 128, 128, 3, 2}
 };
+
+static void pin_write(mp_obj_t pin, int value)
+{
+    if (mp_obj_is_type(pin, &machine_pin_type)) {
+      mp_hal_pin_obj_t hal_pin = mp_hal_get_pin_obj(pin);
+      mp_hal_pin_write(hal_pin, value);
+    } else {
+      mp_obj_t value_callable = mp_load_attr(pin, MP_QSTR_value);
+      mp_obj_t arg			= MP_OBJ_NEW_SMALL_INT(value);
+      mp_call_function_1(value_callable, arg);
+    }
+}
 
 static void write_spi(mp_obj_base_t *spi_obj, const uint8_t *buf, int len) {
     #ifdef MP_OBJ_TYPE_GET_SLOT
@@ -1261,8 +1273,8 @@ static mp_obj_t st7789_ST7789_init(mp_obj_t self_in) {
 
     st7789_ST7789_fill_rect(6, args);
 
-    if (self->backlight != GPIO_NUM_NC) {
-        mp_hal_pin_write(self->backlight, 1);
+    if (self->backlight != MP_OBJ_NULL) {
+        pin_write(self->backlight, 1);
     }
 
     return mp_const_none;
@@ -1272,8 +1284,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_init_obj, st7789_ST7789_init);
 static mp_obj_t st7789_ST7789_on(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->backlight != GPIO_NUM_NC) {
-        mp_hal_pin_write(self->backlight, 1);
+    if (self->backlight != MP_OBJ_NULL) {
+        pin_write(self->backlight, 1);
         mp_hal_delay_ms(10);
     }
 
@@ -1284,8 +1296,8 @@ static MP_DEFINE_CONST_FUN_OBJ_1(st7789_ST7789_on_obj, st7789_ST7789_on);
 static mp_obj_t st7789_ST7789_off(mp_obj_t self_in) {
     st7789_ST7789_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->backlight != GPIO_NUM_NC) {
-        mp_hal_pin_write(self->backlight, 0);
+    if (self->backlight != MP_OBJ_NULL) {
+        pin_write(self->backlight, 0);
         mp_hal_delay_ms(10);
     }
 
@@ -2505,25 +2517,24 @@ mp_obj_t st7789_ST7789_make_new(const mp_obj_type_t *type,
     }
 
     if (args[ARG_reset].u_obj != MP_OBJ_NULL) {
-        self->reset = mp_hal_get_pin_obj(args[ARG_reset].u_obj);
+        self->reset = args[ARG_reset].u_obj;
     } else {
-        self->reset = GPIO_NUM_NC;
+        self->reset = MP_OBJ_NULL;
     }
 
-    self->dc = mp_hal_get_pin_obj(args[ARG_dc].u_obj);
+    self->dc = args[ARG_dc].u_obj;
 
     if (args[ARG_cs].u_obj != MP_OBJ_NULL) {
-        self->cs = mp_hal_get_pin_obj(args[ARG_cs].u_obj);
+        self->cs = args[ARG_cs].u_obj;
     } else {
-        self->cs = GPIO_NUM_NC;
+        self->cs = MP_OBJ_NULL;
     }
 
     if (args[ARG_backlight].u_obj != MP_OBJ_NULL) {
-        self->backlight = mp_hal_get_pin_obj(args[ARG_backlight].u_obj);
+        self->backlight = args[ARG_backlight].u_obj;
     } else {
-        self->backlight = GPIO_NUM_NC;
+        self->backlight = MP_OBJ_NULL;
     }
-
     self->bounding = 0;
     self->min_x = self->display_width;
     self->min_y = self->display_height;
