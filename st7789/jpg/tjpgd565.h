@@ -72,7 +72,7 @@ struct JDEC {
 /* TJpgDec API functions */
 JRESULT jd_prepare (JDEC* jd, unsigned int (*infunc)(JDEC*,uint8_t*,unsigned int), void* pool, unsigned int sz_pool, void* dev);
 JRESULT jd_decomp (JDEC* jd, int (*outfunc)(JDEC*,void*,JRECT*), uint8_t scale);
-
+const char* jresult_to_string(JRESULT result);
 
 #ifdef __cplusplus
 }

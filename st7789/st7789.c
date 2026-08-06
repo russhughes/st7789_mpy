@@ -1667,12 +1667,13 @@ static mp_obj_t st7789_ST7789_jpg(size_t n_args, const mp_obj_t *args) {
 
     JRESULT res;                                // Result code of TJpgDec API
     JDEC jdec;                                  // Decompression object
-    self->work = (void *)m_malloc(3100);        // Pointer to the work area
+    self->work = (void *)m_malloc(8192);        // Pointer to the work area
     size_t bufsize;
 
     if (input_func && (devid.fp || devid.data)) {
         // Prepare to decompress
-        res = jd_prepare(&jdec, input_func, self->work, 3100, &devid);
+        res = jd_prepare(&jdec, input_func, self->work, 8192, &devid);
+        mp_printf(&mp_plat_print, "Result: %s\r\n", jresult_to_string(res));
         if (res == JDR_OK) {
             // Initialize output device
             if (mode == JPG_MODE_FAST) {
@@ -1801,7 +1802,7 @@ static mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args) {
             height = mp_obj_get_int(args[5]);
         }
 
-        self->work = (void *)m_malloc(3100);          // Pointer to the work area
+        self->work = (void *)m_malloc(8192);          // Pointer to the work area
 
         JRESULT res;          // Result code of TJpgDec API
         JDEC jdec;            // Decompression object
@@ -1809,7 +1810,7 @@ static mp_obj_t st7789_ST7789_jpg_decode(size_t n_args, const mp_obj_t *args) {
 
         if (input_func && (devid.fp || devid.data)) {
             // Prepare to decompress
-            res = jd_prepare(&jdec, input_func, self->work, 3100, &devid);
+            res = jd_prepare(&jdec, input_func, self->work, 8192, &devid);
             if (res == JDR_OK) {
                 if (n_args < 6) {
                     x = 0;

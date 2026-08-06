@@ -950,3 +950,20 @@ JRESULT jd_decomp (
 
 	return rc;
 }
+/*-----------------------------------------------------------------------*/
+/*----------------------Parse the error codes----------------------------*/
+/*-----------------------------------------------------------------------*/
+const char* jresult_to_string(JRESULT result) {
+    switch (result) {
+        case JDR_OK:    return "Succeeded";
+        case JDR_INTR:  return "Interrupted by output function";
+        case JDR_INP:   return "Device error or wrong termination of input stream";
+        case JDR_MEM1:  return "Insufficient memory pool for the image";
+        case JDR_MEM2:  return "Insufficient stream input buffer";
+        case JDR_PAR:   return "Parameter error";
+        case JDR_FMT1:  return "Data format error (may be damaged data)";
+        case JDR_FMT2:  return "Right format but not supported";
+        case JDR_FMT3:  return "Not supported JPEG standard";
+        default:        return "Unknown error";
+    }
+}
