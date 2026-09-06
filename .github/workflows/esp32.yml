@@ -1,0 +1,54 @@
+name: Build MicroPython for ESP32 Targets
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      IDF_VERSION: v5.4
+      MICROPYTHON_VERSION: v1.25.0
+      BUILD_VERBOSE: 1
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - idf_target: esp32
+            board: ESP32_GENERIC
+          - idf_target: esp32c3
+            board: ESP32_GENERIC_C3
+          - idf_target: esp32c6
+            board: ESP32_GENERIC_C6
+          - idf_target: esp32s2
+            board: ESP32_GENERIC_S2
+          - idf_target: esp32s3
+            board: ESP32_GENERIC_S3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone MicroPython
+        run: |
+          git clone https://github.com/micropython/micropython.git \
+            --branch ${{ env.MICROPYTHON_VERSION }} \
+            --depth 1
+          cd micropython
+          git submodule update --init --recursive --depth 1
+
+      - name: Build mpy-cross
+        run: cd micropython/mpy-cross && make
+
+      - name: Build MicroPython Firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ env.IDF_VERSION }}
+          target: ${{ matrix.idf_target }}
+          path: 'micropython/ports/esp32'
+          command: make BOARD=${{ matrix.board }} USER_C_MODULES=../../../../st7789/micropython.cmake
+
+      - name: Upload Firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.board }}
+          path: micropython/ports/esp32/build-${{ matrix.board }}/firmware.bin

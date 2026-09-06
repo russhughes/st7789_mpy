@@ -1960,6 +1960,7 @@ static mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
 
     char buf[PNG_FILE_BUFFER_SIZE];
     int len, remain = 0;
+    const char *errmsg = NULL;
 
     PNG_USER_DATA user_data = {
         .self = self,
@@ -1973,17 +1974,25 @@ static mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
         .buffer = NULL
     };
 
+    // open the file before taking the (static) decoder: on failure the
+    // exception unwinds without leaving the decoder marked in-use
+    self->fp = mp_open(filename, "rb");
+
     // allocate new pngle_t and store in self to protect memory from gc
     self->work = pngle_new(self);
+    if (self->work == NULL) {
+        mp_close(self->fp);
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("png decoder busy"));
+    }
     pngle_t *pngle = (pngle_t *)self->work;
     pngle_set_user_data(pngle, (void *)&user_data);
     pngle_set_draw_callback(pngle, pngle_on_draw);
 
-    self->fp = mp_open(filename, "rb");
     while ((len = mp_readinto(self->fp, buf + remain, PNG_FILE_BUFFER_SIZE - remain)) > 0) {
         int fed = pngle_feed(pngle, buf, remain + len);
         if (fed < 0) {
-            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("png decompress failed: %s"), pngle_error(pngle));
+            errmsg = pngle_error(pngle);   // string literal, safe past destroy
+            goto error;
         }
         remain = remain + len - fed;
         if (remain > 0) {
@@ -1995,15 +2004,18 @@ static mp_obj_t st7789_ST7789_png(size_t n_args, const mp_obj_t *args) {
         png_flush(self, &user_data);
     }
 
+error:  // shared cleanup for the explicit failure path
     // free dynamic buffer
     if (self->buffer_size == 0) {
         m_free(self->i2c_buffer);
         self->i2c_buffer = NULL;
     }
-
     mp_close(self->fp);
     pngle_destroy(pngle);
     self->work = NULL;
+    if (errmsg) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("png decompress failed: %s"), errmsg);
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(st7789_ST7789_png_obj, 4, 5, st7789_ST7789_png);
