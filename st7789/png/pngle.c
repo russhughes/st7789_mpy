@@ -152,7 +152,13 @@ static uint32_t interlace_off_x[8] = { 0,  0, 4, 0, 2, 0, 1, 0 };
 static uint32_t interlace_off_y[8] = { 0,  0, 0, 4, 0, 2, 0, 1 };
 static uint32_t interlace_div_x[8] = { 1,  8, 8, 4, 4, 2, 2, 1 };
 static uint32_t interlace_div_y[8] = { 1,  8, 8, 8, 4, 4, 2, 2 };
-
+// static decoder instance (see pngle_new): ~44KB in BSS instead of the
+// MicroPython GC heap. The MicroPython VM is single-threaded and png
+// decoding never yields, so calls cannot overlap; if a previous call
+// was aborted by an exception (nlr longjmp past cleanup), the stale
+// state is simply discarded and the instance reused — self-healing,
+// no stuck "in use" flag possible.
+static pngle_t pngle_static;
 
 static inline uint8_t  read_uint8(const uint8_t *p)
 {
@@ -215,9 +221,13 @@ void pngle_reset(pngle_t *pngle)
 
 pngle_t *pngle_new(st7789_ST7789_obj_t *self)
 {
-	pngle_t *pngle = (pngle_t *)PNGLE_CALLOC(1, sizeof(pngle_t), "pngle_t");
-	if (!pngle) return NULL;
-
+	// pngle_t embeds tinfl_decompressor (~11KB) + lz_buf (32KB) = ~44KB.
+	// Allocating it from the MicroPython GC heap fails under heap
+	// fragmentation and leaks on error paths that longjmp past cleanup.
+	// Use one static instance in BSS instead: no GC-heap spike, and any
+	// state left by an exception-aborted call is wiped by the reset.
+	pngle_t *pngle = &pngle_static;
+	memset(pngle, 0, sizeof(pngle_t));
 	pngle->self = self;		// save reference back to MicroPython Object
 	pngle_reset(pngle);
 
@@ -226,6 +236,12 @@ pngle_t *pngle_new(st7789_ST7789_obj_t *self)
 
 void pngle_destroy(pngle_t *pngle)
 {
+	if (pngle == &pngle_static) {
+		// static instance: only release the sub-buffers; the struct
+		// itself stays in BSS for the next call
+		pngle_reset(pngle);
+		return;
+	}
 	if (pngle) {
 		pngle_reset(pngle);
 		PNGLE_FREE(pngle);
